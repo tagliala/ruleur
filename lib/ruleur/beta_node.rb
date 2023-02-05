@@ -1,18 +1,21 @@
 # frozen_string_literal: true
 
-# lib/ruleur/beta_node.rb
 module Ruleur
   # The BetaNode class represents a beta node in the Rete algorithm.
-  # A beta node is responsible for comparing two sets of facts and
-  # returning the set of tuples that match a given condition.
+  # A beta node is responsible for checking if two or more conditions
+  # match and passing the facts that match to the next node.
   class BetaNode
-    attr_reader :left, :right
+    attr_reader :left, :right, :parent, :children
 
-    def initialize(left:, right:)
+    def initialize(left, right, parent = nil)
       @left = left
       @right = right
+      @parent = parent
+      @children = []
     end
 
-    # ...
+    def add_child(node)
+      @children << node
+    end
   end
 end
