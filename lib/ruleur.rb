@@ -2,3 +2,4 @@
 
 require 'ruleur/alpha_node'
 require 'ruleur/beta_node'
+require 'ruleur/rule'
