@@ -34,5 +34,8 @@ Metrics/PerceivedComplexity:
   Exclude:
     - 'spec/**/*'
 
+RSpec/ExampleLength:
+  Max: 15
+
 RSpec/MultipleExpectations:
   Max: 5
