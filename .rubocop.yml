@@ -33,3 +33,6 @@ Metrics/ModuleLength:
 Metrics/PerceivedComplexity:
   Exclude:
     - 'spec/**/*'
+
+RSpec/MultipleExpectations:
+  Max: 5
