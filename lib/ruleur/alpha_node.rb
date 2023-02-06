@@ -13,18 +13,31 @@ module Ruleur
       @children = []
     end
 
-    def activate(fact)
-      return unless match(fact)
-
-      @parent&.activate(fact)
-    end
-
-    def match(fact)
-      @conditions.all? { |condition| condition.call(fact) }
+    def filter_fact(fact)
+      children.each do |child|
+        if match?(fact)
+          child.filter_fact(fact)
+          break
+        end
+      end
     end
 
     def add_child(node)
-      @children << node
+      children << node
+    end
+
+    def remove_child(node)
+      children.delete(node)
+    end
+
+    def reset
+      children.clear
+    end
+
+    private
+
+    def match?(fact)
+      conditions.all? { |condition| condition.call(fact) }
     end
   end
 end

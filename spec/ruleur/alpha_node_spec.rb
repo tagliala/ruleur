@@ -38,27 +38,24 @@ RSpec.describe Ruleur::AlphaNode do
     end
   end
 
-  describe '#match' do
-    let(:alpha_node) { described_class.new([->(fact) { fact[:age] > 18 }]) }
-
-    it 'returns true if all conditions match the fact' do
-      fact = { age: 21 }
-      expect(alpha_node.match(fact)).to be true
-    end
-
-    it "returns false if any conditions don't match the fact" do
-      fact = { age: 17 }
-      expect(alpha_node.match(fact)).to be false
-    end
-  end
-
   describe '#add_child' do
     let(:alpha_node) { described_class.new([]) }
-    let(:child) { instance_double(Ruleur::BetaNode) }
+    let(:child) { instance_double(described_class) }
 
     it 'adds a child node to the Alpha Node' do
       alpha_node.add_child(child)
       expect(alpha_node.children).to include child
+    end
+  end
+
+  describe '#remove_child' do
+    let(:alpha_node) { described_class.new([child]) }
+    let(:child) { instance_double(described_class) }
+
+    it 'removes a child node from the list of children' do
+      alpha_node.remove_child(child)
+
+      expect(alpha_node.children).not_to include(child)
     end
   end
 end
