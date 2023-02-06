@@ -3,29 +3,23 @@
 require 'spec_helper'
 
 RSpec.describe Ruleur::Rule do
-  describe '#initialize' do
-    it 'takes a condition and an action as arguments' do
-      condition = proc {}
-      action = proc {}
-
-      rule = described_class.new(condition, action)
-
-      expect(rule.condition).to eq(condition)
-      expect(rule.action).to eq(action)
-    end
-  end
-
   describe '#evaluate' do
-    let(:condition) { proc { |fact| fact > 5 } }
-    let(:action) { proc { |fact| results << fact } }
-    let(:rule) { described_class.new(condition, action) }
-    let(:results) { [] }
-    let(:facts) { [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }
+    let(:fact) { double }
+    let(:condition) { double(call: true) }
+    let(:action) { double(call: nil) }
+    let(:rule) { described_class.new([condition], [action]) }
 
-    it 'evaluates the rule against a set of facts' do
-      rule.evaluate(facts)
+    it 'executes action when condition is satisfied' do
+      expect(action).to receive(:call).with(fact)
+      rule.evaluate(fact)
+    end
 
-      expect(results).to eq([6, 7, 8, 9, 10])
+    it 'does not execute action when condition is not satisfied' do
+      allow(condition).to receive(:call).and_return(false)
+
+      rule.evaluate(fact)
+
+      expect(action).not_to have_received(:call)
     end
   end
 end
