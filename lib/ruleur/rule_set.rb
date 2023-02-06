@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Ruleur
-  # The RuleSet class represents a set of rules that can be managed and evaluated.
+  # The RuleSet class represents a collection of business rules in the BRMS.
+  # The RuleSet can be evaluated against a set of facts, known as the working memory,
+  # to trigger the actions associated with the rules whose conditions are satisfied.
   class RuleSet
     attr_reader :rules
 
