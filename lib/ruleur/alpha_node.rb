@@ -5,12 +5,22 @@ module Ruleur
   # An alpha node is responsible for filtering the set of facts that
   # match a given condition.
   class AlphaNode
-    attr_reader :fact, :parent, :children
+    attr_reader :conditions, :parent, :children
 
-    def initialize(fact, parent = nil)
-      @fact = fact
+    def initialize(conditions, parent = nil)
+      @conditions = conditions
       @parent = parent
       @children = []
+    end
+
+    def activate(fact)
+      return unless match(fact)
+
+      @parent&.activate(fact)
+    end
+
+    def match(fact)
+      @conditions.all? { |condition| condition.call(fact) }
     end
 
     def add_child(node)

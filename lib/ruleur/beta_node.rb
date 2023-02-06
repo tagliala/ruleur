@@ -17,5 +17,13 @@ module Ruleur
     def add_child(node)
       @children << node
     end
+
+    def activate(fact)
+      if left.fact == fact && right.fact == fact
+        children.each do |child|
+          child.activate(fact)
+        end
+      end
+    end
   end
 end
