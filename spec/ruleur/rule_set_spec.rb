@@ -17,9 +17,12 @@ RSpec.describe Ruleur::RuleSet do
     let(:working_memory) { instance_double(Ruleur::WorkingMemory) }
 
     it 'evaluates each rule in the rule set' do
+      allow(rule).to receive(:evaluate)
+
       rule_set.add_rule(rule)
-      expect(rule).to receive(:evaluate).with(working_memory)
       rule_set.evaluate(working_memory)
+
+      expect(rule).to have_received(:evaluate).with(working_memory)
     end
   end
 end

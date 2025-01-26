@@ -1,14 +1,17 @@
 require:
+  - rubocop-packaging
   - rubocop-performance
   - rubocop-rake
   - rubocop-rspec
 
 AllCops:
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 3.1
   NewCops: enable
   Exclude:
-    - 'gemfiles/**/*'
-    - 'vendor/bundle/**/*'
+    - .git/**/*
+    - gemfiles/**/*
+    - tmp/**/*
+    - vendor/**/*
 
 Metrics/AbcSize:
   Exclude:
