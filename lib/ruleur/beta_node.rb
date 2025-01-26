@@ -19,10 +19,10 @@ module Ruleur
     end
 
     def activate(fact)
-      if left.fact == fact && right.fact == fact
-        children.each do |child|
-          child.activate(fact)
-        end
+      return unless left.fact == fact && right.fact == fact
+
+      children.each do |child|
+        child.activate(fact)
       end
     end
   end

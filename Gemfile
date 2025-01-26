@@ -4,7 +4,14 @@ source 'https://rubygems.org'
 
 gemspec
 
-gem 'rubocop'
-gem 'rubocop-performance'
-gem 'rubocop-rake'
-gem 'rubocop-rspec'
+gem 'bundler'
+gem 'rake'
+gem 'rspec'
+gem 'simplecov'
+gem 'simplecov-lcov'
+
+gem 'rubocop', require: false
+gem 'rubocop-packaging', require: false
+gem 'rubocop-performance', require: false
+gem 'rubocop-rake', require: false
+gem 'rubocop-rspec', require: false

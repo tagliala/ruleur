@@ -19,8 +19,7 @@ Gem::Specification.new do |gem|
   gem.homepage      = 'https://github.com/tagliala/ruleur'
   gem.license       = 'MIT'
 
-  gem.files         = `git ls-files -z -- {CHANGELOG.md,LICENSE,README.md,lib}`.split("\x0")
-  gem.executables   = gem.files.grep(%r{^bin/}).map { |f| File.basename(f) }
+  gem.files         = Dir['LICENSE', 'README.md', 'lib/**/*.rb']
   gem.name          = 'ruleur'
   gem.require_paths = ['lib']
   gem.version       = Ruleur::VERSION
@@ -31,11 +30,5 @@ Gem::Specification.new do |gem|
   gem.metadata['changelog_uri'] = 'https://github.com/tagliala/ruleur/blob/main/CHANGELOG.md'
   gem.metadata['source_code_uri'] = 'https://github.com/tagliala/ruleur'
 
-  gem.required_ruby_version = '>= 3.0'
-
-  gem.add_development_dependency 'bundler', '~> 2.0'
-  gem.add_development_dependency 'rake', '~> 13.0'
-  gem.add_development_dependency 'rspec', '~> 3.12'
-  gem.add_development_dependency 'simplecov', '~> 0.22.0'
-  gem.add_development_dependency 'simplecov-lcov', '~> 0.8.0'
+  gem.required_ruby_version = '>= 3.1'
 end

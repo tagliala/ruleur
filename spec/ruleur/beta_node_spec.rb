@@ -5,9 +5,9 @@ require 'spec_helper'
 RSpec.describe Ruleur::BetaNode do
   subject(:beta_node) { described_class.new(left, right, parent) }
 
-  let(:left) { double('left') }
-  let(:right) { double('right') }
-  let(:parent) { double('parent') }
+  let(:left) { 'left' }
+  let(:right) { 'right' }
+  let(:parent) { 'parent' }
 
   describe '#initialize' do
     it 'sets left and right' do
@@ -25,7 +25,7 @@ RSpec.describe Ruleur::BetaNode do
   end
 
   describe '#add_child' do
-    let(:child) { double('child') }
+    let(:child) { 'child' }
 
     it 'adds child to children array' do
       beta_node.add_child(child)
