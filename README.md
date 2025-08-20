@@ -1,48 +1,125 @@
-# Welcome to Ruleur
+# Ruleur
 
-Ruleur is a Ruby gem that implements a Business Rule Management System
-(BRMS) using the Rete algorithm. The gem allows you to manage your
-business rules in a scalable and efficient manner.
+A tiny, composable Business Rules Engine (BRMS) for Ruby with:
+- Composable boolean conditions (all/any/not + predicates)
+- A small, readable Ruby DSL
+- Forward-chaining engine with salience and no-loop
+- Optional persistence (serialize/deserialize rules) with a memory or ActiveRecord-backed repository
 
-## The name "Ruleur"
+Status: PoC.
 
-The name "Ruleur" was chosen for this gem because it is concise,
-memorable, and easy to associate with the purpose of the gem. The "ru"
-at the beginning of the name aligns with the naming convention for
-Ruby gems, and the "leur" at the end gives the name a unique and
-memorable sound. The name "Ruleur" was suggested by ChatGPT, an AI
-language model developed by OpenAI, which is acknowledged as a
-co-author of this gem.
+## Why
 
-## Rete Algorithm Overview
+Separate changing business logic (rules) from code where possible, keep policies small, and make rules testable and inspectable. One use case is replacing complex Pundit checks with rules, but Ruleur is generic.
 
-The Rete algorithm is a rule-based system used to efficiently
-match facts against a set of rules. Ruleur implements this
-algorithm to provide a scalable and efficient way to manage
-business rules. This section provides an overview of main
-components and how they work together.
+## Quick start
 
-- Network: Implements algorithm using nodes
-  - Nodes: Alpha and Beta
-    - Alpha: Filter facts based on conditions
-    - Beta: Match filtered facts to activate rules
-- Rule Set: Top-level container for all rules
-- Rules: Business rules with conditions and actions
-- Facts: Data processed by the system
-- Working Memory: Maintains current state of facts
+```ruby
+require "ruleur"
 
+MockRecord = Struct.new(:updatable, :draft) do
+  def updatable? = !!updatable
+  def draft? = !!draft
+end
 
-## Contributing
+MockUser = Struct.new(:admin) do
+  def admin? = !!admin
+end
 
-To contribute to this gem, please follow the standard Git workflow
-and submit a pull request. All contributions are welcome and
-appreciated.
+engine = Ruleur.define do
+  rule "allow_create", no_loop: true do
+    when_any(
+      usr(:admin?),
+      all(rec(:updatable?), rec(:draft?))
+    )
+    action { allow! :create }
+  end
 
-## License
+  rule "allow_update", no_loop: true do
+    when_all(
+      rec(:updatable?),
+      any(
+        usr(:admin?),
+        all(rec(:draft?), flag(:create))
+      )
+    )
+    action { allow! :update }
+  end
+end
 
-This gem is licensed under the [MIT License](LICENSE).
+ctx = engine.run(record: MockRecord.new(true, true), user: MockUser.new(false))
+ctx[:allow_create] # => true
+ctx[:allow_update] # => true
+```
 
-## Credits
+DSL helpers:
+- rec(:method_name) => truthy(record.method_name)
+- usr(:method_name) => truthy(user.method_name)
+- flag(:name) => truthy(:allow_name)
+- allow!(:name) => set :allow_name => true
+- You can still use eq/gt/lt/includes/matches, all/any/not_ for more complex cases.
 
-This gem was co-authored by Geremia Taglialatela and ChatGPT, an AI language
-model developed by OpenAI.
+## Persistence
+
+Rules can be serialized to a JSON-able structure (condition AST + action_spec) and stored in a database.
+
+- Memory repository:
+
+```ruby
+repo = Ruleur::Persistence::MemoryRepository.new
+engine.rules.each { |r| repo.save(r) }
+
+loaded_engine = Ruleur::Engine.new(rules: repo.all)
+```
+
+- ActiveRecord repository (optional):
+
+Create a table (recommended jsonb for payload):
+
+```ruby
+class CreateRuleurRules < ActiveRecord::Migration[7.0]
+  def change
+    create_table :ruleur_rules do |t|
+      t.string :name, null: false
+      t.jsonb :payload, null: false, default: {}
+      t.timestamps
+    end
+    add_index :ruleur_rules, :name, unique: true
+  end
+end
+```
+
+Then:
+
+```ruby
+repo = Ruleur::Persistence::ActiveRecordRepository.new
+engine.rules.each { |r| repo.save(r) }
+rules = repo.all
+engine = Ruleur::Engine.new(rules: rules)
+```
+
+Note: Only a constrained action_spec is persisted (e.g., `{ set: { allow_update: true } }`). Arbitrary Ruby actions are intentionally not serializable.
+
+## Is storing rules in a DB a good practice?
+
+Yes, when you need runtime configurability. Ensure:
+- Pre-validation and compilation of rules before activation
+- Versioning and audit trail
+- Strong typing/constraints on permitted actions (no arbitrary code)
+- Staged rollout and safe rollback
+- Tests that exercise serialized rules
+
+For simpler deployments or when rules are tightly coupled to code, keeping them in code may be preferable.
+
+## Development
+
+- Minimal RSpec suite in `spec/`
+- Example script in `examples/policy_poc.rb`
+- Engine tracing: `Ruleur::Engine.new(trace: true)`
+
+## Roadmap
+
+- Rule groups/agenda groups, conflict strategies
+- Richer DSL proxies (method-chained refs), temporal ops
+- YAML loader for authoring rules outside Ruby
+- Better explanations/tracing (why a rule did/didn't fire)
