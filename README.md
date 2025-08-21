@@ -1,5 +1,8 @@
 # Ruleur
 
+[![Ruby specs](https://github.com/tagliala/ruleur/actions/workflows/ruby.yml/badge.svg)](https://github.com/tagliala/ruleur/actions/workflows/ruby.yml)
+[![RuboCop](https://github.com/tagliala/ruleur/actions/workflows/rubocop.yml/badge.svg)](https://github.com/tagliala/ruleur/actions/workflows/rubocop.yml)
+
 A tiny, composable Business Rules Engine (BRMS) for Ruby with:
 - Composable boolean conditions (all/any/not + predicates)
 - A small, readable Ruby DSL
@@ -123,3 +126,18 @@ For simpler deployments or when rules are tightly coupled to code, keeping them 
 - Richer DSL proxies (method-chained refs), temporal ops
 - YAML loader for authoring rules outside Ruby
 - Better explanations/tracing (why a rule did/didn't fire)
+
+## Contributing
+
+To contribute to this gem, please follow the standard Git workflow
+and submit a pull request. All contributions are welcome and
+appreciated.
+
+## License
+
+This gem is licensed under the [MIT License](LICENSE).
+
+## Credits
+
+This gem was co-authored by Geremia Taglialatela and ChatGPT, an AI language
+model developed by OpenAI.
