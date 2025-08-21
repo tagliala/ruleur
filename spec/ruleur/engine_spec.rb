@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "spec_helper"
+require 'spec_helper'
 
 MockRecord = Struct.new(:updatable, :draft) do
   def updatable? = !!updatable
@@ -11,10 +11,10 @@ MockUser = Struct.new(:admin) do
   def admin? = !!admin
 end
 
-RSpec.describe "Policy PoC rules" do
+RSpec.describe 'Policy PoC rules' do
   let(:engine) do
     Ruleur.define do
-      rule "allow_create", no_loop: true do
+      rule 'allow_create', no_loop: true do
         when_any(
           usr(:admin?),
           all(
@@ -25,7 +25,7 @@ RSpec.describe "Policy PoC rules" do
         action { allow! :create }
       end
 
-      rule "allow_update", no_loop: true do
+      rule 'allow_update', no_loop: true do
         when_all(
           rec(:updatable?),
           any(
@@ -41,29 +41,29 @@ RSpec.describe "Policy PoC rules" do
     end
   end
 
-  it "grants both when admin and updatable" do
+  it 'grants both when admin and updatable' do
     ctx = engine.run(record: MockRecord.new(true, false), user: MockUser.new(true))
-    expect(ctx[:allow_create]).to eq(true)
-    expect(ctx[:allow_update]).to eq(true)
+    expect(ctx[:allow_create]).to be(true)
+    expect(ctx[:allow_update]).to be(true)
   end
 
-  it "grants both when draft and updatable (no admin)" do
+  it 'grants both when draft and updatable (no admin)' do
     ctx = engine.run(record: MockRecord.new(true, true), user: MockUser.new(false))
-    expect(ctx[:allow_create]).to eq(true)
-    expect(ctx[:allow_update]).to eq(true)
+    expect(ctx[:allow_create]).to be(true)
+    expect(ctx[:allow_update]).to be(true)
   end
 
-  it "denies both when not draft, not admin" do
+  it 'denies both when not draft, not admin' do
     ctx = engine.run(record: MockRecord.new(true, false), user: MockUser.new(false))
-    expect(ctx[:allow_create]).not_to eq(true)
-    expect(ctx[:allow_update]).not_to eq(true)
+    expect(ctx[:allow_create]).not_to be(true)
+    expect(ctx[:allow_update]).not_to be(true)
   end
 end
 
-RSpec.describe "Persistence" do
-  it "serializes/deserializes rules and runs them" do
+RSpec.describe 'Persistence' do
+  it 'serializes/deserializes rules and runs them' do
     engine = Ruleur.define do
-      rule "allow_create", no_loop: true do
+      rule 'allow_create', no_loop: true do
         when_any(
           usr(:admin?),
           all(rec(:updatable?), rec(:draft?))
@@ -77,6 +77,6 @@ RSpec.describe "Persistence" do
 
     loaded_engine = Ruleur::Engine.new(rules: repo.all)
     ctx = loaded_engine.run(record: MockRecord.new(true, true), user: MockUser.new(false))
-    expect(ctx[:allow_create]).to eq(true)
+    expect(ctx[:allow_create]).to be(true)
   end
 end

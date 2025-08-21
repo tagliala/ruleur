@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "json"
+require 'json'
 
 module Ruleur
   module Persistence
@@ -12,7 +12,7 @@ module Ruleur
 
       def save(rule)
         h = Serializer.rule_to_h(rule)
-        idx = @serialized_rules.index { |r| (r[:name] || r["name"]) == h[:name] }
+        idx = @serialized_rules.index { |r| (r[:name] || r['name']) == h[:name] }
         if idx
           @serialized_rules[idx] = h
         else
@@ -25,7 +25,7 @@ module Ruleur
       end
 
       def delete(name)
-        @serialized_rules.reject! { |h| (h[:name] || h["name"]) == name.to_s }
+        @serialized_rules.reject! { |h| (h[:name] || h['name']) == name.to_s }
       end
     end
 
@@ -53,14 +53,15 @@ module Ruleur
       private
 
       def default_model
-        unless defined?(::ActiveRecord)
-          raise "ActiveRecord not loaded. Provide model_class: or load ActiveRecord"
+        raise 'ActiveRecord not loaded. Provide model_class: or load ActiveRecord' unless defined?(::ActiveRecord)
+
+        Class.new(::ActiveRecord::Base) do
+          self.table_name = 'ruleur_rules'
+          unless respond_to?(:attribute_types) && attribute_types['payload'].respond_to?(:deserialize)
+            serialize :payload,
+                      JSON
+          end
         end
-        klass = Class.new(::ActiveRecord::Base) do
-          self.table_name = "ruleur_rules"
-          serialize :payload, JSON unless respond_to?(:attribute_types) && attribute_types["payload"].respond_to?(:deserialize)
-        end
-        klass
       end
     end
   end

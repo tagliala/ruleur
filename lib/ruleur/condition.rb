@@ -28,6 +28,7 @@ module Ruleur
       # Enable a & b and a | b in DSL
       def &(other) = All.new(self, other)
       def |(other) = Any.new(self, other)
+
       def !
         Not.new(self)
       end
@@ -51,6 +52,7 @@ module Ruleur
 
     class All < Node
       attr_reader :children
+
       def initialize(*children)
         @children = children.flatten
       end
@@ -62,6 +64,7 @@ module Ruleur
 
     class Any < Node
       attr_reader :children
+
       def initialize(*children)
         @children = children.flatten
       end
@@ -73,6 +76,7 @@ module Ruleur
 
     class Not < Node
       attr_reader :child
+
       def initialize(child)
         @child = child
       end
@@ -128,7 +132,7 @@ module Ruleur
       def any(*children) = Any.new(*children)
       def not_(child) = Not.new(child)
 
-      def predicate(&block) = BlockPredicate.new(&block)
+      def predicate(&) = BlockPredicate.new(&)
     end
   end
 end

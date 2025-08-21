@@ -6,7 +6,7 @@ module Ruleur
 
     def initialize(rules: [], trace: false)
       @rules = []
-      @trace = !!trace
+      @trace = !trace.nil?
       rules.each { |r| add_rule(r) }
     end
 
@@ -19,7 +19,7 @@ module Ruleur
     def run(initial_facts = {}, max_cycles: 100, **kwargs)
       # If kwargs are provided, merge them with initial_facts
       # but exclude engine control parameters
-      trace_param = kwargs.delete(:trace)
+      kwargs.delete(:trace)
       initial_facts = initial_facts.merge(kwargs) unless kwargs.empty?
       ctx = initial_facts.is_a?(Context) ? initial_facts : Context.new(initial_facts)
       cycles = 0
@@ -38,7 +38,7 @@ module Ruleur
           before = ctx.facts.dup
           rule.fire(ctx)
           after = ctx.facts
-          log "Facts changed: #{(after.to_a - before.to_a).map(&:first).join(", ")}" if before != after
+          log "Facts changed: #{(after.to_a - before.to_a).map(&:first).join(', ')}" if before != after
         end
       end
 
@@ -48,7 +48,7 @@ module Ruleur
     private
 
     def log(msg)
-      $stderr.puts "[Ruleur] #{msg}" if trace
+      warn "[Ruleur] #{msg}" if trace
     end
   end
 end

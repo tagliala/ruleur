@@ -11,6 +11,7 @@ module Ruleur
     def self.call(name, left, right)
       fn = @ops[name.to_sym]
       raise ArgumentError, "Unknown operator: #{name}" unless fn
+
       fn.call(left, right)
     end
 
@@ -24,7 +25,7 @@ module Ruleur
       register(:in) { |l, r| r.respond_to?(:include?) && r.include?(l) }
       register(:includes) { |l, r| l.respond_to?(:include?) && l.include?(r) }
       register(:matches) { |l, r| r.is_a?(Regexp) && l.is_a?(String) && l.match?(r) }
-      register(:truthy) { |l, _| !!l }
+      register(:truthy) { |l, _| !l.nil? && l != false }
       register(:falsy) { |l, _| !l }
       register(:present) { |l, _| !(l.nil? || (l.respond_to?(:empty?) && l.empty?)) }
       register(:blank) { |l, _| l.nil? || (l.respond_to?(:empty?) && l.empty?) }

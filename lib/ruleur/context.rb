@@ -17,8 +17,8 @@ module Ruleur
       @facts[key.to_sym] = value
     end
 
-    def fetch(key, *args, &blk)
-      @facts.fetch(key.to_sym, *args, &blk)
+    def fetch(key, ...)
+      @facts.fetch(key.to_sym, ...)
     end
 
     # Resolve a reference path starting from a root fact key.
@@ -27,6 +27,7 @@ module Ruleur
       obj = @facts[root_key.to_sym]
       path.each do |segment|
         return nil if obj.nil?
+
         if segment.is_a?(Array)
           meth, *args = segment
           obj = obj.public_send(meth, *resolve_args(args))

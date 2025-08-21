@@ -52,17 +52,17 @@ module Ruleur
       end
 
       # Inline builder helpers: returns a Condition::Node
-      def when_all(*children, &block)
-        @conds << all(*children, &block)
+      def when_all(*children, &)
+        @conds << all(*children, &)
       end
 
-      def when_any(*children, &block)
-        @conds << any(*children, &block)
+      def when_any(*children, &)
+        @conds << any(*children, &)
       end
 
       # Low-level: add a predicate explicitly
-      def when_predicate(&block)
-        @conds << predicate(&block)
+      def when_predicate(&)
+        @conds << predicate(&)
       end
 
       # Action helpers
@@ -87,14 +87,14 @@ module Ruleur
 
       # Convenience to set allow_#{sym} => true
       def allow!(sym)
-        set("allow_#{sym}".to_sym, true)
+        set(:"allow_#{sym}", true)
       end
 
       # Provide arbitrary action
       def action(&block)
         @action = block
         # If the block calls DSL methods, we need to capture them
-        instance_eval(&block) if block.arity == 0
+        instance_eval(&block) if block.arity.zero?
       end
 
       alias then action
@@ -111,7 +111,7 @@ module Ruleur
         Rule.new(
           name: @name,
           condition: cond,
-          action: (@action || ->(_ctx) {}),
+          action: @action || ->(_ctx) {},
           action_spec: @action_spec,
           **@opts
         )
@@ -149,9 +149,9 @@ module Ruleur
 
     module_function
 
-    def build(&block)
+    def build(&)
       eb = EngineBuilder.new
-      eb.instance_eval(&block)
+      eb.instance_eval(&)
       eb.build
     end
   end

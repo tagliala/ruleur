@@ -11,12 +11,13 @@ module Ruleur
       @action_spec = action_spec # serializable action (e.g., { set: { allow_update: true } })
       @salience = salience.to_i
       @tags = Array(tags).map!(&:to_sym)
-      @no_loop = !!no_loop
+      @no_loop = !no_loop.nil?
       @fired_once = false
     end
 
     def eligible?(ctx)
       return false if no_loop && @fired_once
+
       !!condition.evaluate(ctx)
     end
 
@@ -34,8 +35,8 @@ module Ruleur
 
       def apply(ctx, spec)
         spec = stringify_keys(spec)
-        if spec["set"].is_a?(Hash)
-          spec["set"].each do |k, v|
+        if spec['set'].is_a?(Hash)
+          spec['set'].each do |k, v|
             ctx[k.to_sym] = resolve_value(ctx, v)
           end
         end

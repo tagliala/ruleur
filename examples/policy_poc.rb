@@ -3,8 +3,8 @@
 # Minimal example showing allow_create and allow_update without workflow checks.
 # Run with: ruby examples/policy_poc.rb
 
-$LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
-require "ruleur"
+$LOAD_PATH.unshift(File.expand_path('../lib', __dir__))
+require 'ruleur'
 
 MockRecord = Struct.new(:updatable, :draft) do
   def updatable? = !!updatable
@@ -18,7 +18,7 @@ end
 def create_engine
   Ruleur.define do
     # allow_create if admin OR (record is draft and updatable)
-    rule "allow_create", no_loop: true, salience: 10 do
+    rule 'allow_create', no_loop: true, salience: 10 do
       when_any(
         usr(:admin?),
         all(
@@ -30,7 +30,7 @@ def create_engine
     end
 
     # allow_update if updatable and (admin OR (draft AND allow_create))
-    rule "allow_update", no_loop: true, salience: 5 do
+    rule 'allow_update', no_loop: true, salience: 5 do
       when_all(
         rec(:updatable?),
         any(
