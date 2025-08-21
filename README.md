@@ -1,5 +1,8 @@
 # Welcome to Ruleur
 
+[![Ruby specs](https://github.com/tagliala/ruleur/actions/workflows/ruby.yml/badge.svg)](https://github.com/tagliala/ruleur/actions/workflows/ruby.yml)
+[![RuboCop](https://github.com/tagliala/ruleur/actions/workflows/rubocop.yml/badge.svg)](https://github.com/tagliala/ruleur/actions/workflows/rubocop.yml)
+
 Ruleur is a Ruby gem that implements a Business Rule Management System
 (BRMS) using the Rete algorithm. The gem allows you to manage your
 business rules in a scalable and efficient manner.
