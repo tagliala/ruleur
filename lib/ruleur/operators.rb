@@ -17,6 +17,10 @@ module Ruleur
       fn.call(left, right)
     end
 
+    def self.registry
+      @ops
+    end
+
     def self.register_defaults!
       register_comparison_operators
       register_collection_operators

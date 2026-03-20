@@ -1,0 +1,596 @@
+# Advanced Topics
+
+This guide covers advanced features and techniques for working with Ruleur, including salience, no-loop, tracing, and performance optimization.
+
+## Salience (Priority)
+
+**Salience** determines the firing order of rules when multiple rules are eligible. Higher salience rules fire first.
+
+### Basic Salience
+
+```ruby
+engine = Ruleur.define do
+  rule "low_priority", salience: 0 do
+    when_all(usr(:logged_in?))
+    set :priority, "low"
+  end
+  
+  rule "high_priority", salience: 100 do
+    when_all(usr(:admin?))
+    set :priority, "high"
+  end
+end
+```
+
+**Execution order:** `high_priority` (100) fires before `low_priority` (0).
+
+### Default Salience
+
+Rules have salience `0` by default:
+
+```ruby
+rule "default_rule" do
+  # Implicit salience: 0
+end
+```
+
+### Salience Ranges
+
+Use consistent ranges for different priority levels:
+
+```ruby
+# Critical business rules
+rule "payment_validation", salience: 1000 do
+  # ...
+end
+
+# Important rules
+rule "permission_check", salience: 100 do
+  # ...
+end
+
+# Normal rules
+rule "log_activity", salience: 10 do
+  # ...
+end
+
+# Cleanup rules
+rule "set_defaults", salience: 0 do
+  # ...
+end
+```
+
+### Conflict Resolution
+
+When multiple rules have the same salience, they're sorted alphabetically by name:
+
+```ruby
+rule "a_rule", salience: 10 do
+  # Fires first (alphabetically)
+end
+
+rule "b_rule", salience: 10 do
+  # Fires second
+end
+```
+
+::: tip
+Use descriptive names with numeric prefixes for fine-grained control:
+
+```ruby
+rule "10_validate_user", salience: 100
+rule "20_check_permissions", salience: 100
+rule "30_apply_rules", salience: 100
+```
+:::
+
+## No-Loop Protection
+
+The `no_loop` option prevents a rule from firing multiple times in the same execution cycle.
+
+### Why No-Loop?
+
+Without no-loop, a rule might fire repeatedly if its action makes its condition true again:
+
+```ruby
+# Without no_loop - could fire multiple times!
+rule "increment_counter" do
+  when_all(lt(ref(:counter), 10))
+  action do |ctx|
+    ctx[:counter] = (ctx[:counter] || 0) + 1
+  end
+end
+```
+
+### With No-Loop
+
+```ruby
+rule "increment_counter", no_loop: true do
+  when_all(lt(ref(:counter), 10))
+  action do |ctx|
+    ctx[:counter] = (ctx[:counter] || 0) + 1
+  end
+end
+```
+
+Now the rule fires at most once per execution cycle.
+
+### When to Use No-Loop
+
+Use `no_loop: true` when:
+- Rule actions might make the rule eligible again
+- You want to prevent infinite loops
+- A rule should fire once per execution
+
+**Example: Permission chains**
+
+```ruby
+rule "grant_base_permissions", no_loop: true do
+  when_all(usr(:registered?))
+  action do
+    allow! :view
+    allow! :comment
+  end
+end
+
+rule "grant_premium_permissions", no_loop: true do
+  when_all(
+    usr(:premium?),
+    flag(:view)  # Depends on previous rule
+  )
+  action do
+    allow! :download
+    allow! :export
+  end
+end
+```
+
+## Engine Tracing
+
+Enable tracing to debug rule execution:
+
+```ruby
+engine = Ruleur::Engine.new(trace: true)
+ctx = engine.run(user: user, record: record)
+```
+
+**Output:**
+
+```
+[Ruleur] Firing: high_priority_rule (salience=100)
+[Ruleur] Facts changed: allow_access
+[Ruleur] Firing: medium_priority_rule (salience=50)
+[Ruleur] Facts changed: allow_edit
+[Ruleur] Firing: low_priority_rule (salience=0)
+[Ruleur] Facts changed: allow_view
+```
+
+### Trace in Production
+
+Control tracing via environment variable:
+
+```ruby
+trace = ENV['RULEUR_TRACE'] == 'true'
+engine = Ruleur::Engine.new(rules: rules, trace: trace)
+```
+
+## Execution Cycles
+
+Ruleur uses a forward-chaining execution model with cycles:
+
+### How It Works
+
+1. **Build conflict set**: Find all eligible rules
+2. **Sort by salience**: Higher salience first
+3. **Fire rules**: Execute actions, update facts
+4. **Repeat**: If facts changed, build new conflict set
+5. **Terminate**: Stop when no rules fire or max cycles reached
+
+### Max Cycles
+
+Prevent infinite loops with `max_cycles`:
+
+```ruby
+ctx = engine.run(user: user, max_cycles: 10)
+```
+
+Default: 100 cycles
+
+### Detecting Cycles
+
+Monitor execution cycles:
+
+```ruby
+cycles = 0
+engine = Ruleur.define do
+  rule "count_cycles", no_loop: false do
+    when_all(lt(ref(:counter), 100))
+    action do |ctx|
+      ctx[:counter] = (ctx[:counter] || 0) + 1
+      cycles += 1
+    end
+  end
+end
+
+ctx = engine.run({}, max_cycles: 5)
+puts "Executed #{cycles} times"  # => 5
+```
+
+## Rule Tags
+
+Organize rules with tags:
+
+```ruby
+engine = Ruleur.define do
+  rule "admin_check", tags: ['permissions', 'admin'] do
+    # ...
+  end
+  
+  rule "payment_rule", tags: ['payment', 'validation'] do
+    # ...
+  end
+end
+```
+
+### Querying by Tags
+
+```ruby
+# Find rules with specific tag
+admin_rules = engine.rules.select { |r| r.tags.include?('admin') }
+
+# Find rules with multiple tags
+payment_validation = engine.rules.select do |r|
+  r.tags.include?('payment') && r.tags.include?('validation')
+end
+```
+
+### Tag Conventions
+
+Use consistent tag hierarchies:
+
+```ruby
+# Domain tags
+tags: ['user', 'permissions']
+tags: ['order', 'payment']
+tags: ['document', 'workflow']
+
+# Type tags
+tags: ['validation', 'constraint']
+tags: ['transformation', 'calculation']
+tags: ['authorization', 'access-control']
+
+# Environment tags
+tags: ['production', 'critical']
+tags: ['experimental', 'beta']
+```
+
+## Context Management
+
+The execution context holds all facts and intermediate results.
+
+### Initial Context
+
+Provide facts when running:
+
+```ruby
+ctx = engine.run(
+  user: current_user,
+  record: document,
+  custom_data: { foo: 'bar' }
+)
+```
+
+### Reading Context Values
+
+```ruby
+ctx[:user]           # => User object
+ctx[:record]         # => Document object
+ctx[:allow_access]   # => true/false (set by rules)
+```
+
+### Context Isolation
+
+Each engine run creates a new context:
+
+```ruby
+ctx1 = engine.run(user: user1, record: doc1)
+ctx2 = engine.run(user: user2, record: doc2)
+
+# ctx1 and ctx2 are independent
+```
+
+### Reusing Context
+
+You can pass a Context object for incremental execution:
+
+```ruby
+ctx = Ruleur::Context.new(user: user, record: record)
+engine1.run(ctx)
+
+# Continue with same context
+engine2.run(ctx)
+
+# ctx accumulates facts from both engines
+```
+
+## Performance Optimization
+
+### 1. Minimize Rule Count
+
+Fewer rules = faster execution:
+
+```ruby
+# Good - single rule
+rule "permission_check" do
+  when_any(
+    usr(:admin?),
+    usr(:editor?),
+    usr(:owner?)
+  )
+  allow! :edit
+end
+
+# Less efficient - three rules
+rule "admin_edit" do
+  when_all(usr(:admin?))
+  allow! :edit
+end
+
+rule "editor_edit" do
+  when_all(usr(:editor?))
+  allow! :edit
+end
+
+rule "owner_edit" do
+  when_all(usr(:owner?))
+  allow! :edit
+end
+```
+
+### 2. Optimize Condition Order
+
+Put cheap, likely-to-fail checks first:
+
+```ruby
+# Good - cheap check first
+when_all(
+  usr(:logged_in?),        # Fast boolean check
+  present(rec_val(:title)), # Fast presence check
+  expensive_db_query()      # Slow check last
+)
+
+# Less efficient - expensive check first
+when_all(
+  expensive_db_query(),
+  usr(:logged_in?)
+)
+```
+
+### 3. Use Salience Wisely
+
+Higher salience rules execute first - use for critical paths:
+
+```ruby
+# Execute validation first (high salience)
+rule "validate_input", salience: 100 do
+  # Fast validation
+end
+
+# Then business logic (normal salience)
+rule "process_order", salience: 10 do
+  # Heavier processing
+end
+```
+
+### 4. Limit Execution Cycles
+
+Set appropriate `max_cycles` to prevent runaway execution:
+
+```ruby
+# For simple rules that shouldn't chain
+ctx = engine.run(user: user, max_cycles: 1)
+
+# For complex workflows
+ctx = engine.run(user: user, max_cycles: 50)
+```
+
+### 5. Cache Engine Instances
+
+Reuse engines across requests:
+
+```ruby
+class RuleService
+  def self.engine
+    @engine ||= begin
+      rules = load_rules_from_database
+      Ruleur::Engine.new(rules: rules)
+    end
+  end
+end
+
+# Use cached engine
+ctx = RuleService.engine.run(user: user)
+```
+
+### 6. Precompute Values
+
+Avoid expensive computations in conditions:
+
+```ruby
+# Bad - computed on every evaluation
+when_all(
+  gt(rec_val(:items).sum(&:price), 1000)
+)
+
+# Good - precompute before engine run
+total = record.items.sum(&:price)
+ctx = engine.run(user: user, record: record, total: total)
+
+rule "high_value_order" do
+  when_all(gt(ref(:total), 1000))
+end
+```
+
+## Debugging Techniques
+
+### 1. Trace Execution
+
+Enable tracing to see what fires:
+
+```ruby
+engine = Ruleur::Engine.new(rules: rules, trace: true)
+```
+
+### 2. Test Conditions Manually
+
+Evaluate conditions outside the engine:
+
+```ruby
+ctx = Ruleur::Context.new(user: user, record: record)
+
+# Test condition
+condition = all(usr(:admin?), rec(:published?))
+result = condition.evaluate(ctx)
+
+puts "Condition result: #{result}"  # => true/false
+```
+
+### 3. Inspect Rule Eligibility
+
+Check if a rule would fire:
+
+```ruby
+rule = engine.rules.find { |r| r.name == "my_rule" }
+ctx = Ruleur::Context.new(user: user, record: record)
+
+if rule.eligible?(ctx)
+  puts "Rule would fire"
+else
+  puts "Rule would not fire"
+end
+```
+
+### 4. Log Context State
+
+Inspect context before/after execution:
+
+```ruby
+ctx = Ruleur::Context.new(user: user, record: record)
+puts "Before: #{ctx.facts.inspect}"
+
+engine.run(ctx)
+
+puts "After: #{ctx.facts.inspect}"
+```
+
+### 5. Use Validation
+
+Validate rules to catch errors early:
+
+```ruby
+engine.rules.each do |rule|
+  result = Ruleur::Validation.validate_rule(rule)
+  unless result.valid?
+    puts "Rule '#{rule.name}' has errors:"
+    result.errors.each { |e| puts "  - #{e}" }
+  end
+end
+```
+
+## Custom Operators
+
+Register custom operators for domain-specific logic:
+
+```ruby
+# Register custom operator
+Ruleur::Operators.register(:within_range) do |value, range|
+  range.is_a?(Range) && range.include?(value)
+end
+
+# Use in rule
+rule "age_range_check" do
+  when_all(
+    predicate do
+      left = rec_val(:age)
+      right = lit(18..65)
+      Ruleur::Operators.call(:within_range, left, right)
+    end
+  )
+  allow! :eligible
+end
+```
+
+::: warning
+Custom operators won't serialize to YAML. Use them only for code-based rules.
+:::
+
+## Working with Large Datasets
+
+### Batch Processing
+
+Process records in batches:
+
+```ruby
+def process_batch(records, user)
+  results = []
+  
+  records.each do |record|
+    ctx = engine.run(user: user, record: record)
+    results << { record_id: record.id, allowed: ctx[:allow_access] }
+  end
+  
+  results
+end
+
+# Process in chunks
+Record.find_in_batches(batch_size: 100) do |batch|
+  results = process_batch(batch, current_user)
+  BulkProcessor.process(results)
+end
+```
+
+### Parallel Processing
+
+Use threads for parallel execution:
+
+```ruby
+require 'concurrent'
+
+records = Record.all.to_a
+thread_pool = Concurrent::FixedThreadPool.new(10)
+
+futures = records.map do |record|
+  Concurrent::Future.execute(executor: thread_pool) do
+    engine.run(user: user, record: record)
+  end
+end
+
+results = futures.map(&:value)
+```
+
+## Best Practices Summary
+
+1. **Use salience** to control execution order
+2. **Enable no-loop** to prevent infinite firing
+3. **Tag rules** for organization and filtering
+4. **Cache engines** for better performance
+5. **Optimize conditions** (cheap checks first)
+6. **Limit cycles** with `max_cycles`
+7. **Enable tracing** during development
+8. **Validate rules** before deployment
+9. **Test conditions** independently
+10. **Monitor performance** in production
+
+## Next Steps
+
+- **[DSL Basics](./dsl-basics.md)**: Master rule authoring
+- **[Conditions](./conditions.md)**: Build complex conditions
+- **[Persistence](./persistence.md)**: Store rules in database
+- **[Versioning](./versioning.md)**: Track rule changes
+
+## Related API
+
+- [Engine Class](../api/engine.md)
+- [Rule Class](../api/rule.md)
+- [Context Class](../api/context.md)
+- [Operators Module](../api/operators.md)

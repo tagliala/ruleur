@@ -8,7 +8,11 @@ require_relative 'ruleur/rule'
 require_relative 'ruleur/engine'
 require_relative 'ruleur/dsl'
 require_relative 'ruleur/persistence/serializer'
+require_relative 'ruleur/persistence/versioned_rule'
+require_relative 'ruleur/persistence/rule_version'
 require_relative 'ruleur/persistence/repository'
+require_relative 'ruleur/persistence/yaml_loader'
+require_relative 'ruleur/validation'
 
 # Ruleur is a composable Business Rules Management System (BRMS) for Ruby.
 # It provides a forward-chaining engine with composable conditions, salience-based
