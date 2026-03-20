@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
 module Ruleur
+  # Rule represents a single business rule with condition, action, and metadata
   class Rule
     attr_reader :name, :condition, :action, :salience, :tags, :no_loop, :action_spec
 
+    # rubocop:disable Metrics/ParameterLists
     def initialize(name:, condition:, action: nil, action_spec: nil, salience: 0, tags: [], no_loop: false)
       @name = name.to_s
       @condition = condition
@@ -14,6 +16,7 @@ module Ruleur
       @no_loop = !no_loop.nil?
       @fired_once = false
     end
+    # rubocop:enable Metrics/ParameterLists
 
     def eligible?(ctx)
       return false if no_loop && @fired_once
@@ -25,23 +28,27 @@ module Ruleur
       if action
         action.call(ctx)
       elsif action_spec
-        ActionRunner.apply(ctx, action_spec)
+        ActionRunner.apply_action(ctx, action_spec)
       end
       @fired_once = true if no_loop
     end
 
+    # ActionRunner handles execution of serialized action specifications
     module ActionRunner
       module_function
 
-      def apply(ctx, spec)
+      # rubocop:disable Naming/PredicateMethod
+      # apply_action performs an action and returns success status - intentional naming
+      def apply_action(ctx, spec)
         spec = stringify_keys(spec)
-        if spec['set'].is_a?(Hash)
-          spec['set'].each do |k, v|
-            ctx[k.to_sym] = resolve_value(ctx, v)
-          end
+        return true unless spec['set'].is_a?(Hash)
+
+        spec['set'].each do |key, value|
+          ctx[key.to_sym] = resolve_value(ctx, value)
         end
         true
       end
+      # rubocop:enable Naming/PredicateMethod
 
       def stringify_keys(obj)
         case obj
@@ -51,12 +58,12 @@ module Ruleur
         end
       end
 
-      def resolve_value(ctx, v)
-        case v
+      def resolve_value(ctx, val)
+        case val
         when Condition::Ref, Condition::Call, Condition::LambdaValue
-          ctx.resolve_value(v)
+          ctx.resolve_value(val)
         else
-          v
+          val
         end
       end
     end

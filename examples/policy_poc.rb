@@ -15,6 +15,7 @@ MockUser = Struct.new(:admin) do
   def admin? = !!admin
 end
 
+# rubocop:disable Metrics/AbcSize, Metrics/MethodLength
 def create_engine
   Ruleur.define do
     # allow_create if admin OR (record is draft and updatable)
@@ -45,6 +46,7 @@ def create_engine
     end
   end
 end
+# rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
 def run_case(record:, user:)
   engine = create_engine

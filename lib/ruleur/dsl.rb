@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Ruleur
+  # DSL provides a fluent interface for building rules and engines
   module DSL
     include Condition::Builders
 
@@ -29,6 +30,7 @@ module Ruleur
       end
     end
 
+    # RuleBuilder provides a fluent interface for defining rules
     class RuleBuilder
       include Condition::Builders
       include Shortcuts
@@ -100,14 +102,23 @@ module Ruleur
       alias then action
 
       def build
-        cond = if @conds.empty?
-                 Condition::Predicate.new(true, :eq, true)
-               elsif @conds.size == 1
-                 @conds.first
-               else
-                 Condition::All.new(*@conds)
-               end
+        cond = build_condition
+        build_rule(cond)
+      end
 
+      private
+
+      def build_condition
+        if @conds.empty?
+          Condition::Predicate.new(true, :eq, true)
+        elsif @conds.size == 1
+          @conds.first
+        else
+          Condition::All.new(*@conds)
+        end
+      end
+
+      def build_rule(cond)
         Rule.new(
           name: @name,
           condition: cond,
@@ -116,8 +127,6 @@ module Ruleur
           **@opts
         )
       end
-
-      private
 
       def resolve_value_for_action(ctx, val)
         case val
@@ -129,6 +138,7 @@ module Ruleur
       end
     end
 
+    # EngineBuilder provides a fluent interface for defining engines with rules
     class EngineBuilder
       include Shortcuts
 

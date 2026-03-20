@@ -4,6 +4,7 @@ require 'json'
 
 module Ruleur
   module Persistence
+    # MemoryRepository stores rules in memory as serialized hashes
     class MemoryRepository
       # stores an array of serialized rule hashes
       def initialize(serialized_rules = [])

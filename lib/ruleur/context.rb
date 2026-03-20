@@ -28,18 +28,9 @@ module Ruleur
       path.each do |segment|
         return nil if obj.nil?
 
-        if segment.is_a?(Array)
-          meth, *args = segment
-          obj = obj.public_send(meth, *resolve_args(args))
-        else
-          obj = obj.public_send(segment)
-        end
+        obj = resolve_segment(obj, segment)
       end
       obj
-    end
-
-    def resolve_args(args)
-      args.map { |a| resolve_value(a) }
     end
 
     # Resolve a Value-like object (Ref/Call/Literal) or raw literal.
@@ -48,14 +39,33 @@ module Ruleur
       when Condition::Ref
         resolve_ref(val.root, *val.path)
       when Condition::Call
-        recv = resolve_value(val.receiver)
-        args = resolve_args(val.args)
-        recv&.public_send(val.method, *args)
+        resolve_call_value(val)
       when Condition::LambdaValue
         val.block.call(self)
       else
         val
       end
+    end
+
+    private
+
+    def resolve_segment(obj, segment)
+      if segment.is_a?(Array)
+        method_name, *args = segment
+        obj.public_send(method_name, *resolve_args(args))
+      else
+        obj.public_send(segment)
+      end
+    end
+
+    def resolve_args(args)
+      args.map { |a| resolve_value(a) }
+    end
+
+    def resolve_call_value(val)
+      recv = resolve_value(val.receiver)
+      args = resolve_args(val.args)
+      recv&.public_send(val.method_name, *args)
     end
   end
 end
