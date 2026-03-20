@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "ruleur"
+
+engine = Ruleur.define do
+  rule "hello" do
+    when_any(truthy(true))
+    action { set :greeting, "Hello Ruleur!" }
+  end
+end
+
+ctx = engine.run
+puts ctx[:greeting] # => "Hello Ruleur!"
