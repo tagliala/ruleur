@@ -10,6 +10,7 @@ AllCops:
   Exclude:
     - .git/**/*
     - gemfiles/**/*
+    - test/rails_app/**/*
     - tmp/**/*
     - vendor/**/*
 
@@ -42,3 +43,6 @@ RSpec/ExampleLength:
 
 RSpec/MultipleExpectations:
   Max: 5
+
+RSpec/SpecFilePathFormat:
+  Enabled: false

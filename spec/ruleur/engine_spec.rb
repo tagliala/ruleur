@@ -11,8 +11,6 @@ MockUser = Struct.new(:admin) do
   def admin? = !!admin
 end
 
-# rubocop:disable RSpec/SpecFilePathFormat
-# This file contains specs for multiple Ruleur components
 RSpec.describe Ruleur do
   describe Ruleur::Engine do
     describe 'policy rules' do
