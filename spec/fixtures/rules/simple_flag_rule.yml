@@ -1,0 +1,16 @@
+# Simple rule for testing basic functionality
+name: simple_flag_rule
+salience: 0
+tags: []
+no_loop: false
+condition:
+  type: pred
+  op: eq
+  left:
+    type: ref
+    root: status
+    path: []
+  right: active
+action:
+  set:
+    approved: true

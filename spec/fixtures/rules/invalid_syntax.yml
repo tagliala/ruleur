@@ -1,0 +1,11 @@
+# Invalid YAML syntax - missing colon
+name invalid_syntax
+salience: 0
+condition:
+  type: pred
+  op: eq
+  left: value
+  right: 10
+action:
+  set:
+    result: true

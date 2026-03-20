@@ -1,0 +1,58 @@
+# Rule: allow_update
+# Allows update if record is updatable AND (user is admin OR (record is draft AND create is allowed))
+name: allow_update
+salience: 5
+tags:
+  - permissions
+  - update
+no_loop: true
+condition:
+  type: all
+  children:
+    - type: pred
+      op: truthy
+      left:
+        type: call
+        recv:
+          type: ref
+          root: record
+          path: []
+        method: updatable?
+        args: []
+      right: null
+    - type: any
+      children:
+        - type: pred
+          op: truthy
+          left:
+            type: call
+            recv:
+              type: ref
+              root: user
+              path: []
+            method: admin?
+            args: []
+          right: null
+        - type: all
+          children:
+            - type: pred
+              op: truthy
+              left:
+                type: call
+                recv:
+                  type: ref
+                  root: record
+                  path: []
+                method: draft?
+                args: []
+              right: null
+            - type: pred
+              op: truthy
+              left:
+                type: ref
+                root: allow_create
+                path: []
+              right: null
+action:
+  set:
+    allow_update: true

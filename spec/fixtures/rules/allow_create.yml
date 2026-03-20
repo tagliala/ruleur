@@ -1,0 +1,49 @@
+# Rule: allow_create
+# Allows creation if user is admin OR (record is updatable AND draft)
+name: allow_create
+salience: 10
+tags:
+  - permissions
+  - create
+no_loop: true
+condition:
+  type: any
+  children:
+    - type: pred
+      op: truthy
+      left:
+        type: call
+        recv:
+          type: ref
+          root: user
+          path: []
+        method: admin?
+        args: []
+      right: null
+    - type: all
+      children:
+        - type: pred
+          op: truthy
+          left:
+            type: call
+            recv:
+              type: ref
+              root: record
+              path: []
+            method: updatable?
+            args: []
+          right: null
+        - type: pred
+          op: truthy
+          left:
+            type: call
+            recv:
+              type: ref
+              root: record
+              path: []
+            method: draft?
+            args: []
+          right: null
+action:
+  set:
+    allow_create: true

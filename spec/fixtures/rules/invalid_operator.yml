@@ -1,0 +1,16 @@
+# Invalid rule - uses unknown operator
+name: invalid_operator
+salience: 0
+tags: []
+no_loop: false
+condition:
+  type: pred
+  op: unknown_operator
+  left:
+    type: ref
+    root: value
+    path: []
+  right: 10
+action:
+  set:
+    result: true

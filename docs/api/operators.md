@@ -1,0 +1,293 @@
+# Operators
+
+Operators are used in predicate conditions to compare values and evaluate expressions.
+
+## Overview
+
+Ruleur provides a comprehensive set of operators for:
+- Equality and identity checks
+- Numeric comparisons
+- Collection operations
+- Pattern matching
+- Type checking
+
+## Comparison Operators
+
+### `equals` / `eq`
+
+Checks equality using `==`.
+
+```ruby
+user(:role).equals("admin")
+order(:status).eq("pending")
+```
+
+### `not_equals` / `ne`
+
+Checks inequality using `!=`.
+
+```ruby
+user(:role).not_equals("guest")
+order(:status).ne("cancelled")
+```
+
+### `identical` / `eql`
+
+Checks identity using `eql?`.
+
+```ruby
+value(:type).identical(expected_type)
+```
+
+## Numeric Operators
+
+### `greater_than` / `gt`
+
+Greater than comparison using `>`.
+
+```ruby
+order(:total).greater_than(100)
+user(:age).gt(18)
+```
+
+### `greater_than_or_equal` / `gte`
+
+Greater than or equal comparison using `>=`.
+
+```ruby
+order(:total).greater_than_or_equal(50)
+user(:age).gte(21)
+```
+
+### `less_than` / `lt`
+
+Less than comparison using `<`.
+
+```ruby
+order(:total).less_than(1000)
+user(:age).lt(65)
+```
+
+### `less_than_or_equal` / `lte`
+
+Less than or equal comparison using `<=`.
+
+```ruby
+order(:items_count).less_than_or_equal(10)
+user(:attempts).lte(3)
+```
+
+## Collection Operators
+
+### `includes` / `contains`
+
+Checks if collection includes a value using `include?`.
+
+```ruby
+user(:roles).includes("admin")
+order(:tags).contains("express")
+```
+
+### `in`
+
+Checks if value is in a collection.
+
+```ruby
+user(:status).in(["active", "pending", "trial"])
+order(:type).in(allowed_types)
+```
+
+## Pattern Matching
+
+### `matches` / `match`
+
+Pattern matching using `match?` or `===`.
+
+```ruby
+email(:address).matches(/^[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+$/i)
+user(:role).match(/admin|super/)
+```
+
+## Boolean Operators
+
+### `truthy`
+
+Checks if value is truthy (not `nil` or `false`).
+
+```ruby
+user(:admin?)          # Implicit truthy check
+flag(:enabled).truthy
+```
+
+### `falsy` / `falsey`
+
+Checks if value is falsy (`nil` or `false`).
+
+```ruby
+user(:banned?).falsy
+flag(:disabled).falsey
+```
+
+## Type Checking
+
+### `is_a` / `instance_of`
+
+Type checking using `is_a?`.
+
+```ruby
+record(:object).is_a(User)
+value(:data).instance_of(Hash)
+```
+
+### `nil` / `null`
+
+Checks if value is `nil`.
+
+```ruby
+user(:deleted_at).nil
+record(:parent).null
+```
+
+### `present`
+
+Checks if value is present (not `nil` and not empty).
+
+```ruby
+user(:email).present
+order(:items).present
+```
+
+### `blank`
+
+Checks if value is blank (`nil`, `false`, empty, or whitespace).
+
+```ruby
+user(:notes).blank
+order(:special_instructions).blank
+```
+
+## Method Call Operator
+
+### `call`
+
+Calls a method with arguments.
+
+```ruby
+# Check if user owns the record
+user(:owns?, record)
+
+# Call with multiple arguments
+calculator(:compute, value1, value2, operator: :add)
+```
+
+## Operator Usage
+
+### In DSL
+
+```ruby
+rule "example" do
+  when_all(
+    order(:total).greater_than(100),
+    user(:email).matches(/@company\.com$/),
+    user(:roles).includes("premium")
+  )
+  action { set :qualified, true }
+end
+```
+
+### In YAML
+
+```yaml
+condition:
+  type: all
+  children:
+    - type: pred
+      op: greater_than
+      left:
+        type: call
+        recv: { type: ref, root: order }
+        method: total
+      right:
+        type: literal
+        value: 100
+```
+
+## Custom Operators
+
+::: warning TODO
+Document how to create custom operators and extend the operator system.
+:::
+
+## Operator Precedence
+
+When combining operators, use explicit grouping with `all()` and `any()`:
+
+```ruby
+# Clear precedence with grouping
+when_all(
+  any(
+    user(:admin?),
+    user(:moderator?)
+  ),
+  record(:published?)
+)
+```
+
+## Examples
+
+### Numeric Range Check
+
+```ruby
+rule "medium_order" do
+  when_all(
+    order(:total).greater_than_or_equal(50),
+    order(:total).less_than(200)
+  )
+  action { set :tier, "medium" }
+end
+```
+
+### Email Validation
+
+```ruby
+rule "valid_email" do
+  when_all(
+    user(:email).present,
+    user(:email).matches(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i)
+  )
+  action { set :email_valid, true }
+end
+```
+
+### Role-Based Access
+
+```ruby
+rule "can_approve" do
+  when_all(
+    user(:roles).includes("approver"),
+    document(:status).in(["pending", "submitted"]),
+    not(document(:approved_at).present)
+  )
+  action { allow! :approve }
+end
+```
+
+### Type and Presence Checks
+
+```ruby
+rule "process_data" do
+  when_all(
+    input(:data).present,
+    input(:data).is_a(Hash),
+    input(:data, :items).is_a(Array),
+    not(input(:data, :items).blank)
+  )
+  action { set :ready_to_process, true }
+end
+```
+
+## See Also
+
+- [Condition](./condition) - Condition types
+- [Operators Guide](/guide/operators) - Operator usage patterns
+- [DSL](./dsl) - DSL syntax reference

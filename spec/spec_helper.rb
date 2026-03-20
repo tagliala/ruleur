@@ -14,7 +14,7 @@ SimpleCov.start do
     formatter SimpleCov::Formatter::LcovFormatter
   end
 
-  add_filter %w[version.rb]
+  add_filter %w[version.rb spec/]
 end
 
 require 'ruleur'
@@ -94,6 +94,14 @@ RSpec.configure do |config|
     # unless a formatter has already been configured
     # (e.g. via a command-line flag).
     config.default_formatter = 'doc'
+  end
+
+  config.before do
+    $stderr = StringIO.new
+  end
+
+  config.after do
+    $stderr = STDERR
   end
 
   # Print the 10 slowest examples and example groups at the

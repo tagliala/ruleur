@@ -1,0 +1,17 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Ruby-inspired design with geometric rules pattern -->
+  <rect width="64" height="64" rx="12" fill="#CC342D"/>
+  
+  <!-- Rule lines representing business rules -->
+  <path d="M16 20 L48 20" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="14" cy="20" r="2" fill="white"/>
+  
+  <path d="M16 32 L48 32" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="14" cy="32" r="2" fill="white"/>
+  
+  <path d="M16 44 L48 44" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="14" cy="44" r="2" fill="white"/>
+  
+  <!-- Arrow indicating forward chaining / flow -->
+  <path d="M44 20 L50 20 L47 17 M50 20 L47 23" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
