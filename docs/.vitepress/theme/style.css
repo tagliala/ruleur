@@ -210,3 +210,40 @@
   color: var(--vp-c-text-3);
   font-style: italic;
 }
+
+/**
+ * Fix: Home page content layout
+ * Ensure content sections after features are properly contained and centered
+ * -------------------------------------------------------------------------- */
+
+.vp-doc.container {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Fix home layout content to respect proper containers */
+.VPHome .VPContent {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 48px 24px 96px;
+}
+
+/* Ensure code blocks in home layout are properly contained */
+.VPHome .VPContent .vp-doc > div[class*="language-"],
+.VPHome .VPContent > div[class*="language-"] {
+  margin: 16px 0;
+}
+
+/* Proper spacing for headings and content after features */
+.VPHome .VPContent h2 {
+  margin-top: 48px;
+  margin-bottom: 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+.VPHome .VPContent h2:first-child {
+  border-top: none;
+  padding-top: 0;
+}

@@ -368,7 +368,7 @@ rule "custom_logic" do
     predicate do |ctx|
       user = ctx[:user]
       record = ctx[:record]
-      
+
       # Custom logic
       user.credits > record.cost &&
       user.last_purchase_at < 7.days.ago
@@ -439,7 +439,7 @@ rule "new_feature" do
   when_all(
     flag(:new_feature_enabled),  # Feature flag
     usr(:premium?),                # Business rule
-    gte(rec_val(:created_at), Time.new(2024, 1, 1))  # Time constraint
+    gte(rec_val(:created_at), Time.new(2026, 1, 1))  # Time constraint
   )
   set :use_new_feature, true
 end

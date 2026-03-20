@@ -323,7 +323,7 @@ When `include_metadata: true`, the YAML file includes helpful comments:
 # Salience: 10
 # Tags: permissions
 # No-loop: true
-# Generated: 2024-03-20T10:30:00Z
+# Generated: 2026-03-20T10:30:00Z
 
 name: my_rule
 salience: 10
@@ -417,7 +417,7 @@ Or use the built-in [VersionedActiveRecordRepository](./versioning) for full ver
 # Purpose: Allow document editing for admins and authors of drafts
 # Dependencies: Requires user.admin? and document.draft? methods
 # Author: alice@example.com
-# Created: 2024-03-20
+# Created: 2026-03-20
 
 name: allow_document_edit
 salience: 10
@@ -438,7 +438,7 @@ condition:
         recv: { type: ref, root: user }
         method: admin?
       right: null
-    
+
     # Rule 2: Authors can edit their drafts
     - type: all
       children:

@@ -402,8 +402,8 @@ rule = repo.find('allow_create')
 
 # Version information
 rule.version            # => 3
-rule.created_at         # => 2024-01-15 10:30:00 UTC
-rule.updated_at         # => 2024-01-20 14:45:00 UTC
+rule.created_at         # => 2026-01-15 10:30:00 UTC
+rule.updated_at         # => 2026-01-20 14:45:00 UTC
 rule.created_by         # => "alice@example.com"
 rule.updated_by         # => "bob@example.com"
 

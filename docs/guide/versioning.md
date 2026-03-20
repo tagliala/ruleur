@@ -147,17 +147,17 @@ end
 Output:
 ```
 Version 3
-  Created: 2024-03-20 15:30:00 UTC
+  Created: 2026-03-20 15:30:00 UTC
   By: bob@example.com
   Changes: Added draft document check
   ---
 Version 2
-  Created: 2024-03-20 14:15:00 UTC
+  Created: 2026-03-20 14:15:00 UTC
   By: bob@example.com
   Changes: Fixed permission logic
   ---
 Version 1
-  Created: 2024-03-20 10:00:00 UTC
+  Created: 2026-03-20 10:00:00 UTC
   By: alice@example.com
   Changes: Initial version
   ---
@@ -172,7 +172,7 @@ old_rule = repo.find_version('allow_create', 2)
 if old_rule
   puts old_rule.version           # => 2
   puts old_rule.change_description # => "Fixed permission logic"
-  
+
   # You can run this old version
   engine = Ruleur::Engine.new(rules: [old_rule])
   ctx = engine.run(user: user, record: record)
@@ -238,8 +238,8 @@ rule.versioned?         # => true
 info = rule.version_info
 # => {
 #   version: 3,
-#   created_at: 2024-03-20 10:00:00 UTC,
-#   updated_at: 2024-03-20 15:30:00 UTC,
+#   created_at: 2026-03-20 10:00:00 UTC,
+#   updated_at: 2026-03-20 15:30:00 UTC,
 #   created_by: "alice@example.com",
 #   updated_by: "bob@example.com",
 #   change_description: nil  # Only on historical versions
@@ -276,7 +276,7 @@ RuleApproval.create!(
 if approved?
   # Rule is already saved, just mark as approved
   approval.update!(status: 'approved', approved_by: approver.email)
-  
+
   # Optionally add approval note
   repo.save(
     draft_rule,
@@ -308,10 +308,10 @@ Rollout.create!(
 # Load rules with rollout logic
 def load_rules_for_user(user)
   current_rules = repo.all
-  
+
   current_rules.map do |rule|
     rollout = Rollout.find_by(rule_name: rule.name, stage: 'canary')
-    
+
     if rollout && should_use_canary?(user, rollout.rollout_percentage)
       # Use canary version
       repo.find_version(rule.name, rollout.version)
@@ -479,10 +479,10 @@ history = repo.version_history('my_rule')
 
 if history.size > 100
   old_versions = history[100..-1]
-  
+
   # Archive to S3/file storage
   archive_versions(old_versions)
-  
+
   # Delete from database (custom SQL)
   versions_to_delete = old_versions.map(&:version)
   # ... delete logic
