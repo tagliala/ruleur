@@ -96,6 +96,14 @@ RSpec.configure do |config|
     config.default_formatter = 'doc'
   end
 
+  config.before do
+    $stderr = StringIO.new
+  end
+
+  config.after do
+    $stderr = STDERR
+  end
+
   # Print the 10 slowest examples and example groups at the
   # end of the spec run, to help surface which specs are running
   # particularly slow.

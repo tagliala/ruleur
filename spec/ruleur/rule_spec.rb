@@ -67,13 +67,7 @@ RSpec.describe Ruleur::Rule do
       rule = described_class.new(
         name: 'test',
         condition: Ruleur::Condition::Predicate.new(true, :eq, true),
-        action_spec: {
-          set: {
-            literal: 'value',
-            referenced: ref,
-            flag: true
-          }
-        }
+        action_spec: { set: { literal: 'value', referenced: ref, flag: true } }
       )
 
       config = Struct.new(:timeout).new(30)
@@ -82,6 +76,18 @@ RSpec.describe Ruleur::Rule do
 
       expect(ctx[:literal]).to eq('value')
       expect(ctx[:referenced]).to eq(30)
+    end
+
+    it 'handles boolean flags in action_spec' do
+      rule = described_class.new(
+        name: 'test',
+        condition: Ruleur::Condition::Predicate.new(true, :eq, true),
+        action_spec: { set: { flag: true } }
+      )
+
+      ctx = Ruleur::Context.new
+      rule.fire(ctx)
+
       expect(ctx[:flag]).to be(true)
     end
   end

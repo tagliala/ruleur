@@ -384,7 +384,7 @@ RSpec.describe Ruleur::Validation do
         action_spec: { set: { y: 10 } }
       )
 
-      result = Ruleur::Validation.validate_rule(rule)
+      result = described_class.validate_rule(rule)
       expect(result).to be_a(Ruleur::Validation::ValidationResult)
       expect(result.valid?).to be(true)
     end
@@ -396,7 +396,7 @@ RSpec.describe Ruleur::Validation do
         action: { set: { y: 10 } }
       }
 
-      result = Ruleur::Validation.validate_hash(hash)
+      result = described_class.validate_hash(hash)
       expect(result).to be_a(Ruleur::Validation::ValidationResult)
       expect(result.valid?).to be(true)
     end
@@ -404,7 +404,7 @@ RSpec.describe Ruleur::Validation do
     it 'provides validate_condition shortcut' do
       cond = Ruleur::Condition::Predicate.new(:x, :eq, 5)
 
-      result = Ruleur::Validation.validate_condition(cond)
+      result = described_class.validate_condition(cond)
       expect(result).to be_a(Ruleur::Validation::ValidationResult)
       expect(result.valid?).to be(true)
     end
@@ -412,7 +412,7 @@ RSpec.describe Ruleur::Validation do
     it 'provides validate_action shortcut' do
       action_spec = { set: { y: 10 } }
 
-      result = Ruleur::Validation.validate_action(action_spec)
+      result = described_class.validate_action(action_spec)
       expect(result).to be_a(Ruleur::Validation::ValidationResult)
       expect(result.valid?).to be(true)
     end

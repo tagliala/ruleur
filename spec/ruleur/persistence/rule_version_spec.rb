@@ -29,6 +29,18 @@ RSpec.describe Ruleur::Persistence::RuleVersion do
       expect(version.rule_name).to eq('test_rule')
       expect(version.version).to eq(3)
       expect(version.payload).to eq(payload)
+    end
+
+    it 'has correct metadata' do
+      version = described_class.new(
+        rule_name: 'test_rule',
+        version: 3,
+        payload: payload,
+        created_at: created_at,
+        created_by: 'alice',
+        change_description: 'Updated condition'
+      )
+
       expect(version.created_at).to eq(created_at)
       expect(version.created_by).to eq('alice')
       expect(version.change_description).to eq('Updated condition')
@@ -75,8 +87,22 @@ RSpec.describe Ruleur::Persistence::RuleVersion do
       expect(rule).to be_a(Ruleur::Persistence::VersionedRule)
       expect(rule.name).to eq('test_rule')
       expect(rule.version).to eq(2)
+    end
+
+    it 'preserves version metadata' do
+      version = described_class.new(
+        rule_name: 'test_rule',
+        version: 2,
+        payload: payload,
+        created_at: created_at,
+        created_by: 'bob',
+        change_description: 'Bug fix'
+      )
+
+      rule = version.to_rule
+
       expect(rule.created_by).to eq('bob')
-      expect(rule.updated_by).to eq('bob') # Historical versions have updated_by = created_by
+      expect(rule.updated_by).to eq('bob')
       expect(rule.change_description).to eq('Bug fix')
     end
 
@@ -99,8 +125,8 @@ RSpec.describe Ruleur::Persistence::RuleVersion do
 
   describe '.from_record' do
     it 'creates RuleVersion from ActiveRecord-like object' do
-      record = double(
-        'record',
+      record = double
+      allow(record).to receive_messages(
         rule_name: 'test_rule',
         version: 4,
         payload: payload,
@@ -114,6 +140,21 @@ RSpec.describe Ruleur::Persistence::RuleVersion do
       expect(version).to be_a(described_class)
       expect(version.rule_name).to eq('test_rule')
       expect(version.version).to eq(4)
+    end
+
+    it 'preserves metadata from record' do
+      record = double
+      allow(record).to receive_messages(
+        rule_name: 'test_rule',
+        version: 4,
+        payload: payload,
+        created_at: created_at,
+        created_by: 'charlie',
+        change_description: 'Refactored'
+      )
+
+      version = described_class.from_record(record)
+
       expect(version.created_by).to eq('charlie')
       expect(version.change_description).to eq('Refactored')
     end

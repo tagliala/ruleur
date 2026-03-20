@@ -2,9 +2,10 @@
 
 require 'spec_helper'
 require 'tmpdir'
+require 'fileutils'
 
 RSpec.describe Ruleur::Persistence::YAMLLoader do
-  let(:fixtures_dir) { File.expand_path('../fixtures/rules', __dir__) }
+  let(:fixtures_dir) { File.expand_path('../../fixtures/rules', __dir__) }
 
   describe '.load_file' do
     it 'loads a valid rule from YAML file' do
@@ -25,6 +26,12 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
       expect(rule).to be_a(Ruleur::Rule)
       expect(rule.name).to eq('allow_create')
       expect(rule.salience).to eq(10)
+    end
+
+    it 'loads rule with correct tags' do
+      file_path = File.join(fixtures_dir, 'allow_create.yml')
+      rule = described_class.load_file(file_path)
+
       expect(rule.tags).to include(:permissions, :create)
       expect(rule.no_loop).to be(true)
       expect(rule.condition).to be_a(Ruleur::Condition::Any)
@@ -71,28 +78,14 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
 
   describe '.load_string' do
     it 'loads rule from YAML string' do
-      yaml = <<~YAML
-        name: test_rule
-        salience: 5
-        tags: []
-        no_loop: false
-        condition:
-          type: pred
-          op: eq
-          left:
-            type: ref
-            root: status
-            path: []
-          right: active
-        action:
-          set:
-            result: true
-      YAML
-
-      rule = described_class.load_string(yaml)
+      rule = described_class.load_string(simple_rule_yaml)
 
       expect(rule).to be_a(Ruleur::Rule)
       expect(rule.name).to eq('test_rule')
+    end
+
+    it 'loads rule with correct salience' do
+      rule = described_class.load_string(salience_rule_yaml)
       expect(rule.salience).to eq(5)
     end
 
@@ -117,7 +110,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
   describe '.save_file and .to_yaml' do
     let(:temp_file) { File.join(Dir.tmpdir, 'test_rule.yml') }
 
-    after { File.delete(temp_file) if File.exist?(temp_file) }
+    after { FileUtils.rm_f(temp_file) }
 
     it 'saves rule to YAML file' do
       engine = Ruleur.define do
@@ -182,18 +175,43 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
 
       original = engine.rules.first
 
-      # Save and load
       described_class.save_file(original, temp_file)
       loaded = described_class.load_file(temp_file)
 
       expect(loaded.name).to eq(original.name)
       expect(loaded.salience).to eq(original.salience)
       expect(loaded.no_loop).to eq(original.no_loop)
+    end
 
-      # Tags may be strings or symbols after round-trip
+    it 'preserves tags after round-trip' do
+      engine = Ruleur.define do
+        rule 'roundtrip_tags', salience: 15, tags: %w[test roundtrip], no_loop: true do
+          when_any(usr(:admin?))
+          set :allowed, true
+        end
+      end
+
+      original = engine.rules.first
+
+      described_class.save_file(original, temp_file)
+      loaded = described_class.load_file(temp_file)
+
       expect(loaded.tags.map(&:to_s).sort).to eq(original.tags.map(&:to_s).sort)
+    end
 
-      # Action spec structure is preserved (keys may be symbols or strings)
+    it 'preserves action spec after round-trip' do
+      engine = Ruleur.define do
+        rule 'roundtrip_action', salience: 15, tags: %w[test roundtrip], no_loop: true do
+          when_any(usr(:admin?))
+          set :allowed, true
+        end
+      end
+
+      original = engine.rules.first
+
+      described_class.save_file(original, temp_file)
+      loaded = described_class.load_file(temp_file)
+
       loaded_set = loaded.action_spec[:set] || loaded.action_spec['set']
       expect(loaded_set).to be_a(Hash)
       expect(loaded_set[:allowed] || loaded_set['allowed']).to be(true)
@@ -334,5 +352,43 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
       expect(ctx[:allow_create]).to be(true)
       expect(ctx[:allow_update]).to be(true)
     end
+  end
+
+  def simple_rule_yaml
+    <<~YAML
+      name: test_rule
+      salience: 5
+      tags: []
+      no_loop: false
+      condition:
+        type: pred
+        op: eq
+        left:
+          type: ref
+          root: status
+          path: []
+        right: active
+      action:
+        set:
+          result: true
+    YAML
+  end
+
+  def salience_rule_yaml
+    <<~YAML
+      name: test_salience
+      salience: 5
+      condition:
+        type: pred
+        op: eq
+        left:
+          type: ref
+          root: status
+          path: []
+        right: active
+      action:
+        set:
+          result: true
+    YAML
   end
 end

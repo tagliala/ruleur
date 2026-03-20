@@ -4,30 +4,28 @@ require 'spec_helper'
 
 RSpec.describe Ruleur::Persistence::Serializer do
   describe 'Not condition serialization' do
-    it 'serializes and deserializes Not nodes' do
-      # Create a Not node directly, not via DSL which wraps it in All
-      not_node = Ruleur::Condition::Not.new(
-        Ruleur::Condition::Predicate.new(
-          Ruleur::Condition::Ref.new(:user, :admin?),
-          :truthy,
-          nil
-        )
-      )
-
-      rule = Ruleur::Rule.new(
-        name: 'not_admin',
-        condition: not_node,
-        action_spec: { set: { restricted: true } }
-      )
+    it 'serializes Not nodes' do
+      rule = not_rule
 
       serialized = described_class.rule_to_h(rule)
       expect(serialized[:condition][:type]).to eq('not')
       expect(serialized[:condition][:child]).to be_a(Hash)
+    end
 
+    it 'deserializes Not nodes' do
+      rule = not_rule
+
+      serialized = described_class.rule_to_h(rule)
       deserialized = described_class.rule_from_h(serialized)
       expect(deserialized.condition).to be_a(Ruleur::Condition::Not)
+    end
 
-      # Verify it still works
+    it 'works correctly after deserialization' do
+      rule = not_rule
+
+      serialized = described_class.rule_to_h(rule)
+      deserialized = described_class.rule_from_h(serialized)
+
       ctx = Ruleur::Context.new(user: MockUser.new(false))
       if deserialized.eligible?(ctx)
         deserialized.fire(ctx)
@@ -50,7 +48,7 @@ RSpec.describe Ruleur::Persistence::Serializer do
   end
 
   describe 'Call node serialization' do
-    it 'serializes and deserializes Call nodes without arguments' do
+    it 'serializes Call nodes without arguments' do
       ref = Ruleur::Condition::Ref.new(:user)
       call = Ruleur::Condition::Call.new(ref, :email)
 
@@ -59,13 +57,19 @@ RSpec.describe Ruleur::Persistence::Serializer do
       expect(serialized[:method]).to eq(:email)
       expect(serialized[:recv]).to eq({ type: 'ref', root: :user, path: [] })
       expect(serialized[:args]).to eq([])
+    end
 
+    it 'deserializes Call nodes without arguments' do
+      ref = Ruleur::Condition::Ref.new(:user)
+      call = Ruleur::Condition::Call.new(ref, :email)
+
+      serialized = described_class.value_to_h(call)
       deserialized = described_class.value_from_h(serialized)
       expect(deserialized).to be_a(Ruleur::Condition::Call)
       expect(deserialized.method_name).to eq(:email)
     end
 
-    it 'serializes and deserializes Call nodes with arguments' do
+    it 'serializes Call nodes with arguments' do
       ref = Ruleur::Condition::Ref.new(:calculator)
       call = Ruleur::Condition::Call.new(ref, :add, 5, 10)
 
@@ -73,7 +77,13 @@ RSpec.describe Ruleur::Persistence::Serializer do
       expect(serialized[:type]).to eq('call')
       expect(serialized[:method]).to eq(:add)
       expect(serialized[:args]).to eq([5, 10])
+    end
 
+    it 'deserializes Call nodes with arguments' do
+      ref = Ruleur::Condition::Ref.new(:calculator)
+      call = Ruleur::Condition::Call.new(ref, :add, 5, 10)
+
+      serialized = described_class.value_to_h(call)
       deserialized = described_class.value_from_h(serialized)
       expect(deserialized).to be_a(Ruleur::Condition::Call)
       expect(deserialized.method_name).to eq(:add)
@@ -173,5 +183,20 @@ RSpec.describe Ruleur::Persistence::Serializer do
         described_class.value_from_h(bad_hash)
       end.to raise_error(ArgumentError, /Unknown value type/)
     end
+  end
+
+  def not_rule
+    not_node = Ruleur::Condition::Not.new(
+      Ruleur::Condition::Predicate.new(
+        Ruleur::Condition::Ref.new(:user, :admin?),
+        :truthy,
+        nil
+      )
+    )
+    Ruleur::Rule.new(
+      name: 'not_admin',
+      condition: not_node,
+      action_spec: { set: { restricted: true } }
+    )
   end
 end

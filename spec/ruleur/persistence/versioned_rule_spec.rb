@@ -23,6 +23,21 @@ RSpec.describe Ruleur::Persistence::VersionedRule do
       expect(rule.name).to eq('test_rule')
       expect(rule.version).to eq(5)
       expect(rule.created_by).to eq('alice')
+    end
+
+    it 'has correct update metadata' do
+      rule = described_class.new(
+        name: 'test_rule',
+        condition: condition,
+        action_spec: action_spec,
+        version: 5,
+        created_at: Time.now,
+        updated_at: Time.now,
+        created_by: 'alice',
+        updated_by: 'bob',
+        change_description: 'Updated logic'
+      )
+
       expect(rule.updated_by).to eq('bob')
       expect(rule.change_description).to eq('Updated logic')
     end
@@ -74,26 +89,35 @@ RSpec.describe Ruleur::Persistence::VersionedRule do
   end
 
   describe '#version_info' do
-    it 'returns version metadata as hash' do
-      created = Time.now - 3600
-      updated = Time.now
-      rule = described_class.new(
+    let(:info_params) do
+      {
         name: 'test',
         condition: condition,
         action_spec: action_spec,
         version: 3,
-        created_at: created,
-        updated_at: updated,
+        created_at: Time.now - 3600,
+        updated_at: Time.now,
         created_by: 'alice',
         updated_by: 'bob',
         change_description: 'Fix bug'
-      )
+      }
+    end
+
+    it 'returns version metadata as hash' do
+      rule = described_class.new(**info_params)
 
       info = rule.version_info
 
       expect(info[:version]).to eq(3)
-      expect(info[:created_at]).to eq(created)
-      expect(info[:updated_at]).to eq(updated)
+      expect(info[:created_at]).to eq(info_params[:created_at])
+      expect(info[:updated_at]).to eq(info_params[:updated_at])
+    end
+
+    it 'includes author info' do
+      rule = described_class.new(**info_params)
+
+      info = rule.version_info
+
       expect(info[:created_by]).to eq('alice')
       expect(info[:updated_by]).to eq('bob')
       expect(info[:change_description]).to eq('Fix bug')
@@ -117,5 +141,19 @@ RSpec.describe Ruleur::Persistence::VersionedRule do
       expect(rule.tags).to eq([:test])
       expect(rule.no_loop).to be true
     end
+  end
+
+  def versioned_rule_info
+    {
+      name: 'test',
+      condition: condition,
+      action_spec: action_spec,
+      version: 3,
+      created_at: Time.now - 3600,
+      updated_at: Time.now,
+      created_by: 'alice',
+      updated_by: 'bob',
+      change_description: 'Fix bug'
+    }
   end
 end

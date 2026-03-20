@@ -16,6 +16,18 @@ RSpec.describe Ruleur::Persistence::MemoryRepository do
       repo.save(rule1)
       expect(repo.all.size).to eq(1)
       expect(repo.all.first.action_spec[:set][:v]).to eq(1)
+    end
+
+    it 'replaces rule with same name' do
+      repo = described_class.new
+
+      rule1 = Ruleur::Rule.new(
+        name: 'test',
+        condition: Ruleur::Condition::Predicate.new(true, :eq, true),
+        action_spec: { set: { v: 1 } }
+      )
+
+      repo.save(rule1)
 
       rule2 = Ruleur::Rule.new(
         name: 'test',
@@ -24,7 +36,7 @@ RSpec.describe Ruleur::Persistence::MemoryRepository do
       )
 
       repo.save(rule2)
-      expect(repo.all.size).to eq(1) # Still 1, updated
+      expect(repo.all.size).to eq(1)
       expect(repo.all.first.action_spec[:set][:v]).to eq(2)
     end
 
@@ -103,18 +115,8 @@ RSpec.describe Ruleur::Persistence::MemoryRepository do
 
     it 'deletes only matching rules' do
       repo = described_class.new
-
-      rule1 = Ruleur::Rule.new(
-        name: 'keep',
-        condition: Ruleur::Condition::Predicate.new(true, :eq, true),
-        action_spec: { set: { v: 1 } }
-      )
-
-      rule2 = Ruleur::Rule.new(
-        name: 'delete',
-        condition: Ruleur::Condition::Predicate.new(true, :eq, true),
-        action_spec: { set: { v: 2 } }
-      )
+      rule1 = build_rule('keep', 1)
+      rule2 = build_rule('delete', 2)
 
       repo.save(rule1)
       repo.save(rule2)
@@ -122,6 +124,17 @@ RSpec.describe Ruleur::Persistence::MemoryRepository do
 
       repo.delete('delete')
       expect(repo.all.size).to eq(1)
+    end
+
+    it 'keeps non-matching rules after delete' do
+      repo = described_class.new
+      rule1 = build_rule('keep', 1)
+      rule2 = build_rule('delete', 2)
+
+      repo.save(rule1)
+      repo.save(rule2)
+
+      repo.delete('delete')
       expect(repo.all.first.name).to eq('keep')
     end
 
@@ -163,5 +176,13 @@ RSpec.describe Ruleur::Persistence::MemoryRepository do
       expect(repo.all.size).to eq(3)
       expect(repo.all.map(&:name)).to contain_exactly('rule_0', 'rule_1', 'rule_2')
     end
+  end
+
+  def build_rule(name, value)
+    Ruleur::Rule.new(
+      name: name,
+      condition: Ruleur::Condition::Predicate.new(true, :eq, true),
+      action_spec: { set: { v: value } }
+    )
   end
 end

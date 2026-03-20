@@ -24,8 +24,8 @@ RSpec.describe Ruleur::Condition do
 
     it 'handles method calls with arguments' do
       calculator = Struct.new(:base) do
-        def add(a, b)
-          base + a + b
+        def add(left, right)
+          base + left + right
         end
       end.new(10)
 

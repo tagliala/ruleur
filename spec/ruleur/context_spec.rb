@@ -29,8 +29,8 @@ RSpec.describe Ruleur::Context do
   describe 'method calls with arguments' do
     it 'resolves method calls with arguments via path arrays' do
       calculator = Struct.new(:base) do
-        def multiply(a, b)
-          a * b
+        def multiply(left, right)
+          left * right
         end
       end.new(0)
 
