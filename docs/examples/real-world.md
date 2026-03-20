@@ -146,10 +146,12 @@ class OrderValidationEngine
     end
   end
   
+  ValidationResult = Struct.new(:valid, :errors, :error_code, :warnings, keyword_init: true)
+
   def self.validate(order, customer)
     result = engine.run(order: order, customer: customer)
     
-    OpenStruct.new(
+    ValidationResult.new(
       valid: result[:order_valid] == true,
       errors: result[:validation_failed] ? [result[:error_message]] : [],
       error_code: result[:error_code],
@@ -326,10 +328,12 @@ class FeatureAccessEngine
     result[:"allow_#{feature}"] == true
   end
   
+  LimitsResult = Struct.new(:max_projects, :storage_gb, :api_rate_limit, :upgrade_required, keyword_init: true)
+
   def self.get_limits(user)
     result = engine.run(user: user)
     
-    OpenStruct.new(
+    LimitsResult.new(
       max_projects: result[:max_projects],
       storage_gb: result[:storage_gb],
       api_rate_limit: result[:api_rate_limit],
