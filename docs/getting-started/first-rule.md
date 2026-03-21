@@ -49,16 +49,26 @@ You define rules that set values when conditions are met:
 ```ruby
 engine = Ruleur.define do
   rule 'admin_update' do
-    when_any(user(:admin?))
-    set :update, true
+    match do
+      any(user(:admin?))
+    end
+
+    execute do
+      set :update, true
+    end
   end
 
   rule 'author_draft_update' do
-    when_all(
-      record(:draft?),
-      eq?(record_value(:author_id), user_value(:id))
-    )
-    set :update, true
+    match do
+      all(
+        record(:draft?),
+        eq?(record_value(:author_id), user_value(:id))
+      )
+    end
+
+    execute do
+      set :update, true
+    end
   end
 end
 ```
@@ -95,24 +105,35 @@ ctx[:update]  # => nil (no rule matched)
 ```ruby
 engine = Ruleur.define do
   rule 'admin_update' do
-    when_any(user(:admin?))
-    set :update, true
+    match { any(user(:admin?)) }
+
+    execute { set :update, true }
   end
 
   rule 'author_draft_update' do
-    when_all(
-      record(:draft?),
-      eq?(record_value(:author_id), user_value(:id))
-    )
-    set :update, true
+    match do
+      all(
+        record(:draft?),
+        eq?(record_value(:author_id), user_value(:id))
+      )
+    end
+
+    execute do
+      set :update, true
+    end
   end
 
   rule 'published_requires_admin' do
-    when_all(
-      not(record(:draft?)),
-      user(:admin?)
-    )
-    set :update, true
+    match do
+      all(
+        not(record(:draft?)),
+        user(:admin?)
+      )
+    end
+
+    execute do
+      set :update, true
+    end
   end
 end
 ```
@@ -142,16 +163,26 @@ end
 
 engine = Ruleur.define do
   rule 'admin_update' do
-    when_any(user(:admin?))
-    set :update, true
+    match do
+      any(user(:admin?))
+    end
+
+    execute do
+      set :update, true
+    end
   end
 
   rule 'author_draft_update' do
-    when_all(
-      record(:draft?),
-      eq?(record_value(:author_id), user_value(:id))
-    )
-    set :update, true
+    match do
+      all(
+        record(:draft?),
+        eq?(record_value(:author_id), user_value(:id))
+      )
+    end
+
+    execute do
+      set :update, true
+    end
   end
 end
 

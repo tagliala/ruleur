@@ -9,11 +9,16 @@ require "ruleur"
 
 engine = Ruleur.define do
   rule "admin_create", no_loop: true do
-    when_any(
-      user(:admin?),
-      all(record(:updatable?), record(:draft?))
-    )
-    set :create, true
+    match do
+      any(
+        user(:admin?),
+        all(record(:updatable?), record(:draft?))
+      )
+    end
+
+    execute do
+      set :create, true
+    end
   end
 end
 
@@ -52,10 +57,15 @@ Each rule has:
 
 ```ruby
 rule "rule_name", salience: 10, tags: ['permissions'], no_loop: true do
-  when_all(
-    # conditions go here
-  )
-  set :create, true
+  match do
+    all(
+      # conditions go here
+    )
+  end
+
+  execute do
+    set :create, true
+  end
 end
 ```
 
@@ -111,7 +121,7 @@ Gets the actual value (not truthy check) from a record method:
 
 ```ruby
 eq?(record_value(:age), 18)
-includes(lit(['draft', 'pending']), record_value(:status))
+  includes(literal(['draft', 'pending']), record_value(:status))
 ```
 
 ### `user_value(method_name)` - User Value Reference
@@ -136,33 +146,48 @@ This is useful for chaining rules - one rule sets `:create`, another checks it:
 
 ```ruby
 rule "admin_create" do
-  when_any(user(:admin?))
-  set :create, true
+  match do
+    any(user(:admin?))
+  end
+
+  execute do
+    set :create, true
+  end
 end
 
 rule "draft_update" do
-  when_all(
-    flag(:create),
-    record(:draft?)
-  )
-  set :update, true
+  match do
+    all(
+      flag(:create),
+      record(:draft?)
+    )
+  end
+
+  execute do
+    set :update, true
+  end
 end
 ```
 
 ## Conditions
 
-Conditions determine when a rule fires. Use `when_all`, `when_any`, or `when_predicate`.
+Conditions determine when a rule fires. Use `match` with `all`/`any` builders or the legacy `when_all`/`when_any` helpers.
 
 ### `when_all` - All Conditions Must Be True
 
 ```ruby
 rule "admin_update" do
-  when_all(
-    user(:admin?),
-    record(:published?),
-    not(record(:locked?))
-  )
-  set :update, true
+  match do
+    all(
+      user(:admin?),
+      record(:published?),
+      not(record(:locked?))
+    )
+  end
+
+  execute do
+    set :update, true
+  end
 end
 ```
 
@@ -172,12 +197,17 @@ All conditions must be truthy for the rule to fire.
 
 ```ruby
 rule "editor_show" do
-  when_any(
-    user(:admin?),
-    record(:public?),
-    eq?(record_value(:owner_id), user_value(:id))
-  )
-  set :show, true
+  match do
+    any(
+      user(:admin?),
+      record(:public?),
+      eq?(record_value(:owner_id), user_value(:id))
+    )
+  end
+
+  execute do
+    set :show, true
+  end
 end
 ```
 
@@ -189,17 +219,22 @@ You can nest `all` and `any` within `when_all` or `when_any`:
 
 ```ruby
 rule "editor_update" do
-  when_all(
-    any(
-      user(:admin?),
-      user(:editor?)
-    ),
+  match do
     all(
-      record(:published?),
-      not(record(:archived?))
+      any(
+        user(:admin?),
+        user(:editor?)
+      ),
+      all(
+        record(:published?),
+        not(record(:archived?))
+      )
     )
-  )
-  set :update, true
+  end
+
+  execute do
+    set :update, true
+  end
 end
 ```
 
@@ -212,7 +247,7 @@ rule "premium_purchase" do
   when_all(
     gte(record_value(:age), 18),
     eq?(record_value(:country), 'US'),
-    includes(lit(['active', 'trial']), record_value(:status))
+    includes(literal(['active', 'trial']), record_value(:status))
   )
   set :purchase, true
 end
