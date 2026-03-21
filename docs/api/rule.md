@@ -18,7 +18,7 @@ A Rule consists of:
 rule = Ruleur::Rule.new(
   name: "example_rule",
   condition: condition_tree,
-  action: action_proc,
+  execute: action_proc,
   salience: 10,
   tags: [:example],
   no_loop: true
@@ -102,11 +102,13 @@ The recommended way to create rules is using the DSL within `Ruleur.define`:
 ```ruby
 engine = Ruleur.define do
   rule "discount_rule", salience: 10, tags: [:pricing] do
-    when_all(
+    match do
+      all(
       customer(:vip?),
       order(:total).gt?(100)
     )
-    action do
+    end
+    execute do
       set :discount, 0.2
       set :discount_applied, true
     end
@@ -146,7 +148,7 @@ Prevents a rule from firing again after it modifies facts:
 
 ```ruby
 rule "counter", no_loop: true do
-  action do
+  execute do
     increment :count
   end
 end
@@ -158,14 +160,16 @@ end
 
 ```ruby
 rule "shipping_discount" do
-  when_all(
+  match do
+    all(
     order(:total).gt?(50),
     any(
       customer(:premium?),
       order(:items_count).gt?(3)
     )
   )
-  action do
+  end
+  execute do
     set :free_shipping, true
   end
 end
@@ -175,11 +179,13 @@ end
 
 ```ruby
 rule "approval_workflow" do
-  when_all(
+  match do
+    all(
     document(:ready_for_review?),
     not(document(:approved?))
   )
-  action do
+  end
+  execute do
     call_method document, :mark_pending_review
     set :notification_sent, send_notification(document)
     set :approval_required, true

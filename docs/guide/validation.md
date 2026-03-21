@@ -42,8 +42,13 @@ Validates a complete `Ruleur::Rule` object with structural, semantic, and option
 ```ruby
 rule = Ruleur.define do
   rule "test_rule" do
-    when_all(user(:admin?))
-    allow! :delete
+    match do
+      all(user(:admin?))
+    end
+
+    execute do
+      allow! :delete
+    end
   end
 end.rules.first
 
@@ -68,7 +73,7 @@ Validates a rule hash (serialized format) before deserialization. Useful for val
 rule_hash = {
   name: 'test_rule',
   condition: { type: 'pred', op: 'truthy', left: { type: 'ref', root: 'user' }, right: nil },
-  action: { set: { test: true } }
+  execute: { set: { test: true } }
 }
 
 result = Ruleur::Validation.validate_hash(rule_hash)
@@ -210,8 +215,13 @@ Record = Struct.new(:status)
 
 rule = Ruleur.define do
   rule "admin_access" do
-    when_all(user(:admin))
-    allow! :access
+    match do
+      all(user(:admin))
+    end
+
+    execute do
+      allow! :access
+    end
   end
 end.rules.first
 
@@ -240,8 +250,13 @@ end
 ```ruby
 rule = Ruleur.define do
   rule "broken_rule" do
-    when_all(user(:nonexistent_method))  # This will fail
-    allow! :access
+    match do
+      all(user(:nonexistent_method))  # This will fail
+    end
+
+    execute do
+      allow! :access
+    end
   end
 end.rules.first
 

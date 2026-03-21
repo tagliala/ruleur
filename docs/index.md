@@ -60,19 +60,27 @@ require "ruleur"
 
 engine = Ruleur.define do
   rule "admin_create", no_loop: true do
-    when_any(
+    match do
+      any(
       user(:admin?),
       all(record(:updatable?), record(:draft?))
     )
+    end
+      execute do
     set :create, true
+      end
   end
 
   rule "draft_update", no_loop: true do
-    when_all(
+    match do
+      all(
       record(:draft?),
       flag(:create)
     )
+    end
+      execute do
     set :update, true
+      end
   end
 end
 

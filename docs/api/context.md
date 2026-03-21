@@ -120,8 +120,10 @@ Within rule actions, the context is available and can be modified:
 
 ```ruby
 rule "calculate_discount" do
-  when_all(customer(:vip?))
-  action do
+  match do
+    all(customer(:vip?))
+  end
+  execute do
     # Access facts
     order = context[:order]
     
@@ -151,8 +153,12 @@ Use `set :key, true` to set a result when conditions are met:
 
 ```ruby
 rule "admin_create" do
-  when_all(user(:admin?))
+  match do
+    all(user(:admin?))
+  end
+    execute do
   set :create, true
+    end
 end
 ```
 
@@ -167,7 +173,7 @@ ctx[:create].nil?     # no rule set this value
 For non-permission values, use `set` with clear names:
 
 ```ruby
-action do
+execute do
   set :discount, 0.20
   set :discount_reason, "VIP customer"
   set :error_message, "Something went wrong"
@@ -180,12 +186,12 @@ Avoid overwriting input facts directly:
 
 ```ruby
 # Bad
-action do
+execute do
   context[:user] = modified_user
 end
 
 # Good
-action do
+execute do
   set :modified_user, modified_user
   set :user_updated, true
 end
@@ -196,7 +202,7 @@ end
 Check fact presence before use:
 
 ```ruby
-action do
+execute do
   if context.key?(:order)
     order = context[:order]
     set :total, order.total
@@ -212,11 +218,13 @@ end
 
 ```ruby
 rule "premium_check" do
-  when_all(
+  match do
+    all(
     customer(:premium?),
     order(:total).gt?(100)
   )
-  action do
+  end
+  execute do
     customer = context[:customer]
     order = context[:order]
     
@@ -231,16 +239,20 @@ end
 ```ruby
 # First rule sets a flag
 rule "validate_order" do
-  when_all(order(:valid?))
-  action do
+  match do
+    all(order(:valid?))
+  end
+  execute do
     set :order_valid, true
   end
 end
 
 # Second rule depends on the flag
 rule "process_payment" do
-  when_all(flag(:order_valid))
-  action do
+  match do
+    all(flag(:order_valid))
+  end
+  execute do
     set :payment_processed, true
   end
 end

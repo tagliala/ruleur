@@ -55,8 +55,10 @@ The recommended way to create an engine is using the DSL:
 ```ruby
 engine = Ruleur.define do
   rule "rule_name" do
-    when_all(condition)
-    action do
+    match do
+      all(condition)
+    end
+    execute do
       # action code
     end
   end

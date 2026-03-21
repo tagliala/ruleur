@@ -439,78 +439,128 @@ With Ruleur, you only define **when a value is set**. If no rule matches, the va
 
 ```ruby
 engine = Ruleur.define do
-rule "admin_crud", salience: 100, no_loop: true, tags: [:admin] do
-  when_all(user(:admin?))
-  set :show, true
-  set :create, true
-  set :update, true
-  set :destroy, true
-end
+  rule "admin_crud", salience: 100, no_loop: true, tags: [:admin] do
+    match do
+      all(user(:admin?))
+    end
 
-rule "draft_owner_crud", salience: 50, no_loop: true, tags: [:ownership, :draft] do
-  when_all(
-    record(:draft?),
-    eq?(record_value(:owner_id), user_value(:id))
-  )
-  set :show, true
-  set :update, true
-  set :destroy, true
-end
+    execute do
+      set :show, true
+      set :create, true
+      set :update, true
+      set :destroy, true
+    end
+  end
 
-rule "review_owner_update", salience: 50, no_loop: true, tags: [:lifecycle, :review] do
-  when_all(
-    record(:in_review?),
-    eq?(record_value(:owner_id), user_value(:id))
-  )
-  set :update, true
-end
+  rule "draft_owner_crud", salience: 50, no_loop: true, tags: [:ownership, :draft] do
+    match do
+      all(
+        record(:draft?),
+        eq?(record_value(:owner_id), user_value(:id))
+      )
+    end
 
-rule "review_approver_update", salience: 45, no_loop: true, tags: [:lifecycle, :review] do
-  when_all(
-    record(:in_review?),
-    user(:approver?),
-    eq?(record_value(:department_id), user_value(:department_id))
-  )
-  set :update, true
-end
+    execute do
+      set :show, true
+      set :update, true
+      set :destroy, true
+    end
+  end
 
-rule "published_show", salience: 50, no_loop: true, tags: [:lifecycle, :published] do
-  when_all(record(:published?))
-  set :show, true
-end
+  rule "review_owner_update", salience: 50, no_loop: true, tags: [:lifecycle, :review] do
+    match do
+      all(
+        record(:in_review?),
+        eq?(record_value(:owner_id), user_value(:id))
+      )
+    end
 
-rule "published_owner_destroy", salience: 45, no_loop: true, tags: [:lifecycle, :published] do
-  when_all(
-    record(:published?),
-    eq?(record_value(:owner_id), user_value(:id))
-  )
-  set :destroy, true
-end
+    execute do
+      set :update, true
+    end
+  end
 
-rule "owner_crud", salience: 40, no_loop: true, tags: [:ownership] do
-  when_all(eq?(record_value(:owner_id), user_value(:id)))
-  set :show, true
-  set :update, true
-  set :destroy, true
-end
+  rule "review_approver_update", salience: 45, no_loop: true, tags: [:lifecycle, :review] do
+    match do
+      all(
+        record(:in_review?),
+        user(:approver?),
+        eq?(record_value(:department_id), user_value(:department_id))
+      )
+    end
 
-rule "department_show", salience: 30, no_loop: true, tags: [:department] do
-  when_all(
-    record(:visible_to_department?),
-    eq?(record_value(:department_id), user_value(:department_id))
-  )
-  set :show, true
-end
+    execute do
+      set :update, true
+    end
+  end
 
-rule "shared_show", salience: 25, no_loop: true, tags: [:sharing] do
-  when_all(record(:shared_with_user))
-  set :show, true
-end
+  rule "published_show", salience: 50, no_loop: true, tags: [:lifecycle, :published] do
+    match do
+      all(record(:published?))
+    end
 
-rule "public_show", salience: 20, no_loop: true, tags: [:visibility] do
-  when_all(record(:public?))
-  set :show, true
-end
+    execute do
+      set :show, true
+    end
+  end
+
+  rule "published_owner_destroy", salience: 45, no_loop: true, tags: [:lifecycle, :published] do
+    match do
+      all(
+        record(:published?),
+        eq?(record_value(:owner_id), user_value(:id))
+      )
+    end
+
+    execute do
+      set :destroy, true
+    end
+  end
+
+  rule "owner_crud", salience: 40, no_loop: true, tags: [:ownership] do
+    match do
+      all(eq?(record_value(:owner_id), user_value(:id)))
+    end
+
+    execute do
+      set :show, true
+      set :update, true
+      set :destroy, true
+    end
+  end
+
+  rule "department_show", salience: 30, no_loop: true, tags: [:department] do
+    match do
+      all(
+        record(:visible_to_department?),
+        eq?(record_value(:department_id), user_value(:department_id))
+      )
+    end
+
+    execute do
+      set :show, true
+    end
+  end
+
+  rule "shared_show", salience: 25, no_loop: true, tags: [:sharing] do
+    match do
+      all(record(:shared_with_user))
+    end
+
+    execute do
+      set :show, true
+    end
+  end
+
+  rule "public_show", salience: 20, no_loop: true, tags: [:visibility] do
+    match do
+      all(record(:public?))
+    end
+
+    execute do
+      set :show, true
+    end
+  end
 end
 ```
 
@@ -610,14 +660,24 @@ Only set values when conditions are met. Don't use `set :key, false`:
 ```ruby
 # Avoid: Using false values
 rule "not_authenticated" do
-  when_all(not(user(:authenticated?)))
-  set :update, false
+  match do
+    all(not(user(:authenticated?)))
+  end
+
+  execute do
+    set :update, false
+  end
 end
 
 # Better: Only set when true
 rule "authenticated_update" do
-  when_all(user(:authenticated?))
-  set :update, true
+  match do
+    all(user(:authenticated?))
+  end
+
+  execute do
+    set :update, true
+  end
 end
 ```
 
@@ -628,20 +688,30 @@ Place cheap/fast checks before expensive ones. This avoids unnecessary work:
 ```ruby
 # Bad: Expensive check first
 rule "check_permission" do
-  when_all(
-    expensive_database_query(:has_permission?),  # Expensive - do last
-    user(:admin?)                              # Cheap - check first
-  )
-  set :update, true
+  match do
+    all(
+      expensive_database_query(:has_permission?),  # Expensive - do last
+      user(:admin?)                                # Cheap - check first
+    )
+  end
+
+  execute do
+    set :update, true
+  end
 end
 
 # Good: Cheap checks first
 rule "check_permission" do
-  when_all(
-    user(:admin?),                             # Cheap - check first
-    expensive_database_query(:has_permission?)   # Expensive - only if needed
-  )
-  set :update, true
+  match do
+    all(
+      user(:admin?),                              # Cheap - check first
+      expensive_database_query(:has_permission?)  # Expensive - only if needed
+    )
+  end
+
+  execute do
+    set :update, true
+  end
 end
 ```
 
@@ -651,11 +721,16 @@ Place high-priority rules (like admin bypass) at high salience so they fire firs
 
 ```ruby
 rule "admin_crud", salience: 100 do
-  when_all(user(:admin?))
-  set :show, true
-  set :create, true
-  set :update, true
-  set :destroy, true
+  match do
+    all(user(:admin?))
+  end
+
+  execute do
+    set :show, true
+    set :create, true
+    set :update, true
+    set :destroy, true
+  end
 end
 ```
 

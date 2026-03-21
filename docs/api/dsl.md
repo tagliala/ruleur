@@ -183,7 +183,7 @@ order(:total).gt?(literal(100))
 Sets a value in the context.
 
 ```ruby
-action do
+execute do
   set :discount, 0.15
   set :approved, true
   set :message, "Order processed"
@@ -199,7 +199,7 @@ end
 Calls a method on an object.
 
 ```ruby
-action do
+execute do
   order = context[:order]
   call_method(order, :apply_discount, 0.15)
   call_method(order, :add_note, "Discount applied")
@@ -211,7 +211,7 @@ end
 Within action blocks, you have access to:
 
 ```ruby
-action do
+execute do
   # Direcordt context access
   user = context[:user]
   order = context[:order]

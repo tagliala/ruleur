@@ -118,10 +118,12 @@ match do
 end
 
 # Legacy shorthand (still supported):
-when_all(
+match do
+  all(
   user(:verified?),
   user(:premium?)
 )
+end
 ```
 :::
 
@@ -628,22 +630,26 @@ Break complex conditions into smaller rules:
 ```ruby
 # Good - clear intent
 rule "eligible_for_discount" do
-  when_all(
+  match do
+    all(
     user(:premium?),
     gte(record_value(:total), 100)
   )
+  end
   allow! :discount
 end
 
 # Hard to read
 rule "complex" do
-  when_all(
+  match do
+    all(
     any(
       all(user(:premium?), gte(record_value(:total), 100)),
       all(user(:vip?), gte(record_value(:total), 50)),
       all(user(:staff?), present?(record_value(:staff_id)))
     )
   )
+  end
 end
 ```
 
@@ -675,10 +681,14 @@ end
 # Good
 is_adult = gte(record_value(:age), 18)
 is_verified = user(:verified?)
-when_all(is_adult, is_verified)
+match do
+  all(is_adult, is_verified)
+end
 
 # Less clear
-when_all(gte(record_value(:age), 18), user(:verified?))
+match do
+  all(gte(record_value(:age), 18), user(:verified?))
+end
 ```
 
 ### 4. Avoid Deep Nesting
@@ -687,7 +697,8 @@ More than 3 levels deep gets hard to follow. Break into multiple rules:
 
 ```ruby
 # Too deep (4 levels)
-when_any(
+match do
+  any(
   a,
   all(
     b,
@@ -697,20 +708,31 @@ when_any(
     )
   )
 )
+end
 
 # Better - split into rules
 rule "check_complex_1" do
-  when_all(d, e, any(f, g))
+  match do
+    all(d, e, any(f, g))
+  end
+    execute do
   set :complex_1, true
+    end
 end
 
 rule "check_complex_2" do
-  when_any(c, flag(:complex_1))
+  match do
+    any(c, flag(:complex_1))
+  end
+    execute do
   set :complex_2, true
+    end
 end
 
 rule "final_check" do
-  when_any(a, all(b, flag(:complex_2)))
+  match do
+    any(a, all(b, flag(:complex_2)))
+  end
   allow! :access
 end
 ```
@@ -740,10 +762,12 @@ puts condition.evaluate(ctx)  # => true or false
 
 ```ruby
 # Add presence checks
-when_all(
+match do
+  all(
   present?(record_value(:user)),
   eq?(record_value(:user).call(:role), 'admin')
 )
+end
 
 # Or use safe navigation in models
 class Record
@@ -761,10 +785,12 @@ end
 
 ```ruby
 # This short-circuits
-when_all(
+match do
+  all(
   cheap_check(),    # If false, stops here
   expensive_check()
 )
+end
 ```
 
 ## Next Steps

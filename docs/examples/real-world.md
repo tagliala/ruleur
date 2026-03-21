@@ -533,7 +533,7 @@ class ContentModerationEngine
     result = engine.run(content: content, user: user)
     
     ModerationResult.new(
-      action: result[:moderation_action],
+      execute: result[:moderation_action],
       reason: result[:flag_reason],
       auto_approved: result[:auto_approved] == true,
       review_priority: result[:review_priority],

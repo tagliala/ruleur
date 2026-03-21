@@ -301,8 +301,10 @@ Convert DSL rules to YAML:
 # Define rule in DSL
 engine = Ruleur.define do
   rule "example" do
-    when_all(user(:admin?))
-    action { allow! :access }
+    match do
+      all(user(:admin?))
+    end
+    execute do allow! :access end
   end
 end
 

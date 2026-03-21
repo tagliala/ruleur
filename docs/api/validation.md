@@ -126,17 +126,21 @@ result = Ruleur::Validation.validate(rule)
 
 ```ruby
 # Contradictory conditions
-when_all(
+match do
+  all(
   user(:admin?),
   not(user(:admin?))
 )
+end
 # => Warning: "Contradictory conditions detected"
 
 # Unreachable condition
-when_all(
+match do
+  all(
   lit(false),
   user(:admin?)
 )
+end
 # => Warning: "Unreachable condition detected"
 ```
 
@@ -147,8 +151,10 @@ when_all(
 ```ruby
 engine = Ruleur.define do
   rule "example" do
-    when_all(user(:admin?))
-    action { allow! :access }
+    match do
+      all(user(:admin?))
+    end
+    execute do allow! :access end
   end
 end
 

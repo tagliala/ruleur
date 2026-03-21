@@ -40,19 +40,25 @@ Salience, no-loop, tracing, and performance optimization.
 
 ```ruby
 # Permission check
-when_any(user(:admin?), record(:public?))
+match do
+  any(user(:admin?), record(:public?))
+end
 
 # Ownership check
-when_all(
+match do
+  all(
   eq?(record_value(:owner_id), user_value(:id)),
   record(:active?)
 )
+end
 
 # Range check
-when_all(
+match do
+  all(
   gte?(record_value(:price), 100),
   lte?(record_value(:price), 1000)
 )
+end
 
 # Array membership
 includes(record_value(:roles), literal('editor'))

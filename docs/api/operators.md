@@ -186,12 +186,14 @@ calculator(:compute, value1, value2, operator: :add)
 
 ```ruby
 rule "example" do
-  when_all(
+  match do
+    all(
     order(:total).gt?(100),
     user(:email).matches(/@company\.com$/),
     user(:roles).includes("premium")
   )
-  action { set :qualified, true }
+  end
+  execute do set :qualified, true end
 end
 ```
 
@@ -224,13 +226,15 @@ When combining operators, use explicit grouping with `all()` and `any()`:
 
 ```ruby
 # Clear precedence with grouping
-when_all(
+match do
+  all(
   any(
     user(:admin?),
     user(:moderator?)
   ),
   record(:published?)
 )
+end
 ```
 
 ## Examples
@@ -239,11 +243,13 @@ when_all(
 
 ```ruby
 rule "medium_order" do
-  when_all(
+  match do
+    all(
     order(:total).gte?(50),
     order(:total).lt?(200)
   )
-  action { set :tier, "medium" }
+  end
+  execute do set :tier, "medium" end
 end
 ```
 
@@ -251,11 +257,13 @@ end
 
 ```ruby
 rule "valid_email" do
-  when_all(
+  match do
+    all(
     user(:email).present,
     user(:email).matches(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i)
   )
-  action { set :email_valid, true }
+  end
+  execute do set :email_valid, true end
 end
 ```
 
@@ -263,12 +271,14 @@ end
 
 ```ruby
 rule "can_approve" do
-  when_all(
+  match do
+    all(
     user(:roles).includes("approver"),
     document(:status).in(["pending", "submitted"]),
     not(document(:approved_at).present)
   )
-  action { allow! :approve }
+  end
+  execute do allow! :approve end
 end
 ```
 
@@ -276,13 +286,15 @@ end
 
 ```ruby
 rule "process_data" do
-  when_all(
+  match do
+    all(
     input(:data).present,
     input(:data).is_a(Hash),
     input(:data, :items).is_a(Array),
     not(input(:data, :items).blank)
   )
-  action { set :ready_to_process, true }
+  end
+  execute do set :ready_to_process, true end
 end
 ```
 

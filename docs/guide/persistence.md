@@ -85,13 +85,21 @@ repo.delete("allow_create")
 # Create some rules
 engine = Ruleur.define do
   rule "admin_access" do
-    when_all(user(:admin?))
+    match do
+      all(user(:admin?))
+    end
+      execute do
     set :access, true
+      end
   end
   
   rule "user_access" do
-    when_all(user(:logged_in?))
+    match do
+      all(user(:logged_in?))
+    end
+      execute do
     set :view, true
+      end
   end
 end
 
@@ -178,8 +186,12 @@ repo = Ruleur::Persistence::ActiveRecordRepository.new(model_class: MyRule)
 # Define rules
 engine = Ruleur.define do
   rule "permission_rule", tags: ['permissions'] do
-    when_all(user(:admin?))
+    match do
+      all(user(:admin?))
+    end
+      execute do
     set :delete, true
+      end
   end
 end
 
@@ -276,8 +288,12 @@ require "ruleur"
 # Define rule
 engine = Ruleur.define do
   rule "allow_create", salience: 10, tags: ['permissions'] do
-    when_any(user(:admin?), record(:draft?))
+    match do
+      any(user(:admin?), record(:draft?))
+    end
+      execute do
     set :create, true
+      end
   end
 end
 
@@ -525,8 +541,12 @@ RSpec.describe "Permission System" do
     # Create rule
 engine = Ruleur.define do
   rule "admin_access" do
-    when_all(user(:admin?))
+    match do
+      all(user(:admin?))
+    end
+      execute do
     set :access, true
+      end
   end
 end
     
@@ -619,7 +639,7 @@ rules = repository.all
 
 ```ruby
 # Won't serialize
-action do |ctx|
+execute do |ctx|
   puts "Hello"  # Arbitrary code
   ctx[:result] = "something"
 end

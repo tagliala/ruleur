@@ -45,8 +45,10 @@ If you're new to Ruleur, we recommend starting with the [Getting Started Guide](
 # 1. Define rules using DSL
 engine = Ruleur.define do
   rule "example" do
-    when_all(condition)
-    action do
+    match do
+      all(condition)
+    end
+    execute do
       # ...
     end
   end
