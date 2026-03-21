@@ -182,7 +182,7 @@ rule "approval_workflow" do
   match do
     all(
     document(:ready_for_review?),
-    not(document(:approved?))
+    not?(document(:approved?))
   )
   end
   execute do

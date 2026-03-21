@@ -75,7 +75,7 @@ engine = Ruleur.define do
     match do
       all(
         user(:owns?, record),
-        not(record(:locked?))
+        not?(record(:locked?))
       )
     end
     execute do
@@ -661,7 +661,7 @@ Only set values when conditions are met. Don't use `set :key, false`:
 # Avoid: Using false values
 rule "not_authenticated" do
   match do
-    all(not(user(:authenticated?)))
+        all(not?(user(:authenticated?)))
   end
 
   execute do

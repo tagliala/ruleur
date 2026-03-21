@@ -126,7 +126,7 @@ engine = Ruleur.define do
   rule 'published_requires_admin' do
     match do
       all(
-        not(record(:draft?)),
+        not?(record(:draft?)),
         user(:admin?)
       )
     end

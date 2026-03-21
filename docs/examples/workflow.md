@@ -21,7 +21,7 @@ engine = Ruleur.define do
       all(
         document(:draft?),
         document(:valid?),
-        not(document(:submitted?))
+        not?(document(:submitted?))
       )
     end
     execute do
@@ -34,7 +34,7 @@ engine = Ruleur.define do
       all(
         user(:approver?),
         document(:submitted?),
-        not(document(:approved?))
+        not?(document(:approved?))
       )
     end
     execute do
@@ -309,7 +309,7 @@ engine = Ruleur.define do
       all(
         expense(:amount).lt?(100),
         user(:employee?),
-        not(expense(:approved?))
+        not?(expense(:approved?))
       )
     end
     execute do
@@ -517,7 +517,7 @@ class PurchaseOrderWorkflow
         match do
           all(
             flag(:approved),
-            not(po(:sent_to_vendor?))
+            not?(po(:sent_to_vendor?))
           )
         end
         execute do

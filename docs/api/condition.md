@@ -4,8 +4,7 @@ Conditions define when a rule should fire. Ruleur provides composable condition 
 
 ## Overview
 
-Conditions are organized in a tree structure:
-- **Composite Conditions**: `all`, `any`, `not`
+- **Composite Conditions**: `all`, `any`, `not?`
 - **Predicate Conditions**: Leaf nodes that perform actual evaluations
 
 ## Condition Types
@@ -39,14 +38,14 @@ match do
 end
 ```
 
-#### `not` (NEGATION)
+#### `not?` (NEGATION)
 
 Inverts the child condition.
 
 ```ruby
 match do
   all(
-    not(record(:archived?)),
+    not?(record(:archived?)),
     record(:active?)
   )
 end
@@ -155,11 +154,11 @@ Conditions can be nested to arbitrary depth:
 
 ```ruby
 match do
-  any(
-    all(
-      user(:admin?),
-      not(record(:locked?))
-    ),
+    any(
+      all(
+        user(:admin?),
+        not?(record(:locked?))
+      ),
     all(
       user(:owner?, record),
       record(:editable?),
@@ -204,7 +203,7 @@ order(:items).includes("premium_item")
 
 # Boolean checks
 user(:admin?)        # Implicitly checks truthiness
-not(record(:draft?))
+not?(record(:draft?))
 ```
 
 ## Examples
@@ -251,11 +250,11 @@ rule "can_edit" do
       # Owner can edit if not locked and either draft or has force flag
       all(
         user(:owner?, record),
-        not(record(:locked?)),
-        any(
-          record(:draft?),
-          flag(:force_edit)
-        )
+      not?(record(:locked?)),
+       any(
+         record(:draft?),
+         flag(:force_edit)
+       )
       )
     )
   end
@@ -275,7 +274,7 @@ rule "premium_feature" do
       user(:subscription, :active?),
       user(:subscription, :tier).eq?("premium"),
       feature(:enabled?),
-      not(feature(:deprecated?))
+      not?(feature(:deprecated?))
     )
   end
 

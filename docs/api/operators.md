@@ -275,7 +275,7 @@ rule "can_approve" do
     all(
     user(:roles).includes("approver"),
     document(:status).in(["pending", "submitted"]),
-    not(document(:approved_at).present)
+    not?(document(:approved_at).present)
   )
   end
   execute do allow! :approve end
@@ -291,7 +291,7 @@ rule "process_data" do
     input(:data).present,
     input(:data).is_a(Hash),
     input(:data, :items).is_a(Array),
-    not(input(:data, :items).blank)
+    not?(input(:data, :items).blank)
   )
   end
   execute do set :ready_to_process, true end

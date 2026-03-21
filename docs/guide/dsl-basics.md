@@ -181,7 +181,7 @@ rule "admin_update" do
     all(
       user(:admin?),
       record(:published?),
-      not(record(:locked?))
+      not?(record(:locked?))
     )
   end
 
@@ -227,7 +227,7 @@ rule "editor_update" do
       ),
       all(
         record(:published?),
-        not(record(:archived?))
+        not?(record(:archived?))
       )
     )
   end
@@ -409,7 +409,7 @@ engine = Ruleur.define do
     match do
       all(
         record(:draft?),
-        not(record(:locked?)),
+        not?(record(:locked?)),
         eq?(record_value(:owner_id), user_value(:id))
       )
     end

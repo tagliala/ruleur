@@ -45,7 +45,7 @@ class OrderValidationEngine
         match do
           all(
             order(:items).present,
-            not(order(:items_in_stock?))
+            not?(order(:items_in_stock?))
           )
         end
         execute do
@@ -62,7 +62,7 @@ class OrderValidationEngine
           all(
             flag(:inventory_valid),
             customer(:active?),
-            not(customer(:suspended?))
+            not?(customer(:suspended?))
           )
         end
         execute do
@@ -149,7 +149,7 @@ class OrderValidationEngine
             flag(:customer_valid),
             flag(:payment_valid),
             flag(:shipping_valid),
-            not(flag(:validation_failed))
+            not?(flag(:validation_failed))
           )
         end
         execute do
@@ -335,7 +335,7 @@ class FeatureAccessEngine
       # Expired Subscription
       rule "expired_subscription", salience: 120 do
         match do
-          all(not(user(:subscription, :active?)))
+          all(not?(user(:subscription, :active?)))
         end
         execute do
           allow! :dashboard
@@ -454,8 +454,8 @@ class ContentModerationEngine
         match do
           all(
             user(:account_age_days).lt?(7),
-            not(flag(:auto_approved)),
-            not(flag(:moderation_action).present)
+            not?(flag(:auto_approved)),
+            not?(flag(:moderation_action).present)
           )
         end
         execute do
@@ -518,7 +518,7 @@ class ContentModerationEngine
       # Default: Queue for Review
       rule "default_review", salience: 1 do
         match do
-          all(not(flag(:moderation_action).present))
+          all(not?(flag(:moderation_action).present))
         end
         execute do
           set :moderation_action, "review"
@@ -693,7 +693,7 @@ class InsurancePolicyEngine
         match do
           all(
             flag(:total_risk_score).lt?(50),
-            not(flag(:requires_underwriting))
+            not?(flag(:requires_underwriting))
           )
         end
         execute do
@@ -707,7 +707,7 @@ class InsurancePolicyEngine
           all(
             flag(:total_risk_score).gte?(50),
             flag(:total_risk_score).lt?(80),
-            not(flag(:requires_underwriting))
+            not?(flag(:requires_underwriting))
           )
         end
         execute do

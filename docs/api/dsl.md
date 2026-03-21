@@ -7,7 +7,7 @@ The Ruleur Domain-Specific Language (DSL) provides a Ruby-friendly way to define
 The DSL consists of:
 - **Engine Definition**: `Ruleur.define` block
 - **Rule Definition**: `rule "name"` block
-- **Conditions**: use `match` with `all()`, `any()`, `not()` builders
+- **Conditions**: use `match` with `all()`, `any()`, `not?()` builders
 - **Actions**: `action` block with helper methods
 
 ## Engine Definition
@@ -64,13 +64,13 @@ end
 All conditions must be true (AND). Wrap them in a `match` block in rules:
 
 ```ruby
-match do
-  all(
-    user(:admin?),
-    record(:published?),
-    not(record(:archived?))
-  )
-end
+  match do
+    all(
+      user(:admin?),
+      record(:published?),
+      not?(record(:archived?))
+    )
+  end
 ```
 
 #### `any(*conditions)`
@@ -116,17 +116,17 @@ match do
 end
 ```
 
-#### `not(condition)`
+#### `not?(condition)`
 
 Negates a condition inside a `match` block.
 
 ```ruby
-match do
-  all(
-    user(:active?),
-    not(user(:banned?))
-  )
-end
+  match do
+    all(
+      user(:active?),
+      not?(user(:banned?))
+    )
+  end
 ```
 
 ### Reference Methods
@@ -234,8 +234,8 @@ engine = Ruleur.define do
   rule "validate_user", salience: 100 do
     match do
       all(
-        user(:present),
-        not(user(:banned?))
+      user(:present),
+      not?(user(:banned?))
       )
     end
     execute do
@@ -251,7 +251,7 @@ engine = Ruleur.define do
         all(
           user(:owner?, record()),
           record(:editable?),
-          not(record(:locked?))
+          not?(record(:locked?))
         )
       )
     end

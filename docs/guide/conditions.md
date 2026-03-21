@@ -9,7 +9,7 @@ Ruleur provides five core condition types:
 1. **Predicate** - Compares two values using an operator
 2. **all** - Logical AND - all children must be true
 3. **any** - Logical OR - at least one child must be true
-4. **not_** - Logical NOT - negates the child (note: `not` is a Ruby keyword)
+4. **not?** - Logical NOT - negates the child (DSL exposes `not?`)
 5. **predicate** - Custom Ruby code (advanced)
 
 ## Predicates
@@ -154,7 +154,7 @@ This rule fires when:
 
 ### Not - Logical Negation
 
-The `not_` condition inverts the result of its child.
+The `not?` condition inverts the result of its child.
 
 ```ruby
 rule "not_archived" do
@@ -167,10 +167,6 @@ rule "not_archived" do
   end
 end
 ```
-
-::: warning
-Note the underscore: Use `not_` (with underscore) in Ruby DSL because `not` is a reserved keyword.
-:::
 
 ## Nesting Conditions
 

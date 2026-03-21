@@ -101,7 +101,7 @@ rule "can_submit" do
     all(
       document(:draft?),
       document(:complete?),
-      not(document(:submitted?))
+      not?(document(:submitted?))
     )
   end
 
@@ -115,7 +115,7 @@ rule "can_approve" do
     all(
       user(:approver?),
       document(:submitted?),
-      not(document(:approved?))
+      not?(document(:approved?))
     )
   end
 
@@ -138,7 +138,7 @@ rule "validation" do
     all(
       user(:authenticated?),
       user(:email_verified?),
-      not(user(:banned?))
+      not?(user(:banned?))
     )
   end
 
