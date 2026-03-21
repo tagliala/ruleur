@@ -261,8 +261,8 @@ engine = Ruleur.define do
   rule "process_order", salience: 10, no_loop: true do
     when_all(
       flag(:user_valid),
-      flag(:allow_edit),
-      rec(:ready_to_process?)
+      flag(:update),
+      record(:ready_to_process?)
     )
     action do
       order = context[:record]

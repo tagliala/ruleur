@@ -8,17 +8,37 @@ The Ruleur DSL provides a fluent, readable Ruby interface for defining business 
 require "ruleur"
 
 engine = Ruleur.define do
-  rule "allow_create", no_loop: true do
+  rule "admin_create", no_loop: true do
     when_any(
-      usr(:admin?),
-      all(rec(:updatable?), rec(:draft?))
+      user(:admin?),
+      all(record(:updatable?), record(:draft?))
     )
-    action { allow! :create }
+    allow! :create
   end
 end
 
 ctx = engine.run(record: record, user: user)
-ctx[:allow_create] # => true or false
+ctx[:create] # => true or nil
+```
+
+## Security Principle: Deny by Default
+
+> *"The default rule should always be: deny access unless explicitly permitted."*
+> — [OWASP Access Control](https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/)
+
+With Ruleur, you only define **when access is granted**. If no rule sets a permission flag, access is implicitly denied.
+
+```ruby
+engine = Ruleur.define do
+  rule "admin_update" do
+    when_all(user(:admin?))
+    allow! :update
+  end
+  # No rule for guest? => access denied by default
+end
+
+ctx = engine.run(user: guest, record: doc)
+ctx[:update]  # => nil (denied)
 ```
 
 ## Defining Engines
@@ -31,14 +51,12 @@ engine = Ruleur.define do
     # conditions
     # actions
   end
-  
+
   rule "another_rule", salience: 10 do
     # ...
   end
 end
 ```
-
-The block is evaluated in the context of an `EngineBuilder`, which provides the `rule` method.
 
 ## Defining Rules
 
@@ -55,9 +73,7 @@ rule "rule_name", salience: 10, tags: ['permissions'], no_loop: true do
   when_all(
     # conditions go here
   )
-  action do
-    # actions go here
-  end
+  allow! :create
 end
 ```
 
@@ -72,7 +88,7 @@ rule "high_priority", salience: 100 do
   # This rule fires before others
 end
 
-rule "categorized", tags: ['permissions', 'admin'] do
+rule "admin_crud", tags: ['permissions', 'admin'] do
   # Tagged for organization
 end
 
@@ -83,91 +99,85 @@ end
 
 ## DSL Shortcuts
 
-Ruleur provides convenient helper methods to keep your rules readable:
+Ruleur provides convenient helper methods to keep your rules readable.
 
-### `rec(method_name)` - Record Method Check
+### `record(method_name)` - Record Method Check
 
 Checks if a method on the `record` returns truthy:
 
 ```ruby
-rec(:admin?)       # => truthy(record.admin?)
-rec(:published?)   # => truthy(record.published?)
+record(:admin?)       # => truthy(record.admin?)
+record(:published?)   # => truthy(record.published?)
 ```
 
 ::: tip
-`rec(method)` is shorthand for `truthy(ref(:record).call(method))`. The `truthy` operator checks if the value is not `nil` or `false`.
+`record(method)` is shorthand for `truthy(ref(:record).call(method))`. The `truthy` operator checks if the value is not `nil` or `false`.
 :::
 
-### `usr(method_name)` - User Method Check
+### `user(method_name)` - User Method Check
 
 Checks if a method on the `user` returns truthy:
 
 ```ruby
-usr(:admin?)       # => truthy(user.admin?)
-usr(:verified?)    # => truthy(user.verified?)
-```
+user(:admin?)       # => truthy(user.admin?)
+user(:verified?)    # => truthy(user.verified?)
+:::
 
-### `rec_val(method_name)` - Record Value Reference
+### `record_val(method_name)` - Record Value Reference
 
 Gets the actual value (not truthy check) from a record method:
 
 ```ruby
-# Compare record's age directly
-eq(rec_val(:age), 18)
-
-# Check if record's status is in a list
-includes(lit(['draft', 'pending']), rec_val(:status))
+eq(record_val(:age), 18)
+includes(lit(['draft', 'pending']), record_val(:status))
 ```
 
-### `usr_val(method_name)` - User Value Reference
+### `user_val(method_name)` - User Value Reference
 
 Gets the actual value from a user method:
 
 ```ruby
-# Compare user's role
-eq(usr_val(:role), 'admin')
-
-# Check user's subscription level
-gte(usr_val(:subscription_level), 3)
+eq(user_val(:role), 'admin')
+gte(user_val(:subscription_level), 3)
 ```
 
-### `flag(name)` - Permission Flag Check
+### `flag(name)` - Context Flag Check
 
-Checks if a permission flag was set by another rule:
+Checks if a flag was set by another rule:
 
 ```ruby
-flag(:create)  # => truthy(:allow_create)
-flag(:update)  # => truthy(:allow_update)
+flag(:create)  # => truthy(:create)
+flag(:update)  # => truthy(:update)
 ```
 
-This is useful for chaining rules - one rule sets `:allow_create`, another checks it:
+This is useful for chaining rules - one rule sets `:create`, another checks it:
 
 ```ruby
-rule "allow_create" do
-  when_any(usr(:admin?))
-  allow! :create  # Sets :allow_create => true
+rule "admin_create" do
+  when_any(user(:admin?))
+  allow! :create
 end
 
-rule "allow_update" do
+rule "draft_update" do
   when_all(
-    flag(:create),  # Checks :allow_create flag
-    rec(:draft?)
+    flag(:create),
+    record(:draft?)
   )
   allow! :update
 end
 ```
 
-### `allow!(name)` - Set Permission Flag
+### `allow!(name)` - Grant Permission
 
-Convenience method to set a permission flag:
+Convenience method to grant a permission:
 
 ```ruby
-allow! :create   # Sets :allow_create => true
-allow! :update   # Sets :allow_update => true
-allow! :delete   # Sets :allow_delete => true
+allow! :create
+allow! :update
+allow! :destroy
 ```
 
-This is equivalent to `set(:allow_create, true)` but more readable for permission rules.
+This is equivalent to `set(:create, true)` but more readable.
 
 ## Conditions
 
@@ -176,11 +186,11 @@ Conditions determine when a rule fires. Use `when_all`, `when_any`, or `when_pre
 ### `when_all` - All Conditions Must Be True
 
 ```ruby
-rule "restricted_update" do
+rule "admin_update" do
   when_all(
-    usr(:admin?),
-    rec(:published?),
-    rec(:locked?)
+    user(:admin?),
+    record(:published?),
+    not(record(:locked?))
   )
   allow! :update
 end
@@ -191,13 +201,13 @@ All conditions must be truthy for the rule to fire.
 ### `when_any` - At Least One Condition True
 
 ```ruby
-rule "can_view" do
+rule "editor_show" do
   when_any(
-    usr(:admin?),
-    rec(:public?),
-    rec(:owner_id) == ctx[:user].id
+    user(:admin?),
+    record(:public?),
+    eq(record_val(:owner_id), user_val(:id))
   )
-  allow! :view
+  allow! :show
 end
 ```
 
@@ -208,33 +218,31 @@ If any condition is truthy, the rule fires.
 You can nest `all` and `any` within `when_all` or `when_any`:
 
 ```ruby
-rule "complex_permission" do
+rule "editor_update" do
   when_all(
     any(
-      usr(:admin?),
-      usr(:moderator?)
+      user(:admin?),
+      user(:editor?)
     ),
     all(
-      rec(:published?),
-      not_(rec(:archived?))
+      record(:published?),
+      not(record(:archived?))
     )
   )
-  allow! :edit
+  allow! :update
 end
 ```
-
-This reads as: "Allow edit if (user is admin OR moderator) AND (record is published AND NOT archived)"
 
 ### Using Operators
 
 For more complex comparisons, use operators directly:
 
 ```ruby
-rule "age_check" do
+rule "premium_purchase" do
   when_all(
-    gte(rec_val(:age), 18),           # age >= 18
-    eq(rec_val(:country), 'US'),      # country == 'US'
-    includes(lit(['active', 'trial']), rec_val(:status))
+    gte(record_val(:age), 18),
+    eq(record_val(:country), 'US'),
+    includes(lit(['active', 'trial']), record_val(:status))
   )
   allow! :purchase
 end
@@ -244,14 +252,26 @@ See [Operators](./operators.md) for a complete list.
 
 ## Actions
 
-Actions define what happens when a rule fires. Use the `action` block or helper methods.
+Actions define what happens when a rule fires. Use the `allow!` helper or `action` block.
+
+### `allow!(name)` - Grant Permission
+
+```ruby
+rule "admin_crud" do
+  when_all(user(:admin?))
+  allow! :create
+  allow! :show
+  allow! :update
+  allow! :destroy
+end
+```
 
 ### `set(key, value)` - Set a Context Value
 
 ```ruby
 rule "set_discount" do
-  when_all(usr(:premium?))
-  set :discount, 0.20  # Set discount to 20%
+  when_all(user(:premium?))
+  set :discount, 0.20
 end
 ```
 
@@ -259,25 +279,12 @@ end
 
 ```ruby
 rule "set_defaults" do
-  when_all(rec(:new?))
+  when_all(record(:new?))
   assert(
     status: 'draft',
     priority: 'low',
     assignee: nil
   )
-end
-```
-
-### `allow!(name)` - Set Permission Flag
-
-```ruby
-rule "admin_permissions" do
-  when_all(usr(:admin?))
-  action do
-    allow! :create
-    allow! :update
-    allow! :delete
-  end
 end
 ```
 
@@ -287,26 +294,23 @@ For more complex logic, use an `action` block:
 
 ```ruby
 rule "calculate_total" do
-  when_all(rec(:items))
+  when_all(record(:items))
   action do |ctx|
     items = ctx[:record].items
     total = items.sum(&:price)
     tax = total * 0.1
     ctx[:total] = total
     ctx[:tax] = tax
-    ctx[:grand_total] = total + tax
   end
 end
 ```
-
-The block receives the context as an argument and can read/write any values.
 
 ::: tip
 The `action` method can also be written as `then` for readability:
 
 ```ruby
 rule "apply_discount" do
-  when_all(usr(:premium?))
+  when_all(user(:premium?))
   then do |ctx|
     ctx[:discount] = 0.20
   end
@@ -319,20 +323,17 @@ end
 The execution context holds all facts and values during rule evaluation:
 
 ```ruby
-# Initial context
 ctx = engine.run(
   record: my_record,
   user: current_user,
   custom_value: 123
 )
 
-# Access values
 ctx[:record]       # => my_record
 ctx[:user]         # => current_user
 ctx[:custom_value] # => 123
 
-# Values set by rules
-ctx[:allow_create] # => true (if rule fired)
+ctx[:update] # => true (if rule fired) or nil (denied)
 ctx[:discount]     # => 0.20 (if rule set it)
 ```
 
@@ -366,124 +367,120 @@ User = Struct.new(:id, :role) do
 end
 
 engine = Ruleur.define do
-  # Admins can do everything
-  rule "admin_full_access", salience: 100 do
-    when_all(usr(:admin?))
-    action do
-      allow! :create
-      allow! :update
-      allow! :delete
-      allow! :publish
-    end
+  rule "admin_crud", salience: 100 do
+    when_all(user(:admin?))
+    allow! :create
+    allow! :show
+    allow! :update
+    allow! :destroy
   end
-  
-  # Editors can create and update drafts
-  rule "editor_draft_access", salience: 50 do
+
+  rule "editor_create_update", salience: 50 do
     when_all(
-      usr(:editor?),
-      rec(:draft?)
+      user(:editor?),
+      record(:draft?)
     )
-    action do
-      allow! :create
-      allow! :update
-    end
+    allow! :create
+    allow! :update
   end
-  
-  # Owners can update their own drafts (not locked)
-  rule "owner_update_draft" do
+
+  rule "owner_update" do
     when_all(
-      rec(:draft?),
-      not_(rec(:locked?)),
-      eq(rec_val(:owner_id), usr_val(:id))
+      record(:draft?),
+      not(record(:locked?)),
+      eq(record_val(:owner_id), user_val(:id))
     )
     allow! :update
   end
-  
-  # Published documents can only be updated by admins or editors
-  rule "published_restricted" do
+
+  rule "editor_published_update" do
     when_all(
-      rec(:published?),
-      any(usr(:admin?), usr(:editor?))
+      record(:published?),
+      any(user(:admin?), user(:editor?))
     )
     allow! :update
   end
 end
 
-# Test the rules
 doc = Document.new('draft', 123, false)
 user = User.new(123, 'user')
 
 ctx = engine.run(record: doc, user: user)
 
-puts ctx[:allow_create] # => nil (no permission)
-puts ctx[:allow_update] # => true (owner can update own draft)
-puts ctx[:allow_delete] # => nil (no permission)
+puts ctx[:create]  # => true (editor can create drafts)
+puts ctx[:update]  # => true (owner can update own draft)
+puts ctx[:destroy] # => nil (no permission)
 ```
 
 ## Best Practices
 
-### 1. Use Descriptive Names
+### 1. Deny by Default
+
+Never explicitly deny in rules. Only grant when conditions are met:
 
 ```ruby
-# Good
-rule "admin_can_delete_any_post" do
+# Bad: Explicit deny
+rule "deny_guests" do
+  when_all(not(user(:authenticated?)))
+  set :update, false
+end
+
+# Good: Only grant when appropriate
+rule "auth_update" do
+  when_all(user(:authenticated?))
+  allow! :update
+end
+```
+
+### 2. Use Descriptive Names
+
+```ruby
+rule "admin_destroy" do
   # ...
 end
 
-# Less clear
-rule "delete_rule_1" do
+rule "user_destroy" do
   # ...
 end
 ```
 
-### 2. Keep Rules Focused
+### 3. Keep Rules Focused
 
 Each rule should have a single responsibility:
 
 ```ruby
-# Good - separate concerns
-rule "allow_create_if_admin" do
-  when_all(usr(:admin?))
+rule "admin_create" do
+  when_all(user(:admin?))
   allow! :create
 end
 
-rule "allow_create_if_verified_user" do
-  when_all(usr(:verified?))
+rule "verified_user_create" do
+  when_all(user(:verified?))
   allow! :create
-end
-
-# Less clear - mixed concerns
-rule "allow_create" do
-  when_any(usr(:admin?), usr(:verified?), usr(:premium?))
-  action do
-    allow! :create
-    allow! :update  # Different action mixed in
-    set :created_by, usr_val(:id)  # Side effect
-  end
 end
 ```
 
-### 3. Use Salience for Priority
+### 4. Use Salience for Priority
 
 Higher salience rules fire first:
 
 ```ruby
-rule "set_defaults", salience: 0 do
+rule "set_default_discount", salience: 0 do
   set :discount, 0.0
 end
 
 rule "apply_premium_discount", salience: 10 do
-  when_all(usr(:premium?))
+  when_all(user(:premium?))
   set :discount, 0.15
 end
 
 rule "apply_vip_discount", salience: 20 do
-  when_all(usr(:vip?))
+  when_all(user(:vip?))
   set :discount, 0.30
 end
 ```
 
-### 4. Use `no_loop` to Prevent Infinite Firing
+### 5. Use `no_loop` to Prevent Infinite Firing
 
 If a rule's action could make its own condition true again, use `no_loop`:
 
@@ -496,19 +493,18 @@ rule "increment_counter", no_loop: true do
 end
 ```
 
-### 5. Tag Rules for Organization
+### 6. Tag Rules for Organization
 
 ```ruby
 rule "admin_create", tags: ['permissions', 'admin'] do
-  # ...
+  allow! :create
 end
 
 rule "editor_update", tags: ['permissions', 'editor'] do
-  # ...
+  allow! :update
 end
 
-# Filter by tag (future feature)
-# engine.rules_with_tag('admin')
+engine.rules_with_tag('admin')
 ```
 
 ## Next Steps

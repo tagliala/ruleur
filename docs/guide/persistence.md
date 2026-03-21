@@ -193,7 +193,7 @@ rules = repo.all
 engine = Ruleur::Engine.new(rules: rules)
 
 ctx = engine.run(user: current_user, record: document)
-ctx[:allow_delete]  # => true/false
+ctx[:destroy]  # => true or nil
 ```
 
 ## VersionedActiveRecordRepository
@@ -538,7 +538,7 @@ RSpec.describe "Permission System" do
     engine = Ruleur::Engine.new(rules: rules)
     
     ctx = engine.run(user: admin_user, record: document)
-    expect(ctx[:allow_access]).to be true
+    expect(ctx[:access]).to be true
   end
 end
 ```

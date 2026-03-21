@@ -48,17 +48,17 @@ Complete examples from production systems.
 engine = Ruleur.define do
   rule "admin_access" do
     when_all(user(:admin?))
-    action { allow! :full_access }
+    allow! :access
   end
-  
-  rule "owner_access" do
+
+  rule "owner_update" do
     when_all(user(:owner?, record))
-    action { allow! :edit }
+    allow! :update
   end
 end
 
 result = engine.run(user: current_user, record: @post)
-can_edit = result[:allow_edit] # => true or false
+can_update = result[:update] # => true or nil
 ```
 
 ### Discount Calculation

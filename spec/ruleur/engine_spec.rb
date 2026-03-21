@@ -45,20 +45,20 @@ RSpec.describe Ruleur do
 
       it 'grants both when admin and updatable' do
         ctx = engine.run(record: MockRecord.new(true, false), user: MockUser.new(true))
-        expect(ctx[:allow_create]).to be(true)
-        expect(ctx[:allow_update]).to be(true)
+        expect(ctx[:create]).to be(true)
+        expect(ctx[:update]).to be(true)
       end
 
       it 'grants both when draft and updatable (no admin)' do
         ctx = engine.run(record: MockRecord.new(true, true), user: MockUser.new(false))
-        expect(ctx[:allow_create]).to be(true)
-        expect(ctx[:allow_update]).to be(true)
+        expect(ctx[:create]).to be(true)
+        expect(ctx[:update]).to be(true)
       end
 
       it 'denies both when not draft, not admin' do
         ctx = engine.run(record: MockRecord.new(true, false), user: MockUser.new(false))
-        expect(ctx[:allow_create]).not_to be(true)
-        expect(ctx[:allow_update]).not_to be(true)
+        expect(ctx[:create]).not_to be(true)
+        expect(ctx[:update]).not_to be(true)
       end
     end
   end
@@ -81,7 +81,7 @@ RSpec.describe Ruleur do
 
         loaded_engine = Ruleur::Engine.new(rules: repo.all)
         ctx = loaded_engine.run(record: MockRecord.new(true, true), user: MockUser.new(false))
-        expect(ctx[:allow_create]).to be(true)
+        expect(ctx[:create]).to be(true)
       end
     end
   end

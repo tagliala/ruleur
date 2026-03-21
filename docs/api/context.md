@@ -145,15 +145,32 @@ end
 
 ## Best Practices
 
-### Namespacing Results
+### Permission Results
 
-Use clear prefixes for result flags:
+For permissions, use `allow!` which sets a flag when granted. Access is denied by default when no flag is set:
+
+```ruby
+rule "admin_create" do
+  when_all(user(:admin?))
+  allow! :create
+end
+```
+
+Then check permissions:
+```ruby
+ctx[:create] == true  # granted
+ctx[:create].nil?     # denied by default
+```
+
+### General Context Values
+
+For non-permission values, use `set` with clear names:
 
 ```ruby
 action do
-  set :allow_create, true
-  set :allow_update, false
-  set :error_message, "Insufficient permissions"
+  set :discount, 0.20
+  set :discount_reason, "VIP customer"
+  set :error_message, "Something went wrong"
 end
 ```
 

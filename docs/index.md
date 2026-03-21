@@ -58,59 +58,35 @@ features:
 ```ruby
 require "ruleur"
 
-# Define rules with readable DSL
 engine = Ruleur.define do
-  rule "allow_create", no_loop: true do
+  rule "admin_create", no_loop: true do
     when_any(
-      usr(:admin?),
-      all(rec(:updatable?), rec(:draft?))
+      user(:admin?),
+      all(record(:updatable?), record(:draft?))
     )
-    action { allow! :create }
+    allow! :create
   end
 
-  rule "allow_update", no_loop: true do
+  rule "draft_update", no_loop: true do
     when_all(
-      rec(:updatable?),
-      any(usr(:admin?), all(rec(:draft?), flag(:create)))
+      record(:draft?),
+      flag(:create)
     )
-    action { allow! :update }
+    allow! :update
   end
 end
 
-# Run engine with context
 ctx = engine.run(record: record, user: user)
-ctx[:allow_create] # => true
-ctx[:allow_update] # => true
+ctx[:create] # => true or nil
+ctx[:update] # => true or nil
 ```
 
-## Or Use YAML
+## Security: Deny by Default
 
-```yaml
-# config/rules/allow_create.yml
-name: allow_create
-salience: 10
-tags: [permissions, create]
-no_loop: true
-condition:
-  type: any
-  children:
-    - type: pred
-      op: truthy
-      left:
-        type: call
-        recv: { type: ref, root: user }
-        method: admin?
-action:
-  set:
-    allow_create: true
-```
+> *"The default rule should always be: deny access unless explicitly permitted."*
+> — [OWASP Access Control](https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/)
 
-```ruby
-# Load and run
-rule = Ruleur::Persistence::YAMLLoader.load_file('config/rules/allow_create.yml')
-engine = Ruleur::Engine.new(rules: [rule])
-ctx = engine.run(record: record, user: user)
-```
+With Ruleur, you only define **when access is granted**. If no rule sets a permission, access is implicitly denied.
 
 ## Why Ruleur?
 

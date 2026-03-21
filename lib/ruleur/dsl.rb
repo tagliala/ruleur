@@ -24,9 +24,9 @@ module Ruleur
         Condition::Builders.ref(:user, *path)
       end
 
-      # refer to a permission flag like :allow_create
+      # refer to a permission flag
       def flag(name)
-        Condition::Builders.truthy(Condition::Builders.ref(:"allow_#{name}"))
+        Condition::Builders.truthy(Condition::Builders.ref(name))
       end
     end
 
@@ -87,9 +87,9 @@ module Ruleur
         hash.each { |k, v| @action_spec[:set][k.to_sym] = v }
       end
 
-      # Convenience to set allow_#{sym} => true
+      # Convenience to set :#{sym} => true
       def allow!(sym)
-        set(:"allow_#{sym}", true)
+        set(sym, true)
       end
 
       # Provide arbitrary action

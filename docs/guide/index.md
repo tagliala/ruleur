@@ -40,35 +40,37 @@ Salience, no-loop, tracing, and performance optimization.
 
 ```ruby
 # Permission check
-when_any(usr(:admin?), rec(:public?))
+when_any(user(:admin?), record(:public?))
 
 # Ownership check
 when_all(
-  eq(call(rec, :owner_id), call(usr, :id)),
-  rec(:active?)
+  eq(record_val(:owner_id), user_val(:id)),
+  record(:active?)
 )
 
 # Range check
 when_all(
-  gte(call(rec, :price), 100),
-  lte(call(rec, :price), 1000)
+  gte(record_val(:price), 100),
+  lte(record_val(:price), 1000)
 )
 
 # Array membership
-includes(call(usr, :roles), 'editor')
+includes(record_val(:roles), lit('editor'))
 
 # Pattern matching
-matches(call(rec, :email), /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i)
+matches(record_val(:email), lit(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i))
 ```
 
-### DSL Shortcuts
+### DSL Reference
 
-| Shortcut | Expands To |
-|----------|-----------|
-| `usr(:admin?)` | `truthy(call(ref(:user), :admin?))` |
-| `rec(:active?)` | `truthy(call(ref(:record), :active?))` |
-| `flag(:create)` | `truthy(ref(:allow_create))` |
-| `allow! :edit` | `set :allow_edit, true` |
+| Method | Description | Example |
+|--------|-------------|---------|
+| `user(:admin?)` | Predicate on user object | `user(:admin?)` |
+| `record(:active?)` | Predicate on record object | `record(:active?)` |
+| `user_val(:id)` | Get field value from user | `user_val(:id)` |
+| `record_val(:owner_id)` | Get field value from record | `record_val(:owner_id)` |
+| `flag(:create)` | Check if permission granted | `flag(:create)` |
+| `allow! :update` | Grant permission | `allow! :update` |
 
 ### Operators Reference
 

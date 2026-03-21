@@ -285,7 +285,7 @@ ctx = engine.run(
 ```ruby
 ctx[:user]           # => User object
 ctx[:record]         # => Document object
-ctx[:allow_access]   # => true/false (set by rules)
+ctx[:access]         # => true or nil (set by rules)
 ```
 
 ### Context Isolation
@@ -536,7 +536,7 @@ def process_batch(records, user)
   
   records.each do |record|
     ctx = engine.run(user: user, record: record)
-    results << { record_id: record.id, allowed: ctx[:allow_access] }
+    results << { record_id: record.id, allowed: ctx[:access] }
   end
   
   results
