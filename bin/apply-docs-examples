@@ -26,10 +26,6 @@ OptionParser.new do |opts|
   opts.on('--preview', 'Show previews instead of writing files') do
     options[:preview] = true
   end
-
-  opts.on('--no-backup', 'Do not create a backup before modifying files') do
-    options[:backup] = false
-  end
 end.parse!
 
 unless File.file?(options[:manifest])
@@ -101,12 +97,6 @@ by_source.each do |src_file, entries|
   end
 
   if modified && !options[:preview]
-    if options[:backup]
-      bak = "#{src_file}.bak.#{Time.now.to_i}"
-      FileUtils.cp(src_file, bak)
-      puts "Backed up #{src_file} -> #{bak}"
-    end
-
     # preserve final newline if original had one
     final_newline = File.read(src_file).end_with?("\n")
     new_text = lines.join("\n")

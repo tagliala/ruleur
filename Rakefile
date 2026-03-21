@@ -31,7 +31,7 @@ task 'docs:rubocop:autocorrect': :extract_docs_examples do
   success = system(cmd)
   warn 'RuboCop returned non-zero exit status' unless success
 
-  puts 'Applying corrections back into documentation (creating backups)'
+  puts 'Applying corrections back into documentation'
   apply_examples('tmp/docs-examples/manifest.json', 'tmp/docs-examples')
 end
 
@@ -42,7 +42,7 @@ task 'docs:rubocop:autocorrect_all': :extract_docs_examples do
   success = system(cmd)
   warn 'RuboCop returned non-zero exit status' unless success
 
-  puts 'Applying corrections back into documentation (creating backups)'
+  puts 'Applying corrections back into documentation'
   apply_examples('tmp/docs-examples/manifest.json', 'tmp/docs-examples')
 end
 
@@ -104,10 +104,6 @@ def apply_examples(manifest_path, examples_dir)
     end
 
     if modified
-      bak = "#{src_file}.bak.#{Time.now.to_i}"
-      FileUtils.cp(src_file, bak)
-      puts "Backed up #{src_file} -> #{bak}"
-
       final_newline = File.read(src_file).end_with?("\n")
       new_text = lines.join("\n")
       new_text += "\n" if final_newline
