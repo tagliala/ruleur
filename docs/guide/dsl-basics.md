@@ -121,7 +121,7 @@ Gets the actual value (not truthy check) from a record method:
 
 ```ruby
 eq?(record_value(:age), 18)
-  includes(literal(['draft', 'pending']), record_value(:status))
+includes(literal(['draft', 'pending']), record_value(:status))
 ```
 
 ### `user_value(method_name)` - User Value Reference
@@ -244,12 +244,16 @@ For more complex comparisons, use operators directly:
 
 ```ruby
 rule "premium_purchase" do
-  when_all(
-    gte(record_value(:age), 18),
-    eq?(record_value(:country), 'US'),
-    includes(literal(['active', 'trial']), record_value(:status))
-  )
-  set :purchase, true
+  match do
+    all(
+      gte(record_value(:age), 18),
+      eq?(record_value(:country), 'US'),
+      includes(literal(['active', 'trial']), record_value(:status))
+    )
+  end
+  execute do
+    set :purchase, true
+  end
 end
 ```
 
@@ -263,8 +267,12 @@ Actions define what happens when a rule fires. Use the `set` method or `action` 
 
 ```ruby
 rule "set_discount" do
-  when_all(user(:premium?))
-  set :discount, 0.20
+  match do
+    all(user(:premium?))
+  end
+  execute do
+    set :discount, 0.20
+  end
 end
 ```
 
@@ -272,12 +280,16 @@ end
 
 ```ruby
 rule "set_defaults" do
-  when_all(record(:new?))
-  assert(
-    status: 'draft',
-    priority: 'low',
-    assignee: nil
-  )
+  match do
+    all(record(:new?))
+  end
+  execute do
+    assert(
+      status: 'draft',
+      priority: 'low',
+      assignee: nil
+    )
+  end
 end
 ```
 
@@ -287,8 +299,10 @@ For more complex logic, use an `action` block:
 
 ```ruby
 rule "calculate_total" do
-  when_all(record(:items))
-  action do |ctx|
+  match do
+    all(record(:items))
+  end
+  execute do |ctx|
     items = ctx[:record].items
     total = items.sum(&:price)
     tax = total * 0.1
@@ -303,8 +317,10 @@ The `action` method provides a block for executing code:
 
 ```ruby
 rule "apply_discount" do
-  when_all(user(:premium?))
-  action do |ctx|
+  match do
+    all(user(:premium?))
+  end
+  execute do |ctx|
     ctx[:discount] = 0.20
   end
 end
@@ -334,10 +350,14 @@ Rules can reference any context key using `ref`:
 
 ```ruby
 rule "check_custom" do
-  when_all(
-    eq?(ref(:custom_value), 123)
-  )
-  set :custom_check, true
+  match do
+    all(
+      eq?(ref(:custom_value), 123)
+    )
+  end
+  execute do
+    set :custom_check, true
+  end
 end
 ```
 
@@ -361,37 +381,53 @@ end
 
 engine = Ruleur.define do
   rule "admin_crud", salience: 100 do
-    when_all(user(:admin?))
-    set :create, true
-    set :show, true
-    set :update, true
-    set :destroy, true
+    match do
+      all(user(:admin?))
+    end
+    execute do
+      set :create, true
+      set :show, true
+      set :update, true
+      set :destroy, true
+    end
   end
 
   rule "editor_create_update", salience: 50 do
-    when_all(
-      user(:editor?),
-      record(:draft?)
-    )
-    set :create, true
-    set :update, true
+    match do
+      all(
+        user(:editor?),
+        record(:draft?)
+      )
+    end
+    execute do
+      set :create, true
+      set :update, true
+    end
   end
 
   rule "owner_update" do
-    when_all(
-      record(:draft?),
-      not(record(:locked?)),
-      eq?(record_value(:owner_id), user_value(:id))
-    )
-    set :update, true
+    match do
+      all(
+        record(:draft?),
+        not(record(:locked?)),
+        eq?(record_value(:owner_id), user_value(:id))
+      )
+    end
+    execute do
+      set :update, true
+    end
   end
 
   rule "editor_published_update" do
-    when_all(
-      record(:published?),
-      any(user(:admin?), user(:editor?))
-    )
-    set :update, true
+    match do
+      all(
+        record(:published?),
+        any(user(:admin?), user(:editor?))
+      )
+    end
+    execute do
+      set :update, true
+    end
   end
 end
 
@@ -425,13 +461,21 @@ Each rule should have a single responsibility:
 
 ```ruby
 rule "admin_create" do
-  when_all(user(:admin?))
-  set :create, true
+  match do
+    all(user(:admin?))
+  end
+  execute do
+    set :create, true
+  end
 end
 
 rule "verified_user_create" do
-  when_all(user(:verified?))
-  set :create, true
+  match do
+    all(user(:verified?))
+  end
+  execute do
+    set :create, true
+  end
 end
 ```
 
@@ -441,17 +485,27 @@ Higher salience rules fire first:
 
 ```ruby
 rule "set_default_discount", salience: 0 do
-  set :discount, 0.0
+  execute do
+    set :discount, 0.0
+  end
 end
 
 rule "apply_premium_discount", salience: 10 do
-  when_all(user(:premium?))
-  set :discount, 0.15
+  match do
+    all(user(:premium?))
+  end
+  execute do
+    set :discount, 0.15
+  end
 end
 
 rule "apply_vip_discount", salience: 20 do
-  when_all(user(:vip?))
-  set :discount, 0.30
+  match do
+    all(user(:vip?))
+  end
+  execute do
+    set :discount, 0.30
+  end
 end
 ```
 
@@ -461,8 +515,10 @@ If a rule's action could make its own condition true again, use `no_loop`:
 
 ```ruby
 rule "increment_counter", no_loop: true do
-  when_all(lt(ref(:counter), 100))
-  action do |ctx|
+  match do
+    all(lt(ref(:counter), 100))
+  end
+  execute do |ctx|
     ctx[:counter] = (ctx[:counter] || 0) + 1
   end
 end
