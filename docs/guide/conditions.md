@@ -7,10 +7,10 @@ Conditions are the heart of Ruleur's rule system. They determine when rules fire
 Ruleur provides five core condition types:
 
 1. **Predicate** - Compares two values using an operator
-2. **All** - Logical AND - all children must be true
-3. **Any** - Logical OR - at least one child must be true
-4. **Not** - Logical NOT - negates the child
-5. **BlockPredicate** - Custom Ruby code (advanced)
+2. **all** - Logical AND - all children must be true
+3. **any** - Logical OR - at least one child must be true
+4. **not_** - Logical NOT - negates the child (note: `not` is a Ruby keyword)
+5. **predicate** - Custom Ruby code (advanced)
 
 ## Predicates
 
