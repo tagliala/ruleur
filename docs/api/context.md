@@ -147,7 +147,7 @@ end
 
 ### Permission Results
 
-For permissions, use `set :key, true` to grant access. Access is denied by default when no flag is set:
+Use `set :key, true` to set a result when conditions are met:
 
 ```ruby
 rule "admin_create" do
@@ -156,10 +156,10 @@ rule "admin_create" do
 end
 ```
 
-Then check permissions:
+Check results:
 ```ruby
-ctx[:create] == true  # granted
-ctx[:create].nil?     # denied by default
+ctx[:create] == true  # rule fired and set the value
+ctx[:create].nil?     # no rule set this value
 ```
 
 ### General Context Values

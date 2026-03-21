@@ -42,9 +42,9 @@ class User
 end
 ```
 
-## Step 2: Create Rules (Grant Access Only)
+## Step 2: Create Rules
 
-Ruleur follows **deny by default** - you only define when access is granted:
+You define rules that set values when conditions are met:
 
 ```ruby
 engine = Ruleur.define do
@@ -87,7 +87,7 @@ ctx[:update]  # => true (author_draft_update fired)
 
 other_user = User.new(id: 3, role: 'user')
 ctx = engine.run(user: other_user, record: draft)
-ctx[:update]  # => nil (denied by default)
+ctx[:update]  # => nil (no rule matched)
 ```
 
 ## Step 4: Add More Complex Logic
@@ -171,8 +171,7 @@ When you run `engine.run()`:
 1. **Context is created** with the provided facts (user, record)
 2. **Eligible rules are identified** - rules whose conditions match
 3. **Rules fire in priority order** (salience: highest first)
-4. **Actions grant permissions** - only explicit grants set flags
-5. **Access is denied by default** - no grant means no access
+4. **Actions set context values** - only explicit `set` calls modify the context
 
 ## Debugging with Trace
 
@@ -186,30 +185,6 @@ ctx = engine.run(user: admin, record: doc)
 # [Ruleur] Firing: admin_update (salience=10)
 # [Ruleur] Facts changed: update
 ```
-
-## Security: Deny by Default
-
-Ruleur follows the **deny by default** security principle:
-
-> *"The default rule should always be: deny access unless explicitly permitted."*
-> — [OWASP Access Control](https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/)
-
-With Ruleur, you only define **when access is granted**. If no rule sets a permission, access is implicitly denied.
-
-```ruby
-engine = Ruleur.define do
-  rule 'admin_update' do
-    when_any(user(:admin?))
-    set :update, true
-  end
-  # No rule for guest? => access denied by default
-end
-
-ctx = engine.run(user: guest, record: doc)
-ctx[:update]  # => nil (denied, no rule granted access)
-```
-
-This is more secure than explicitly denying - you can't accidentally forget to deny something.
 
 ## What's Next?
 

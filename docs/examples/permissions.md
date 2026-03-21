@@ -2,28 +2,24 @@
 
 Learn how to implement authorization and access control using Ruleur.
 
-## Security Principle: Deny by Default
+## Access Control Principle: Deny by Default
 
-**Access control is only granted when explicitly allowed.** This is a fundamental security principle:
-
-> *"The default rule should always be: deny access unless explicitly permitted."*
-> — [OWASP Access Control](https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/)
-
-With Ruleur, you only define when access is **granted**. If no rule sets a permission flag, access is implicitly denied.
+In access control, the default should always be **deny**. Only grant access when conditions are explicitly met:
 
 ```ruby
 engine = Ruleur.define do
-  # Access is granted only if this rule fires
+  # Access is only granted if this rule fires
   rule "admin_update" do
     when_all(user(:admin?))
     set :update, true
   end
-  # No rule for guest? => access denied by default
 end
 
 result = engine.run(user: guest, record: doc)
-result[:update]  # => nil (denied, no rule granted access)
+result[:update]  # => nil (no rule matched, so denied)
 ```
+
+This is a fundamental security principle: assume no access unless explicitly granted.
 
 ## Overview
 
@@ -364,9 +360,9 @@ end
 5. **No versioning**: Changing one rule might break another silently
 6. **Business analysts can't read it**: Ruby code isn't business-friendly
 
-### The Ruleur Approach: Deny by Default
+### The Ruleur Approach
 
-With Ruleur, you only define **when access is granted**. Everything else is denied by default:
+With Ruleur, you only define **when a value is set**. If no rule matches, the value remains unset:
 
 ```ruby
 engine = Ruleur.define do
@@ -534,27 +530,51 @@ end
 
 ## Security Best Practices
 
-### 1. Deny by Default
+### 1. Set Values Explicitly
 
-Never explicitly deny in rules. Simply don't grant access unless the conditions are met:
+Only set values when conditions are met. Don't use `set :key, false`:
 
 ```ruby
-# Bad: Explicit deny
-rule "deny_guests" do
+# Avoid: Using false values
+rule "not_authenticated" do
   when_all(not(user(:authenticated?)))
-  set :update, false  # Don't do this
+  set :update, false
 end
 
-# Good: Only grant when appropriate
-rule "auth_update" do
+# Better: Only set when true
+rule "authenticated_update" do
   when_all(user(:authenticated?))
   set :update, true
 end
 ```
 
-### 2. Use High Salience for Admin Bypass
+### 2. Order Conditions by Cost
 
-Place admin rules at high salience so they fire first:
+Place cheap/fast checks before expensive ones. This avoids unnecessary work:
+
+```ruby
+# Bad: Expensive check first
+rule "check_permission" do
+  when_all(
+    expensive_database_query(:has_permission?),  # Expensive - do last
+    user(:admin?)                              # Cheap - check first
+  )
+  set :update, true
+end
+
+# Good: Cheap checks first
+rule "check_permission" do
+  when_all(
+    user(:admin?),                             # Cheap - check first
+    expensive_database_query(:has_permission?)   # Expensive - only if needed
+  )
+  set :update, true
+end
+```
+
+### 3. Use Salience for Priority
+
+Place high-priority rules (like admin bypass) at high salience so they fire first:
 
 ```ruby
 rule "admin_crud", salience: 100 do
@@ -566,7 +586,7 @@ rule "admin_crud", salience: 100 do
 end
 ```
 
-### 3. Test Both Granted and Denied Cases
+### 4. Test Both Set and Unset Cases
 
 ```ruby
 it "grants update to admin" do
@@ -578,7 +598,7 @@ it "denies update to guest" do
 end
 ```
 
-### 4. Audit Your Rules
+### 5. Audit Your Rules
 
 Ruleur makes it easy to review all access rules in one place. Regularly audit:
 - Are all permission grants intentional?
@@ -587,7 +607,7 @@ Ruleur makes it easy to review all access rules in one place. Regularly audit:
 
 ## See Also
 
-- [OWASP Top 10: Broken Access Control](https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/)
+- [OWASP: Broken Access Control](https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/) - Security principle
 - [Workflow Automation](./workflow) - Approval workflows
 - [Conditions Guide](/guide/conditions) - Complex conditions
 - [DSL Basics](/guide/dsl-basics) - DSL syntax

@@ -77,16 +77,11 @@ engine = Ruleur.define do
 end
 
 ctx = engine.run(record: record, user: user)
-ctx[:create] # => true or nil
-ctx[:update] # => true or nil
+ctx[:create] # => true (if rule fired) or nil
+ctx[:update] # => true (if rule fired) or nil
 ```
 
-## Security: Deny by Default
-
-> *"The default rule should always be: deny access unless explicitly permitted."*
-> — [OWASP Access Control](https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/)
-
-With Ruleur, you only define **when access is granted**. If no rule sets a permission, access is implicitly denied.
+With Ruleur, values are only set when rules fire. If no rule matches, the value remains unset.
 
 ## Why Ruleur?
 

@@ -18,28 +18,10 @@ engine = Ruleur.define do
 end
 
 ctx = engine.run(record: record, user: user)
-ctx[:create] # => true or nil
+ctx[:create] # => true (if rule fired) or nil
 ```
 
-## Security Principle: Deny by Default
-
-> *"The default rule should always be: deny access unless explicitly permitted."*
-> — [OWASP Access Control](https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/)
-
-With Ruleur, you only define **when access is granted**. If no rule sets a permission flag, access is implicitly denied.
-
-```ruby
-engine = Ruleur.define do
-  rule "admin_update" do
-    when_all(user(:admin?))
-    set :update, true
-  end
-  # No rule for guest? => access denied by default
-end
-
-ctx = engine.run(user: guest, record: doc)
-ctx[:update]  # => nil (denied)
-```
+With Ruleur, context values are only set when rules fire. If no rule matches, the value remains nil.
 
 ## Defining Engines
 
@@ -390,25 +372,7 @@ puts ctx[:destroy] # => nil (no permission)
 
 ## Best Practices
 
-### 1. Deny by Default
-
-Never explicitly deny in rules. Only grant when conditions are met:
-
-```ruby
-# Bad: Explicit deny
-rule "deny_guests" do
-  when_all(not(user(:authenticated?)))
-  set :update, false
-end
-
-# Good: Only grant when appropriate
-rule "auth_update" do
-  when_all(user(:authenticated?))
-  set :update, true
-end
-```
-
-### 2. Use Descriptive Names
+### 1. Use Descriptive Names
 
 ```ruby
 rule "admin_destroy" do
@@ -420,7 +384,7 @@ rule "user_destroy" do
 end
 ```
 
-### 3. Keep Rules Focused
+### 2. Keep Rules Focused
 
 Each rule should have a single responsibility:
 
@@ -436,7 +400,7 @@ rule "verified_user_create" do
 end
 ```
 
-### 4. Use Salience for Priority
+### 3. Use Salience for Priority
 
 Higher salience rules fire first:
 
@@ -456,7 +420,7 @@ rule "apply_vip_discount", salience: 20 do
 end
 ```
 
-### 5. Use `no_loop` to Prevent Infinite Firing
+### 4. Use `no_loop` to Prevent Infinite Firing
 
 If a rule's action could make its own condition true again, use `no_loop`:
 
