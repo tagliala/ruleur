@@ -49,14 +49,14 @@ result[:admin_access]  # => true or nil
 
 ```ruby
 engine = Ruleur.define do
-rule "staff_access" do
-  when_any(
-    user(:admin?),
-    user(:moderator?),
-    user(:support?)
-  )
-  set :staff_access, true
-end
+  rule "staff_access" do
+    when_any(
+      user(:admin?),
+      user(:moderator?),
+      user(:support?)
+    )
+    set :staff_access, true
+  end
 end
 ```
 
@@ -66,13 +66,13 @@ end
 
 ```ruby
 engine = Ruleur.define do
-rule "owner_update" do
-  when_all(
-    user(:owns?, record),
-    not(record(:locked?))
-  )
-  set :update, true
-end
+  rule "owner_update" do
+    when_all(
+      user(:owns?, record),
+      not(record(:locked?))
+    )
+    set :update, true
+  end
 end
 
 result = engine.run(user: current_user, record: post)
@@ -83,16 +83,16 @@ result[:update]  # => true or nil
 
 ```ruby
 engine = Ruleur.define do
-rule "admin_or_owner_destroy" do
-  when_any(
-    user(:admin?),
-    all(
-      user(:owns?, record),
-      record(:deletable?)
+  rule "admin_or_owner_destroy" do
+    when_any(
+      user(:admin?),
+      all(
+        user(:owns?, record),
+        record(:deletable?)
+      )
     )
-  )
-  set :destroy, true
-end
+    set :destroy, true
+  end
 end
 ```
 
@@ -102,27 +102,27 @@ end
 
 ```ruby
 engine = Ruleur.define do
-rule "authenticated_show" do
-  when_all(user(:authenticated?))
-  set :show, true
-end
+  rule "authenticated_show" do
+    when_all(user(:authenticated?))
+    set :show, true
+  end
 
-rule "contributor_update" do
-  when_any(
-    user(:contributor?),
-    user(:maintainer?),
-    user(:admin?)
-  )
-  set :update, true
-end
+  rule "contributor_update" do
+    when_any(
+      user(:contributor?),
+      user(:maintainer?),
+      user(:admin?)
+    )
+    set :update, true
+  end
 
-rule "maintainer_destroy" do
-  when_any(
-    user(:maintainer?),
-    user(:admin?)
-  )
-  set :destroy, true
-end
+  rule "maintainer_destroy" do
+    when_any(
+      user(:maintainer?),
+      user(:admin?)
+    )
+    set :destroy, true
+  end
 end
 ```
 
@@ -220,45 +220,45 @@ end
 class BlogPolicy
   def self.engine
     @engine ||= Ruleur.define do
-rule "published_show" do
-  when_all(record(:published?))
-  set :show, true
-end
+      rule "published_show" do
+        when_all(record(:published?))
+        set :show, true
+      end
 
-rule "own_draft_show" do
-  when_all(
-    user(:owns?, record),
-    record(:draft?)
-  )
-  set :show, true
-end
+      rule "own_draft_show" do
+        when_all(
+          user(:owns?, record),
+          record(:draft?)
+        )
+        set :show, true
+      end
 
-rule "own_draft_update" do
-  when_all(
-    user(:owns?, record),
-    record(:draft?),
-    not(record(:locked?))
-  )
-  set :update, true
-  set :destroy, true
-end
+      rule "own_draft_update" do
+        when_all(
+          user(:owns?, record),
+          record(:draft?),
+          not(record(:locked?))
+        )
+        set :update, true
+        set :destroy, true
+      end
 
-rule "editor_update" do
-  when_all(
-    in_(user_val(:role), ["editor", "admin"]),
-    not(record(:archived?))
-  )
-  set :update, true
-  set :publish, true
-end
+      rule "editor_update" do
+        when_all(
+          in_(user_val(:role), ["editor", "admin"]),
+          not(record(:archived?))
+        )
+        set :update, true
+        set :publish, true
+      end
 
-rule "admin_crud" do
-  when_all(user(:admin?))
-  set :show, true
-  set :update, true
-  set :destroy, true
-  set :publish, true
-end
+      rule "admin_crud" do
+        when_all(user(:admin?))
+        set :show, true
+        set :update, true
+        set :destroy, true
+        set :publish, true
+      end
     end
   end
 
