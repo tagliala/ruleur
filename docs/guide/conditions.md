@@ -58,7 +58,7 @@ lt(rec_val(:price), 100)
 lte(rec_val(:stock), 5)
 
 # Collection membership
-in(rec_val(:status), lit(['draft', 'pending']))
+in_(rec_val(:status), ['draft', 'pending'])
 includes(rec_val(:roles), 'admin')
 
 # Pattern matching
@@ -240,7 +240,7 @@ For comparisons and complex checks:
 rule "explicit" do
   when_all(
     gte(rec_val(:age), 18),
-    in(rec_val(:status), lit(['active', 'trial']))
+    in_(rec_val(:status), ['active', 'trial'])
   )
 end
 ```
@@ -321,11 +321,11 @@ Conditions operate on **values** from the execution context.
 
 ### Literal Values
 
-Use `lit()` to reference constant values:
+Use values directly (strings, numbers, arrays):
 
 ```ruby
-eq(rec_val(:status), "published")  # "published" is auto-wrapped in lit()
-in(rec_val(:role), lit(['admin', 'editor']))  # Explicit lit() for array
+eq(rec_val(:status), "published")  # String value
+in_(rec_val(:role), ['admin', 'editor'])  # Array value
 ```
 
 ### Context References

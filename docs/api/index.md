@@ -46,7 +46,9 @@ If you're new to Ruleur, we recommend starting with the [Getting Started Guide](
 engine = Ruleur.define do
   rule "example" do
     when_all(condition)
-    action { # ... }
+    action do
+      # ...
+    end
   end
 end
 

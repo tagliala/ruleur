@@ -1,0 +1,65 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'fileutils'
+
+class DocsExamplesExtractor
+  # Extracts Ruby code blocks from markdown documentation files for linting.
+  def initialize(docs_dir, output_dir)
+    @docs_dir = docs_dir
+    @output_dir = output_dir
+  end
+
+  def extract
+    FileUtils.rm_rf(@output_dir)
+    FileUtils.mkdir_p(@output_dir)
+
+    file_num = 0
+
+    Dir.glob("#{@docs_dir}/**/*.md").each do |md_file|
+      content = File.read(md_file)
+      file_num = extract_blocks(content, md_file, file_num)
+    end
+
+    puts "Extracted #{file_num} code blocks to #{@output_dir}"
+    file_num
+  end
+
+  private
+
+  def extract_blocks(content, md_file, start_num)
+    in_block = false
+    block_content = []
+    block_count = 0
+    file_num = start_num
+
+    content.each_line do |line|
+      if line.strip == '```ruby'
+        in_block = true
+        block_content = []
+      elsif line.strip == '```' && in_block
+        in_block = false
+        block_count += 1
+        file_num += 1
+        filename = "#{file_num.to_s.rjust(3, '0')}_#{block_count}_#{File.basename(md_file, '.md')}.rb"
+        write_file(filename, block_content.join)
+      elsif in_block
+        block_content << line
+      end
+    end
+
+    file_num
+  end
+
+  def write_file(filename, content)
+    File.write(File.join(@output_dir, filename), content)
+  end
+end
+
+if __FILE__ == $PROGRAM_NAME
+  docs_dir = ARGV[0] || 'docs'
+  output_dir = ARGV[1] || 'tmp/docs-examples'
+
+  extractor = DocsExamplesExtractor.new(docs_dir, output_dir)
+  extractor.extract
+end

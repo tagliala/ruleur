@@ -161,18 +161,16 @@ Checks if left value is included in the right collection. The right operand must
 ```ruby
 rule "valid_status" do
   when_all(
-    in(rec_val(:status), lit(['draft', 'pending', 'published']))
+    in_(rec_val(:status), ['draft', 'pending', 'published'])
   )
-  allow! :edit
+  set :edit, true
 end
 ```
 
 **Examples:**
 ```ruby
-in(lit('draft'), lit(['draft', 'published']))  # => true
-in(lit('archived'), lit(['draft', 'published'])) # => false
-in(rec_val(:status), lit(['active', 'pending'])) # => true if status in array
-in(lit(5), lit([1, 2, 3, 4, 5])) # => true
+in_(ref(:record), ['draft', 'published'])  # => true if record is in array
+in_(rec_val(:status), ['active', 'pending']) # => true if status in array
 ```
 
 ### `includes` - Collection Includes Value
@@ -361,9 +359,9 @@ For more complex comparisons, use operators directly:
 rule "age_and_status" do
   when_all(
     gte(rec_val(:age), 18),
-    in(rec_val(:status), lit(['active', 'premium']))
+    in_(rec_val(:status), ['active', 'premium'])
   )
-  allow! :purchase
+  set :purchase, true
 end
 ```
 
@@ -373,12 +371,12 @@ end
 rule "complex_eligibility" do
   when_all(
     gte(rec_val(:age), 21),                    # Age >= 21
-    in(rec_val(:country), lit(['US', 'CA'])),  # Country is US or CA
-    present(rec_val(:email)),                  # Email is present
-    matches(rec_val(:email), lit(/\@example\.com$/)), # Email domain check
-    ne(rec_val(:status), "banned")             # Not banned
+    in_(rec_val(:country), ['US', 'CA']),     # Country is US or CA
+    present(rec_val(:email)),                   # Email is present
+    matches(rec_val(:email), /\@example\.com$/), # Email domain check
+    ne(rec_val(:status), 'banned')             # Not banned
   )
-  allow! :vip_access
+  set :vip_access, true
 end
 ```
 
@@ -387,14 +385,14 @@ end
 | Operator | Category | Description | Example |
 |----------|----------|-------------|---------|
 | `eq` | Comparison | Equals | `eq(rec_val(:age), 18)` |
-| `ne` | Comparison | Not equals | `ne(rec_val(:status), "archived")` |
+| `ne` | Comparison | Not equals | `ne(rec_val(:status), 'archived')` |
 | `gt` | Comparison | Greater than | `gt(rec_val(:price), 100)` |
 | `gte` | Comparison | Greater than or equal | `gte(rec_val(:age), 18)` |
 | `lt` | Comparison | Less than | `lt(rec_val(:stock), 10)` |
 | `lte` | Comparison | Less than or equal | `lte(rec_val(:weight), 50)` |
-| `in` | Collection | Value in collection | `in(rec_val(:status), lit(['draft', 'pending']))` |
+| `in_` | Collection | Value in collection | `in_(rec_val(:status), ['draft', 'pending'])` |
 | `includes` | Collection | Collection includes value | `includes(rec_val(:tags), 'featured')` |
-| `matches` | Collection | Regex match | `matches(rec_val(:email), lit(/\@example\.com$/))` |
+| `matches` | Collection | Regex match | `matches(rec_val(:email), /\@example\.com$/)` |
 | `truthy` | Predicate | Is truthy | `truthy(rec(:published?))` |
 | `falsy` | Predicate | Is falsy | `falsy(rec(:locked?))` |
 | `present` | Predicate | Not nil/empty | `present(rec_val(:name))` |
@@ -546,12 +544,12 @@ end
 
 ### 5. Use Literals for Constants
 
-Wrap constant values in `lit()` for clarity in complex expressions:
+For clarity, use literal values directly:
 
 ```ruby
 rule "status_check" do
   when_all(
-    in(rec_val(:status), lit(['draft', 'pending', 'published']))
+    in_(rec_val(:status), ['draft', 'pending', 'published'])
   )
 end
 ```

@@ -435,7 +435,7 @@ repo.save(rule, user: 'user', change_description: 'update')
 repo.save(
   rule,
   user: "#{current_user.name} <#{current_user.email}>",
-  change_description: "Fixed draft document permission check - now correctly allows authors to edit their own drafts (fixes #123)"
+  change_description: 'Fixed draft permission check - authors can edit own drafts (fixes #123)'
 )
 ```
 

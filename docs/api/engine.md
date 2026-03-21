@@ -56,7 +56,9 @@ The recommended way to create an engine is using the DSL:
 engine = Ruleur.define do
   rule "rule_name" do
     when_all(condition)
-    action { # action code }
+    action do
+      # action code
+    end
   end
 end
 ```

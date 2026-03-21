@@ -264,12 +264,12 @@ end
 ```
 
 ::: tip
-The `action` method can also be written as `then` for readability:
+The `action` method provides a block for executing code:
 
 ```ruby
 rule "apply_discount" do
   when_all(user(:premium?))
-  then do |ctx|
+  action do |ctx|
     ctx[:discount] = 0.20
   end
 end

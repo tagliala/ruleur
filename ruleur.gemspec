@@ -30,5 +30,5 @@ Gem::Specification.new do |gem|
   gem.metadata['changelog_uri'] = 'https://github.com/tagliala/ruleur/blob/main/CHANGELOG.md'
   gem.metadata['source_code_uri'] = 'https://github.com/tagliala/ruleur'
 
-  gem.required_ruby_version = '>= 3.1'
+  gem.required_ruby_version = '>= 3.2'
 end

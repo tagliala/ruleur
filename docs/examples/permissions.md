@@ -132,26 +132,26 @@ end
 
 ```ruby
 engine = Ruleur.define do
-rule "standard_approve", salience: 10 do
-  when_all(
-    user(:role).in(["approver", "admin"]),
-    not(eq(record_val(:author_id), user_val(:id))),
-    eq(record_val(:status), "pending_approval"),
-    record(:complete?),
-    gte(lit(Time.current.hour), 9),
-    lt(lit(Time.current.hour), 17)
-  )
-  set :approve, true
-end
+  rule "standard_approve", salience: 10 do
+    when_all(
+      in_(user_val(:role), ['approver', 'admin']),
+      not(eq(record_val(:author_id), user_val(:id))),
+      eq(record_val(:status), 'pending_approval'),
+      record(:complete?),
+      gte(Time.current.hour, 9),
+      lt(Time.current.hour, 17)
+    )
+    set :approve, true
+  end
 
-rule "emergency_approve", salience: 20 do
-  when_all(
-    user(:admin?),
-    eq(record_val(:status), "pending_approval"),
-    flag(:emergency_mode)
-  )
-  set :approve, true
-end
+  rule "emergency_approve", salience: 20 do
+    when_all(
+      user(:admin?),
+      eq(record_val(:status), 'pending_approval'),
+      flag(:emergency_mode)
+    )
+    set :approve, true
+  end
 end
 ```
 
@@ -161,31 +161,33 @@ end
 
 ```ruby
 engine = Ruleur.define do
-rule "basic_features" do
-  when_all(user(:subscription, :active?))
-  set :basic_export, true
-  set :basic_analytics, true
-end
+  rule "basic_features" do
+    when_all(
+      user(:subscription_active?)
+    )
+    set :basic_export, true
+    set :basic_analytics, true
+  end
 
-rule "premium_features" do
-  when_all(
-    user(:subscription, :tier).in(["premium", "enterprise"]),
-    user(:subscription, :active?)
-  )
-  set :advanced_export, true
-  set :custom_reports, true
-  set :api_access, true
-end
+  rule "premium_features" do
+    when_all(
+      in_(user_val(:subscription_tier), ['premium', 'enterprise']),
+      user(:subscription_active?)
+    )
+    set :advanced_export, true
+    set :custom_reports, true
+    set :api_access, true
+  end
 
-rule "enterprise_features" do
-  when_all(
-    user(:subscription, :tier).equals("enterprise"),
-    user(:subscription, :active?)
-  )
-  set :white_label, true
-  set :sso, true
-  set :audit_logs, true
-end
+  rule "enterprise_features" do
+    when_all(
+      eq(user_val(:subscription_tier), 'enterprise'),
+      user(:subscription_active?)
+    )
+    set :white_label, true
+    set :sso, true
+    set :audit_logs, true
+  end
 end
 ```
 
@@ -195,20 +197,20 @@ end
 
 ```ruby
 engine = Ruleur.define do
-rule "business_hours_access" do
-  when_all(
-    user(:employee?),
-    in(lit(Time.current.wday), [1, 2, 3, 4, 5]),
-    gte(lit(Time.current.hour), 9),
-    lt(lit(Time.current.hour), 17)
-  )
-  set :system_access, true
-end
+  rule "business_hours_access" do
+    when_all(
+      user(:employee?),
+      in_([1, 2, 3, 4, 5], [Time.current.wday]),
+      gte(Time.current.hour, 9),
+      lt(Time.current.hour, 17)
+    )
+    set :system_access, true
+  end
 
-rule "after_hours_admin" do
-  when_all(user(:admin?))
-  set :system_access, true
-end
+  rule "after_hours_admin" do
+    when_all(user(:admin?))
+    set :system_access, true
+  end
 end
 ```
 
@@ -243,7 +245,7 @@ end
 
 rule "editor_update" do
   when_all(
-    user(:role).in(["editor", "admin"]),
+    in_(user_val(:role), ["editor", "admin"]),
     not(record(:archived?))
   )
   set :update, true

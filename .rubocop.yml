@@ -5,7 +5,7 @@ plugins:
   - rubocop-rspec
 
 AllCops:
-  TargetRubyVersion: 3.1
+  TargetRubyVersion: 3.2
   NewCops: enable
   Exclude:
     - .git/**/*
@@ -13,6 +13,7 @@ AllCops:
     - test/rails_app/**/*
     - tmp/**/*
     - vendor/**/*
+    - bin/**/*
 
 Metrics/AbcSize:
   Exclude:

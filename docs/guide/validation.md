@@ -67,8 +67,8 @@ Validates a rule hash (serialized format) before deserialization. Useful for val
 ```ruby
 rule_hash = {
   name: 'test_rule',
-  condition: { type: 'pred', op: 'truthy', left: {...}, right: nil },
-  action: { set: { allow_test: true } }
+  condition: { type: 'pred', op: 'truthy', left: { type: 'ref', root: 'user' }, right: nil },
+  action: { set: { test: true } }
 }
 
 result = Ruleur::Validation.validate_hash(rule_hash)

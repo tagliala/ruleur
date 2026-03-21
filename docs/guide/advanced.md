@@ -249,17 +249,16 @@ end
 Use consistent tag hierarchies:
 
 ```ruby
-# Domain tags
-tags: ['user', 'permissions']
-tags: ['order', 'payment']
-tags: ['document', 'workflow']
+rule "process_user", tags: ['user', 'permissions'] do
+  when_all(user(:active?))
+  set :can_access, true
+end
 
-# Type tags
-tags: ['validation', 'constraint']
-tags: ['transformation', 'calculation']
-tags: ['authorization', 'access-control']
-
-# Environment tags
+rule "process_order", tags: ['order', 'payment'] do
+  when_all(order(:pending?))
+  set :can_charge, true
+end
+```
 tags: ['production', 'critical']
 tags: ['experimental', 'beta']
 ```
