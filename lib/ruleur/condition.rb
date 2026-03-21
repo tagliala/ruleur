@@ -125,8 +125,8 @@ module Ruleur
       end
 
       # Call a method on resolved receiver with (possibly ref) args
-      def call(receiver, method, *args)
-        Call.new(receiver, method, *args)
+      def call(receiver, method, *)
+        Call.new(receiver, method, *)
       end
 
       def lambda_value(&block)

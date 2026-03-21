@@ -141,9 +141,9 @@ module Ruleur
         @engine = Engine.new
       end
 
-      def rule(name, salience: 0, tags: [], no_loop: false, &block)
+      def rule(name, salience: 0, tags: [], no_loop: false, &)
         rb = RuleBuilder.new(name, salience: salience, tags: tags, no_loop: no_loop)
-        rb.instance_eval(&block)
+        rb.instance_eval(&)
         @engine.add_rule(rb.build)
       end
 
