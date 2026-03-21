@@ -17,7 +17,7 @@ All child conditions must be true.
 
 ```ruby
 match do
-  all(
+  all?(
     user(:admin?),
     record(:published?),
     record(:approved?)
@@ -31,7 +31,7 @@ At least one child condition must be true.
 
 ```ruby
 match do
-  any(
+  any?(
     user(:admin?),
     user(:owner?, record)
   )
@@ -44,7 +44,7 @@ Inverts the child condition.
 
 ```ruby
 match do
-  all(
+  all?(
     not?(record(:archived?)),
     record(:active?)
   )
@@ -154,15 +154,15 @@ Conditions can be nested to arbitrary depth:
 
 ```ruby
 match do
-        any(
-      all(
+        any?(
+      all?(
         user(:admin?),
         not?(record(:locked?))
       ),
-    all(
+    all?(
       user(:owner?, record),
       record(:editable?),
-      any(
+      any?(
         flag(:force_edit),
         not?(record(:published?))
       )
@@ -213,7 +213,7 @@ not?(record(:draft?))
 ```ruby
 rule "admin_only" do
   match do
-    all(user(:admin?))
+    all?(user(:admin?))
   end
 
   execute do
@@ -227,7 +227,7 @@ end
 ```ruby
 rule "bulk_discount" do
   match do
-    all(
+    all?(
       order(:total).gt?(500),
       order(:items_count).gt?(10)
     )
@@ -244,14 +244,14 @@ end
 ```ruby
 rule "can_edit" do
   match do
-    any(
+    any?(
       # Admin can always edit
       user(:admin?),
       # Owner can edit if not locked and either draft or has force flag
-      all(
+      all?(
         user(:owner?, record),
       not?(record(:locked?)),
-       any(
+       any?(
          record(:draft?),
          flag(:force_edit)
        )
@@ -270,7 +270,7 @@ end
 ```ruby
 rule "premium_feature" do
   match do
-    all(
+    all?(
       user(:subscription, :active?),
       user(:subscription, :tier).eq?("premium"),
       feature(:enabled?),

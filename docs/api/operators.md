@@ -187,7 +187,7 @@ calculator(:compute, value1, value2, operator: :add)
 ```ruby
 rule "example" do
   match do
-    all(
+    all?(
     order(:total).gt?(100),
     user(:email).matches(/@company\.com$/),
     user(:roles).includes("premium")
@@ -222,13 +222,13 @@ Document how to create custom operators and extend the operator system.
 
 ## Operator Precedence
 
-When combining operators, use explicit grouping with `all()` and `any()`:
+When combining operators, use explicit grouping with `all?()` and `any?()`:
 
 ```ruby
 # Clear precedence with grouping
 match do
-  all(
-  any(
+  all?(
+  any?(
     user(:admin?),
     user(:moderator?)
   ),
@@ -244,7 +244,7 @@ end
 ```ruby
 rule "medium_order" do
   match do
-    all(
+    all?(
     order(:total).gte?(50),
     order(:total).lt?(200)
   )
@@ -258,7 +258,7 @@ end
 ```ruby
 rule "valid_email" do
   match do
-    all(
+    all?(
     user(:email).present,
     user(:email).matches(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i)
   )
@@ -272,7 +272,7 @@ end
 ```ruby
 rule "can_approve" do
   match do
-    all(
+    all?(
     user(:roles).includes("approver"),
     document(:status).in(["pending", "submitted"]),
     not?(document(:approved_at).present)
@@ -287,7 +287,7 @@ end
 ```ruby
 rule "process_data" do
   match do
-    all(
+    all?(
     input(:data).present,
     input(:data).is_a(Hash),
     input(:data, :items).is_a(Array),

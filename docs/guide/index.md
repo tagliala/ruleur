@@ -41,12 +41,12 @@ Salience, no-loop, tracing, and performance optimization.
 ```ruby
 # Permission check
 match do
-  any(user(:admin?), record(:public?))
+  any?(user(:admin?), record(:public?))
 end
 
 # Ownership check
 match do
-  all(
+  all?(
   eq?(record_value(:owner_id), user_value(:id)),
   record(:active?)
 )
@@ -54,7 +54,7 @@ end
 
 # Range check
 match do
-  all(
+  all?(
   gte?(record_value(:price), 100),
   lte?(record_value(:price), 1000)
 )

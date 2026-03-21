@@ -103,7 +103,7 @@ The recommended way to create rules is using the DSL within `Ruleur.define`:
 engine = Ruleur.define do
   rule "discount_rule", salience: 10, tags: [:pricing] do
     match do
-      all(
+      all?(
       customer(:vip?),
       order(:total).gt?(100)
     )
@@ -161,9 +161,9 @@ end
 ```ruby
 rule "shipping_discount" do
   match do
-    all(
+    all?(
     order(:total).gt?(50),
-    any(
+    any?(
       customer(:premium?),
       order(:items_count).gt?(3)
     )
@@ -180,7 +180,7 @@ end
 ```ruby
 rule "approval_workflow" do
   match do
-    all(
+    all?(
     document(:ready_for_review?),
     not?(document(:approved?))
   )

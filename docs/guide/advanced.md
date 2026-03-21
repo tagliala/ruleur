@@ -12,7 +12,7 @@ This guide covers advanced features and techniques for working with Ruleur, incl
 engine = Ruleur.define do
   rule "low_priority", salience: 0 do
     match do
-      all(user(:logged_in?))
+      all?(user(:logged_in?))
     end
     execute do
       set :priority, "low"
@@ -21,7 +21,7 @@ engine = Ruleur.define do
   
   rule "high_priority", salience: 100 do
     match do
-      all(user(:admin?))
+      all?(user(:admin?))
     end
     execute do
       set :priority, "high"
@@ -104,7 +104,7 @@ Without no-loop, a rule might fire repeatedly if its action makes its condition 
 # Without no_loop - could fire multiple times!
 rule "increment_counter" do
   match do
-    all(lt(ref(:counter), 10))
+    all?(lt(ref(:counter), 10))
   end
   execute do |ctx|
     ctx[:counter] = (ctx[:counter] || 0) + 1
@@ -117,7 +117,7 @@ end
 ```ruby
 rule "increment_counter", no_loop: true do
   match do
-    all(lt(ref(:counter), 10))
+    all?(lt(ref(:counter), 10))
   end
   execute do |ctx|
     ctx[:counter] = (ctx[:counter] || 0) + 1
@@ -139,7 +139,7 @@ Use `no_loop: true` when:
 ```ruby
 rule "grant_base_permissions", no_loop: true do
   match do
-    all(user(:registered?))
+    all?(user(:registered?))
   end
   execute do
     set :view, true
@@ -149,7 +149,7 @@ end
 
 rule "grant_premium_permissions", no_loop: true do
   match do
-    all(
+    all?(
       user(:premium?),
       flag(:view)  # Depends on previous rule
     )
@@ -221,7 +221,7 @@ cycles = 0
 engine = Ruleur.define do
   rule "count_cycles", no_loop: false do
     match do
-      all(lt(ref(:counter), 100))
+      all?(lt(ref(:counter), 100))
     end
     execute do |ctx|
       ctx[:counter] = (ctx[:counter] || 0) + 1
@@ -242,13 +242,13 @@ Organize rules with tags:
 engine = Ruleur.define do
   rule "admin_check", tags: ['permissions', 'admin'] do
     match do
-      all() # placeholder
+      all?() # placeholder
     end
   end
   
   rule "payment_rule", tags: ['payment', 'validation'] do
     match do
-      all() # placeholder
+      all?() # placeholder
     end
   end
 end
@@ -273,7 +273,7 @@ Use consistent tag hierarchies:
 ```ruby
 rule "process_user", tags: ['user', 'permissions'] do
   match do
-    all(user(:active?))
+    all?(user(:active?))
   end
   execute do
     set :can_access, true
@@ -282,7 +282,7 @@ end
 
 rule "process_order", tags: ['order', 'payment'] do
   match do
-    all(order(:pending?))
+    all?(order(:pending?))
   end
   execute do
     set :can_charge, true
@@ -352,7 +352,7 @@ Fewer rules = faster execution:
 # Good - single rule
 rule "permission_check" do
   match do
-    any(
+    any?(
       user(:admin?),
       user(:editor?),
       user(:owner?)
@@ -366,7 +366,7 @@ end
 # Less efficient - three rules
 rule "admin_edit" do
   match do
-    all(user(:admin?))
+    all?(user(:admin?))
   end
   execute do
     set :edit, true
@@ -375,7 +375,7 @@ end
 
 rule "editor_edit" do
   match do
-    all(user(:editor?))
+    all?(user(:editor?))
   end
   execute do
     set :edit, true
@@ -384,7 +384,7 @@ end
 
 rule "owner_edit" do
   match do
-    all(user(:owner?))
+    all?(user(:owner?))
   end
   execute do
     set :edit, true
@@ -399,7 +399,7 @@ Put cheap, likely-to-fail checks first:
 ```ruby
 # Good - cheap check first
 match do
-  all(
+  all?(
     user(:logged_in?),        # Fast boolean check
     present?(record_value(:title)), # Fast presence check
     expensive_db_query()      # Slow check last
@@ -408,7 +408,7 @@ end
 
 # Less efficient - expensive check first
 match do
-  all(
+  all?(
     expensive_db_query(),
     user(:logged_in?)
   )
@@ -468,7 +468,7 @@ Avoid expensive computations in conditions:
 ```ruby
 # Bad - computed on every evaluation
 match do
-  all(
+  all?(
     gt?(record_value(:items).sum(&:price), 1000)
   )
 end
@@ -479,7 +479,7 @@ ctx = engine.run(user: user, recordord: recordord, total: total)
 
 rule "high_value_order" do
   match do
-    all(gt?(ref(:total), 1000))
+    all?(gt?(ref(:total), 1000))
   end
 end
 ```
@@ -502,7 +502,7 @@ Evaluate conditions outside the engine:
 ctx = Ruleur::Context.new(user: user, recordord: recordord)
 
 # Test condition
-condition = all(user(:admin?), record(:published?))
+condition = all?(user(:admin?), record(:published?))
 result = condition.evaluate(ctx)
 
 puts "Condition result: #{result}"  # => true/false
@@ -563,7 +563,7 @@ end
 # Use in rule
 rule "age_range_check" do
   match do
-    all(
+    all?(
       predicate do
         left = record_value(:age)
         right = lit(18..65)

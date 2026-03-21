@@ -46,7 +46,7 @@ If you're new to Ruleur, we recommend starting with the [Getting Started Guide](
 engine = Ruleur.define do
   rule "example" do
     match do
-      all(condition)
+      all?(condition)
     end
     execute do
       # ...

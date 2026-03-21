@@ -10,9 +10,9 @@ require "ruleur"
 engine = Ruleur.define do
   rule "admin_create", no_loop: true do
     match do
-      any(
+      any?(
         user(:admin?),
-        all(record(:updatable?), record(:draft?))
+        all?(record(:updatable?), record(:draft?))
       )
     end
 
@@ -58,7 +58,7 @@ Each rule has:
 ```ruby
 rule "rule_name", salience: 10, tags: ['permissions'], no_loop: true do
   match do
-    all(
+    all?(
       # conditions go here
     )
   end
@@ -147,7 +147,7 @@ This is useful for chaining rules - one rule sets `:create`, another checks it:
 ```ruby
 rule "admin_create" do
   match do
-    any(user(:admin?))
+    any?(user(:admin?))
   end
 
   execute do
@@ -157,7 +157,7 @@ end
 
 rule "draft_update" do
   match do
-    all(
+    all?(
       flag(:create),
       record(:draft?)
     )
@@ -178,7 +178,7 @@ Conditions determine when a rule fires. Use `match` with `all`/`any` builders or
 ```ruby
 rule "admin_update" do
   match do
-    all(
+    all?(
       user(:admin?),
       record(:published?),
       not?(record(:locked?))
@@ -198,7 +198,7 @@ All conditions must be truthy for the rule to fire.
 ```ruby
 rule "editor_show" do
   match do
-    any(
+    any?(
       user(:admin?),
       record(:public?),
       eq?(record_value(:owner_id), user_value(:id))
@@ -220,12 +220,12 @@ You can nest `all` and `any` within `when_all` or `when_any`:
 ```ruby
 rule "editor_update" do
   match do
-    all(
-      any(
+    all?(
+      any?(
         user(:admin?),
         user(:editor?)
       ),
-      all(
+      all?(
         record(:published?),
         not?(record(:archived?))
       )
@@ -245,7 +245,7 @@ For more complex comparisons, use operators directly:
 ```ruby
 rule "premium_purchase" do
   match do
-    all(
+    all?(
       gte(record_value(:age), 18),
       eq?(record_value(:country), 'US'),
       includes(literal(['active', 'trial']), record_value(:status))
@@ -268,7 +268,7 @@ Actions define what happens when a rule fires. Use the `set` method or `action` 
 ```ruby
 rule "set_discount" do
   match do
-    all(user(:premium?))
+    all?(user(:premium?))
   end
   execute do
     set :discount, 0.20
@@ -281,7 +281,7 @@ end
 ```ruby
 rule "set_defaults" do
   match do
-    all(record(:new?))
+    all?(record(:new?))
   end
   execute do
     assert(
@@ -300,7 +300,7 @@ For more complex logic, use an `action` block:
 ```ruby
 rule "calculate_total" do
   match do
-    all(record(:items))
+    all?(record(:items))
   end
   execute do |ctx|
     items = ctx[:record].items
@@ -318,7 +318,7 @@ The `action` method provides a block for executing code:
 ```ruby
 rule "apply_discount" do
   match do
-    all(user(:premium?))
+    all?(user(:premium?))
   end
   execute do |ctx|
     ctx[:discount] = 0.20
@@ -351,7 +351,7 @@ Rules can reference any context key using `ref`:
 ```ruby
 rule "check_custom" do
   match do
-    all(
+    all?(
       eq?(ref(:custom_value), 123)
     )
   end
@@ -382,7 +382,7 @@ end
 engine = Ruleur.define do
   rule "admin_crud", salience: 100 do
     match do
-      all(user(:admin?))
+      all?(user(:admin?))
     end
     execute do
       set :create, true
@@ -394,7 +394,7 @@ engine = Ruleur.define do
 
   rule "editor_create_update", salience: 50 do
     match do
-      all(
+      all?(
         user(:editor?),
         record(:draft?)
       )
@@ -407,7 +407,7 @@ engine = Ruleur.define do
 
   rule "owner_update" do
     match do
-      all(
+      all?(
         record(:draft?),
         not?(record(:locked?)),
         eq?(record_value(:owner_id), user_value(:id))
@@ -420,9 +420,9 @@ engine = Ruleur.define do
 
   rule "editor_published_update" do
     match do
-      all(
+      all?(
         record(:published?),
-        any(user(:admin?), user(:editor?))
+        any?(user(:admin?), user(:editor?))
       )
     end
     execute do
@@ -462,7 +462,7 @@ Each rule should have a single responsibility:
 ```ruby
 rule "admin_create" do
   match do
-    all(user(:admin?))
+    all?(user(:admin?))
   end
   execute do
     set :create, true
@@ -471,7 +471,7 @@ end
 
 rule "verified_user_create" do
   match do
-    all(user(:verified?))
+    all?(user(:verified?))
   end
   execute do
     set :create, true
@@ -492,7 +492,7 @@ end
 
 rule "apply_premium_discount", salience: 10 do
   match do
-    all(user(:premium?))
+    all?(user(:premium?))
   end
   execute do
     set :discount, 0.15
@@ -501,7 +501,7 @@ end
 
 rule "apply_vip_discount", salience: 20 do
   match do
-    all(user(:vip?))
+    all?(user(:vip?))
   end
   execute do
     set :discount, 0.30
@@ -516,7 +516,7 @@ If a rule's action could make its own condition true again, use `no_loop`:
 ```ruby
 rule "increment_counter", no_loop: true do
   match do
-    all(lt(ref(:counter), 100))
+    all?(lt(ref(:counter), 100))
   end
   execute do |ctx|
     ctx[:counter] = (ctx[:counter] || 0) + 1

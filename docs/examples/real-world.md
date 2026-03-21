@@ -30,7 +30,7 @@ class OrderValidationEngine
       # Inventory Check
       rule "check_inventory", salience: 100 do
         match do
-          all(
+          all?(
             order(:items).present,
             order(:items_in_stock?)
           )
@@ -43,7 +43,7 @@ class OrderValidationEngine
       
       rule "insufficient_inventory", salience: 100 do
         match do
-          all(
+          all?(
             order(:items).present,
             not?(order(:items_in_stock?))
           )
@@ -59,7 +59,7 @@ class OrderValidationEngine
       # Customer Validation
       rule "validate_customer", salience: 90 do
         match do
-          all(
+          all?(
             flag(:inventory_valid),
             customer(:active?),
             not?(customer(:suspended?))
@@ -73,7 +73,7 @@ class OrderValidationEngine
       
       rule "suspended_customer", salience: 90 do
         match do
-          all(customer(:suspended?))
+          all?(customer(:suspended?))
         end
         execute do
           set :validation_failed, true
@@ -85,7 +85,7 @@ class OrderValidationEngine
       # Payment Method Validation
       rule "validate_payment", salience: 80 do
         match do
-          all(
+          all?(
             flag(:customer_valid),
             order(:payment_method).present,
             order(:payment_valid?)
@@ -100,7 +100,7 @@ class OrderValidationEngine
       # Regional Restrictions
       rule "check_shipping_restrictions", salience: 70 do
         match do
-          all(
+          all?(
             flag(:payment_valid),
             order(:shipping_address).present
           )
@@ -123,7 +123,7 @@ class OrderValidationEngine
       # Business Days Check
       rule "business_days_validation", salience: 60 do
         match do
-          all(
+          all?(
             flag(:shipping_valid),
             order(:expedited_shipping?)
           )
@@ -144,7 +144,7 @@ class OrderValidationEngine
       # Final Validation
       rule "order_valid", salience: 10 do
         match do
-          all(
+          all?(
             flag(:inventory_valid),
             flag(:customer_valid),
             flag(:payment_valid),
@@ -211,7 +211,7 @@ class FeatureAccessEngine
       # Basic Features (All tiers)
       rule "basic_features", salience: 100 do
         match do
-          all(user(:subscription, :active?))
+          all?(user(:subscription, :active?))
         end
         execute do
           allow! :dashboard
@@ -225,7 +225,7 @@ class FeatureAccessEngine
       # Pro Features
       rule "pro_features", salience: 90 do
         match do
-          all(
+          all?(
             user(:subscription, :tier).in(["pro", "enterprise"]),
             user(:subscription, :active?)
           )
@@ -244,7 +244,7 @@ class FeatureAccessEngine
       # Enterprise Features
       rule "enterprise_features", salience: 80 do
         match do
-          all(
+          all?(
             user(:subscription, :tier).eq?("enterprise"),
             user(:subscription, :active?)
           )
@@ -264,7 +264,7 @@ class FeatureAccessEngine
       # Trial Limitations
       rule "trial_limitations", salience: 110 do
         match do
-          all(
+          all?(
             user(:subscription, :trial?),
             user(:subscription, :active?)
           )
@@ -281,7 +281,7 @@ class FeatureAccessEngine
       # Add-on: Extra Storage
       rule "storage_addon", salience: 70 do
         match do
-          all(user(:has_addon?, "extra_storage"))
+          all?(user(:has_addon?, "extra_storage"))
         end
         execute do
           current_storage = context[:storage_gb] || 5
@@ -292,7 +292,7 @@ class FeatureAccessEngine
       # Add-on: API Access for Basic Users
       rule "api_addon", salience: 70 do
         match do
-          all(
+          all?(
             user(:subscription, :tier).eq?("basic"),
             user(:has_addon?, "api_access")
           )
@@ -306,7 +306,7 @@ class FeatureAccessEngine
       # Usage Limits
       rule "check_project_limit", salience: 50 do
         match do
-          all(
+          all?(
             flag(:max_projects).present,
             user(:projects_count).gte?(flag(:max_projects))
           )
@@ -320,7 +320,7 @@ class FeatureAccessEngine
       
       rule "check_storage_limit", salience: 50 do
         match do
-          all(
+          all?(
             flag(:storage_gb).present,
             user(:storage_used_gb).gte?(flag(:storage_gb))
           )
@@ -335,7 +335,7 @@ class FeatureAccessEngine
       # Expired Subscription
       rule "expired_subscription", salience: 120 do
         match do
-          all(not?(user(:subscription, :active?)))
+          all?(not?(user(:subscription, :active?)))
         end
         execute do
           allow! :dashboard
@@ -400,7 +400,7 @@ class ContentModerationEngine
       # Trusted User Auto-Approve
       rule "trusted_user_auto_approve", salience: 100 do
         match do
-          all(
+          all?(
             user(:trusted?),
             user(:violations_count).eq?(0),
             content(:type).in(["text", "image"])
@@ -416,8 +416,8 @@ class ContentModerationEngine
       # Spam Detection
       rule "spam_detection", salience: 110 do
         match do
-          all(
-            any(
+          all?(
+            any?(
               content(:contains_spam_keywords?),
               content(:excessive_links?),
               content(:repetitive_content?)
@@ -434,7 +434,7 @@ class ContentModerationEngine
       # Profanity Check
       rule "profanity_check", salience: 105 do
         match do
-          all(content(:contains_profanity?))
+          all?(content(:contains_profanity?))
         end
         execute do
           severity = context[:content].profanity_severity
@@ -452,7 +452,7 @@ class ContentModerationEngine
       # New User Content
       rule "new_user_review", salience: 90 do
         match do
-          all(
+          all?(
             user(:account_age_days).lt?(7),
             not?(flag(:auto_approved)),
             not?(flag(:moderation_action).present)
@@ -468,7 +468,7 @@ class ContentModerationEngine
       # Sensitive Content
       rule "sensitive_content", salience: 95 do
         match do
-          all(
+          all?(
             content(:type).in(["image", "video"]),
             content(:ai_flagged?)
           )
@@ -490,7 +490,7 @@ class ContentModerationEngine
       # Copyright Claims
       rule "copyright_check", salience: 100 do
         match do
-          all(
+          all?(
             content(:type).in(["image", "video", "audio"]),
             content(:copyright_match?)
           )
@@ -506,7 +506,7 @@ class ContentModerationEngine
       # Rate Limiting
       rule "rate_limit_exceeded", salience: 120 do
         match do
-          all(user(:posts_last_hour).gt?(10))
+          all?(user(:posts_last_hour).gt?(10))
         end
         execute do
           set :moderation_action, "rate_limit"
@@ -518,7 +518,7 @@ class ContentModerationEngine
       # Default: Queue for Review
       rule "default_review", salience: 1 do
         match do
-          all(not?(flag(:moderation_action).present))
+          all?(not?(flag(:moderation_action).present))
         end
         execute do
           set :moderation_action, "review"
@@ -588,7 +588,7 @@ class InsurancePolicyEngine
       # Base Risk Assessment
       rule "age_risk_low", salience: 100 do
         match do
-          all(
+          all?(
             applicant(:age).gte?(25),
             applicant(:age).lte?(60)
           )
@@ -598,8 +598,8 @@ class InsurancePolicyEngine
       
       rule "age_risk_high", salience: 100 do
         match do
-          all(
-            any(
+          all?(
+            any?(
               applicant(:age).lt?(25),
               applicant(:age).gt?(60)
             )
@@ -611,7 +611,7 @@ class InsurancePolicyEngine
       # Driving History
       rule "clean_driving_record", salience: 90 do
         match do
-          all(
+          all?(
             applicant(:accidents_last_5_years).eq?(0),
             applicant(:violations_last_3_years).eq?(0)
           )
@@ -624,7 +624,7 @@ class InsurancePolicyEngine
       
       rule "moderate_driving_risk", salience: 90 do
         match do
-          all(
+          all?(
             applicant(:accidents_last_5_years).in([1, 2]),
             applicant(:violations_last_3_years).lt?(3)
           )
@@ -634,8 +634,8 @@ class InsurancePolicyEngine
       
       rule "high_driving_risk", salience: 90 do
         match do
-          all(
-            any(
+          all?(
+            any?(
               applicant(:accidents_last_5_years).gt?(2),
               applicant(:violations_last_3_years).gte?(3),
               applicant(:dui_history?)
@@ -651,7 +651,7 @@ class InsurancePolicyEngine
       # Credit Score Impact
       rule "excellent_credit", salience: 85 do
         match do
-          all(
+          all?(
             applicant(:credit_score).gte?(750)
           )
         end
@@ -663,7 +663,7 @@ class InsurancePolicyEngine
       
       rule "poor_credit", salience: 85 do
         match do
-          all(
+          all?(
             applicant(:credit_score).lt?(600)
           )
         end
@@ -673,7 +673,7 @@ class InsurancePolicyEngine
       # Calculate Total Risk Score
       rule "calculate_risk", salience: 50, no_loop: true do
         match do
-          all(
+          all?(
             flag(:age_risk_score).present,
             flag(:driving_risk_score).present
           )
@@ -691,7 +691,7 @@ class InsurancePolicyEngine
       # Eligibility Determination
       rule "eligible_standard", salience: 40 do
         match do
-          all(
+          all?(
             flag(:total_risk_score).lt?(50),
             not?(flag(:requires_underwriting))
           )
@@ -704,7 +704,7 @@ class InsurancePolicyEngine
       
       rule "eligible_high_risk", salience: 40 do
         match do
-          all(
+          all?(
             flag(:total_risk_score).gte?(50),
             flag(:total_risk_score).lt?(80),
             not?(flag(:requires_underwriting))
@@ -718,8 +718,8 @@ class InsurancePolicyEngine
       
       rule "requires_manual_review", salience: 40 do
         match do
-          all(
-            any(
+          all?(
+            any?(
               flag(:total_risk_score).gte?(80),
               flag(:requires_underwriting)
             )
@@ -735,7 +735,7 @@ class InsurancePolicyEngine
       # Premium Calculation
       rule "calculate_premium", salience: 30 do
         match do
-          all(
+          all?(
             flag(:eligible),
             flag(:policy_tier).present
           )

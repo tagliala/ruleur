@@ -127,7 +127,7 @@ result = Ruleur::Validation.validate(rule)
 ```ruby
 # Contradictory conditions
 match do
-  all(
+  all?(
   user(:admin?),
   not?(user(:admin?))
 )
@@ -136,7 +136,7 @@ end
 
 # Unreachable condition
 match do
-  all(
+  all?(
   lit(false),
   user(:admin?)
 )
@@ -152,7 +152,7 @@ end
 engine = Ruleur.define do
   rule "example" do
     match do
-      all(user(:admin?))
+      all?(user(:admin?))
     end
     execute do allow! :access end
   end

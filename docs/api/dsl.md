@@ -7,7 +7,7 @@ The Ruleur Domain-Specific Language (DSL) provides a Ruby-friendly way to define
 The DSL consists of:
 - **Engine Definition**: `Ruleur.define` block
 - **Rule Definition**: `rule "name"` block
-- **Conditions**: use `match` with `all()`, `any()`, `not?()` builders
+  - **Conditions**: use `match` with `all?()`, `any?()`, `not?()` builders
 - **Actions**: `action` block with helper methods
 
 ## Engine Definition
@@ -40,7 +40,7 @@ Defines a rule within the engine.
 ```ruby
 rule "example", salience: 10, tags: [:important], no_loop: true do
   match do
-    all(conditions)
+    all?(conditions)
   end
   execute do
     # action code here
@@ -59,13 +59,13 @@ end
 
 ### Composite Conditions
 
-#### `all(*conditions)`
+#### `all?(*conditions)`
 
 All conditions must be true (AND). Wrap them in a `match` block in rules:
 
 ```ruby
   match do
-    all(
+    all?(
       user(:admin?),
       record(:published?),
       not?(record(:archived?))
@@ -73,13 +73,13 @@ All conditions must be true (AND). Wrap them in a `match` block in rules:
   end
 ```
 
-#### `any(*conditions)`
+#### `any?(*conditions)`
 
 At least one condition must be true (OR). Wrap them in a `match` block in rules:
 
 ```ruby
 match do
-  any(
+  any?(
     user(:admin?),
     user(:owner?, record),
     flag(:force_access)
@@ -87,15 +87,15 @@ match do
 end
 ```
 
-#### `all(*conditions)`
+#### `all?(*conditions)`
 
 Same as above but can be nested within `any`.
 
 ```ruby
 match do
-  any(
+  any?(
     user(:admin?),
-    all(
+    all?(
       user(:moderator?),
       record(:flagged?)
     )
@@ -103,14 +103,14 @@ match do
 end
 ```
 
-#### `any(*conditions)`
+#### `any?(*conditions)`
 
 Same as above but can be nested within `all`.
 
 ```ruby
 match do
-  all(
-    any(user(:admin?), user(:moderator?)),
+  all?(
+    any?(user(:admin?), user(:moderator?)),
     record(:published?)
   )
 end
@@ -122,7 +122,7 @@ Negates a condition inside a `match` block.
 
 ```ruby
   match do
-    all(
+    all?(
       user(:active?),
       not?(user(:banned?))
     )
@@ -233,7 +233,7 @@ engine = Ruleur.define do
   # High priority rule
   rule "validate_user", salience: 100 do
     match do
-      all(
+      all?(
       user(:present),
       not?(user(:banned?))
       )
@@ -246,9 +246,9 @@ engine = Ruleur.define do
   # Permission rule
   rule "allow_edit", salience: 50, tags: [:permissions] do
     match do
-      any(
+      any?(
         user(:admin?),
-        all(
+        all?(
           user(:owner?, record()),
           record(:editable?),
           not?(record(:locked?))
@@ -264,7 +264,7 @@ engine = Ruleur.define do
   # Workflow rule with no_loop
   rule "process_order", salience: 10, no_loop: true do
     match do
-      all(
+      all?(
         flag(:user_valid),
         flag(:update),
         recordord(:ready_to_process?)
@@ -292,7 +292,7 @@ puts result[:processed] # => true
 def create_threshold_rule(name, threshold)
   rule name do
     match do
-      all(order(:total).gt?(literal(threshold)))
+      all?(order(:total).gt?(literal(threshold)))
     end
     execute { set :tier, name }
   end
@@ -310,7 +310,7 @@ end
 ```ruby
 rule "premium_check" do
   match do
-    all(
+    all?(
       user(:subscription, :tier).eq?("premium"),
       user(:subscription, :active?),
       user(:subscription, :expires_at).gt?(literal(Date.today))
@@ -327,7 +327,7 @@ end
 ```ruby
 rule "calculate_shipping" do
   match do
-    all(flag(:order_valid))
+    all?(flag(:order_valid))
   end
   execute do
     order = context[:order]

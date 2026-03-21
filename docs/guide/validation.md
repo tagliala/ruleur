@@ -43,7 +43,7 @@ Validates a complete `Ruleur::Rule` object with structural, semantic, and option
 rule = Ruleur.define do
   rule "test_rule" do
     match do
-      all(user(:admin?))
+      all?(user(:admin?))
     end
 
     execute do
@@ -94,7 +94,7 @@ end
 Validates a condition node (structural and semantic checks).
 
 ```ruby
-condition = Ruleur::DSL::Condition::Builders.all(
+condition = Ruleur::DSL::Condition::Builders.all?(
   Ruleur::DSL::Condition::Builders.truthy?(
     Ruleur::DSL::Condition::Builders.ref(:user, :admin?)
   )
@@ -216,7 +216,7 @@ Record = Struct.new(:status)
 rule = Ruleur.define do
   rule "admin_access" do
     match do
-      all(user(:admin))
+      all?(user(:admin))
     end
 
     execute do
@@ -251,7 +251,7 @@ end
 rule = Ruleur.define do
   rule "broken_rule" do
     match do
-      all(user(:nonexistent_method))  # This will fail
+      all?(user(:nonexistent_method))  # This will fail
     end
 
     execute do

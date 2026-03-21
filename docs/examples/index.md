@@ -48,7 +48,7 @@ Complete examples from production systems.
 engine = Ruleur.define do
   rule "admin_access" do
     match do
-      all(user(:admin?))
+      all?(user(:admin?))
     end
 
     execute do
@@ -58,7 +58,7 @@ engine = Ruleur.define do
 
   rule "owner_update" do
     match do
-      all(user(:owner?, record))
+      all?(user(:owner?, record))
     end
 
     execute do
@@ -76,13 +76,13 @@ can_update = result[:update] # => true or nil
 ```ruby
 engine = Ruleur.define do
   rule "bulk_discount", salience: 10 do
-    match { all(order(:total).gt?(500)) }
+    match { all?(order(:total).gt?(500)) }
 
     execute { set :discount, 0.15 }
   end
   
   rule "vip_discount", salience: 20 do
-    match { all(customer(:vip?)) }
+    match { all?(customer(:vip?)) }
 
     execute { set :discount, 0.20 }
   end
@@ -98,7 +98,7 @@ discount = result[:discount] # Higher salience wins
 engine = Ruleur.define do
 rule "can_submit" do
   match do
-    all(
+    all?(
       document(:draft?),
       document(:complete?),
       not?(document(:submitted?))
@@ -112,7 +112,7 @@ end
 
 rule "can_approve" do
   match do
-    all(
+    all?(
       user(:approver?),
       document(:submitted?),
       not?(document(:approved?))
@@ -135,7 +135,7 @@ Check conditions and set result flags:
 ```ruby
 rule "validation" do
   match do
-    all(
+    all?(
       user(:authenticated?),
       user(:email_verified?),
       not?(user(:banned?))
@@ -153,7 +153,7 @@ Compute values based on inputs:
 ```ruby
 rule "calculate_total" do
   match do
-    all(order(:items).present)
+    all?(order(:items).present)
   end
 
   execute do
@@ -176,14 +176,14 @@ Rules that depend on other rules' results:
 
 ```ruby
 rule "step1" do
-  match { all(input(:valid?)) }
+  match { all?(input(:valid?)) }
 
   execute { set :step1_complete, true }
 end
 
 rule "step2" do
   match do
-    all(
+    all?(
       flag(:step1_complete),
       input(:ready?)
     )

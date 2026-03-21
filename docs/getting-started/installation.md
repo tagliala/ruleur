@@ -35,7 +35,7 @@ require 'ruleur'
 engine = Ruleur.define do
   rule 'hello' do
     match do
-      any(truthy?(true))
+      any?(truthy?(true))
     end
     execute do set :greeting, 'Hello Ruleur!' end
   end

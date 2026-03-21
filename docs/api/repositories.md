@@ -251,7 +251,7 @@ repo = Ruleur::Persistence::Repository::ActiveRecord.new
 rule = Ruleur.define do
   rule "discount" do
     match do
-      all(order(:total).gt?(100))
+      all?(order(:total).gt?(100))
     end
     execute do set :discount, 0.1 end
   end

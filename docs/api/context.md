@@ -121,7 +121,7 @@ Within rule actions, the context is available and can be modified:
 ```ruby
 rule "calculate_discount" do
   match do
-    all(customer(:vip?))
+    all?(customer(:vip?))
   end
   execute do
     # Access facts
@@ -154,7 +154,7 @@ Use `set :key, true` to set a result when conditions are met:
 ```ruby
 rule "admin_create" do
   match do
-    all(user(:admin?))
+    all?(user(:admin?))
   end
     execute do
   set :create, true
@@ -219,7 +219,7 @@ end
 ```ruby
 rule "premium_check" do
   match do
-    all(
+    all?(
     customer(:premium?),
     order(:total).gt?(100)
   )
@@ -240,7 +240,7 @@ end
 # First rule sets a flag
 rule "validate_order" do
   match do
-    all(order(:valid?))
+    all?(order(:valid?))
   end
   execute do
     set :order_valid, true
@@ -250,7 +250,7 @@ end
 # Second rule depends on the flag
 rule "process_payment" do
   match do
-    all(flag(:order_valid))
+    all?(flag(:order_valid))
   end
   execute do
     set :payment_processed, true

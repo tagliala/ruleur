@@ -18,7 +18,7 @@ Workflow rules help you:
 engine = Ruleur.define do
   rule "can_submit" do
     match do
-      all(
+      all?(
         document(:draft?),
         document(:valid?),
         not?(document(:submitted?))
@@ -31,7 +31,7 @@ engine = Ruleur.define do
   
   rule "can_approve" do
     match do
-      all(
+      all?(
         user(:approver?),
         document(:submitted?),
         not?(document(:approved?))
@@ -44,7 +44,7 @@ engine = Ruleur.define do
   
   rule "can_reject" do
     match do
-      all(
+      all?(
         user(:approver?),
         document(:submitted?)
       )
@@ -65,7 +65,7 @@ engine = Ruleur.define do
   # Draft -> Submitted
   rule "submit_document", salience: 100 do
     match do
-      all(
+      all?(
         document(:status).eq?("draft"),
         document(:complete?),
         flag(:action_submit)
@@ -81,7 +81,7 @@ engine = Ruleur.define do
   # Submitted -> Under Review
   rule "start_review", salience: 90 do
     match do
-      all(
+      all?(
         document(:status).eq?("submitted"),
         user(:reviewer?),
         flag(:action_start_review)
@@ -98,7 +98,7 @@ engine = Ruleur.define do
   # Under Review -> Approved
   rule "approve_document", salience: 80 do
     match do
-      all(
+      all?(
         document(:status).eq?("under_review"),
         user(:approver?),
         flag(:action_approve)
@@ -115,7 +115,7 @@ engine = Ruleur.define do
   # Under Review -> Rejected
   rule "reject_document", salience: 80 do
     match do
-      all(
+      all?(
         document(:status).eq?("under_review"),
         user(:approver?),
         flag(:action_reject),
@@ -133,7 +133,7 @@ engine = Ruleur.define do
   # Rejected -> Draft (resubmit)
   rule "resubmit_document", salience: 70 do
     match do
-      all(
+      all?(
         document(:status).eq?("rejected"),
         user(:owns?, document),
         flag(:action_resubmit)
@@ -157,7 +157,7 @@ engine = Ruleur.define do
   # Step 1: Validate Order
   rule "validate_order", salience: 100, no_loop: true do
     match do
-      all(
+      all?(
         order(:status).eq?("pending"),
         order(:items).present,
         order(:shipping_address).present
@@ -172,7 +172,7 @@ engine = Ruleur.define do
   # Step 2: Check Inventory
   rule "check_inventory", salience: 90, no_loop: true do
     match do
-      all(
+      all?(
         flag(:order_valid),
         order(:items_in_stock?)
       )
@@ -186,7 +186,7 @@ engine = Ruleur.define do
   # Step 3: Calculate Pricing
   rule "calculate_pricing", salience: 80, no_loop: true do
     match do
-      all(
+      all?(
         flag(:inventory_available),
         order(:total).gt?(0)
       )
@@ -206,7 +206,7 @@ engine = Ruleur.define do
   # Step 4: Process Payment
   rule "process_payment", salience: 70, no_loop: true do
     match do
-      all(
+      all?(
         flag(:step_pricing).eq?("completed"),
         order(:payment_method).present
       )
@@ -221,7 +221,7 @@ engine = Ruleur.define do
   # Step 5: Fulfill Order
   rule "fulfill_order", salience: 60, no_loop: true do
     match do
-      all(
+      all?(
         flag(:payment_processed),
         flag(:inventory_available)
       )
@@ -236,7 +236,7 @@ engine = Ruleur.define do
   # Final Step: Complete Order
   rule "complete_order", salience: 50, no_loop: true do
     match do
-      all(flag(:fulfillment_started))
+      all?(flag(:fulfillment_started))
     end
     execute do
       call_method order, :complete!
@@ -255,7 +255,7 @@ end
 engine = Ruleur.define do
   rule "technical_approval" do
     match do
-      all(
+      all?(
         user(:technical_lead?),
         document(:technical_review_pending?),
         flag(:action_approve_technical)
@@ -269,7 +269,7 @@ engine = Ruleur.define do
   
   rule "business_approval" do
     match do
-      all(
+      all?(
         user(:business_lead?),
         document(:business_review_pending?),
         flag(:action_approve_business)
@@ -283,7 +283,7 @@ engine = Ruleur.define do
   
   rule "final_approval" do
     match do
-      all(
+      all?(
         flag(:technical_approved),
         flag(:business_approved)
       )
@@ -306,7 +306,7 @@ engine = Ruleur.define do
   # Small amounts - auto-approve
   rule "auto_approve_small", salience: 100 do
     match do
-      all(
+      all?(
         expense(:amount).lt?(100),
         user(:employee?),
         not?(expense(:approved?))
@@ -322,7 +322,7 @@ engine = Ruleur.define do
   # Medium amounts - manager approval
   rule "manager_approval_required", salience: 90 do
     match do
-      all(
+      all?(
         expense(:amount).gte?(100),
         expense(:amount).lt?(1000)
       )
@@ -336,7 +336,7 @@ engine = Ruleur.define do
   # Large amounts - director approval
   rule "director_approval_required", salience: 80 do
     match do
-      all(
+      all?(
         expense(:amount).gte?(1000),
         expense(:amount).lt?(10000)
       )
@@ -350,7 +350,7 @@ engine = Ruleur.define do
   # Very large - CFO approval
   rule "cfo_approval_required", salience: 70 do
     match do
-      all(expense(:amount).gte?(10000))
+      all?(expense(:amount).gte?(10000))
     end
     execute do
       set :approval_required, "cfo"
@@ -368,7 +368,7 @@ end
 engine = Ruleur.define do
   rule "track_progress", no_loop: true do
     match do
-      all(workflow(:in_progress?))
+      all?(workflow(:in_progress?))
     end
     execute do
       workflow = context[:workflow]
@@ -452,7 +452,7 @@ class PurchaseOrderWorkflow
       # Create PO
       rule "create_po", salience: 100 do
         match do
-          all(
+          all?(
             po(:draft?),
             po(:valid?),
             flag(:action_create)
@@ -468,7 +468,7 @@ class PurchaseOrderWorkflow
       # Auto-approve under threshold
       rule "auto_approve", salience: 90 do
         match do
-          all(
+          all?(
             po(:total).lt?(1000),
             po(:status).eq?("pending_approval"),
             user(:employee?)
@@ -484,7 +484,7 @@ class PurchaseOrderWorkflow
       # Manager approval
       rule "manager_review", salience: 80 do
         match do
-          all(
+          all?(
             po(:total).gte?(1000),
             po(:total).lt?(10000),
             po(:status).eq?("pending_approval")
@@ -499,7 +499,7 @@ class PurchaseOrderWorkflow
       # Manager approves
       rule "manager_approves", salience: 70 do
         match do
-          all(
+          all?(
             flag(:requires_manager_approval),
             user(:manager?),
             flag(:action_approve)
@@ -515,7 +515,7 @@ class PurchaseOrderWorkflow
       # Send to vendor
       rule "send_to_vendor", salience: 60 do
         match do
-          all(
+          all?(
             flag(:approved),
             not?(po(:sent_to_vendor?))
           )

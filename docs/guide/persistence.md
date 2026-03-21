@@ -86,7 +86,7 @@ repo.delete("allow_create")
 engine = Ruleur.define do
   rule "admin_access" do
     match do
-      all(user(:admin?))
+      all?(user(:admin?))
     end
       execute do
     set :access, true
@@ -95,7 +95,7 @@ engine = Ruleur.define do
   
   rule "user_access" do
     match do
-      all(user(:logged_in?))
+      all?(user(:logged_in?))
     end
       execute do
     set :view, true
@@ -187,7 +187,7 @@ repo = Ruleur::Persistence::ActiveRecordRepository.new(model_class: MyRule)
 engine = Ruleur.define do
   rule "permission_rule", tags: ['permissions'] do
     match do
-      all(user(:admin?))
+      all?(user(:admin?))
     end
       execute do
     set :delete, true
@@ -289,7 +289,7 @@ require "ruleur"
 engine = Ruleur.define do
   rule "allow_create", salience: 10, tags: ['permissions'] do
     match do
-      any(user(:admin?), record(:draft?))
+      any?(user(:admin?), record(:draft?))
     end
       execute do
     set :create, true
@@ -542,7 +542,7 @@ RSpec.describe "Permission System" do
 engine = Ruleur.define do
   rule "admin_access" do
     match do
-      all(user(:admin?))
+      all?(user(:admin?))
     end
       execute do
     set :access, true

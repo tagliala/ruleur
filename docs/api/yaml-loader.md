@@ -302,7 +302,7 @@ Convert DSL rules to YAML:
 engine = Ruleur.define do
   rule "example" do
     match do
-      all(user(:admin?))
+      all?(user(:admin?))
     end
     execute do allow! :access end
   end
