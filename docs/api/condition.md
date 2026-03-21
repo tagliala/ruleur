@@ -172,22 +172,22 @@ The DSL provides convenient methods for creating conditions:
 
 ```ruby
 # Reference a fact by key
-usr(:method_name)    # context[:user].method_name
-rec(:method_name)    # context[:record].method_name
-obj(:key, :method)   # context[:key].method
+user(:method_name)    # context[:user].method_name
+record(:method_name)  # context[:record].method_name
+obj(:key, :method)    # context[:key].method
 
 # Flag check
-flag(:key)           # context[:key]
+flag(:key)            # context[:key]
 
 # Literal value
-lit(42)              # The value 42
+lit(42)               # The value 42
 ```
 
 ### Comparison Shortcuts
 
 ```ruby
 # Equality
-usr(:role).equals("admin")
+user(:role).equals("admin")
 
 # Comparisons
 order(:total).greater_than(100)

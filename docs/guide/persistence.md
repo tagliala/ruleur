@@ -85,12 +85,12 @@ repo.delete("allow_create")
 # Create some rules
 engine = Ruleur.define do
   rule "admin_access" do
-    when_all(usr(:admin?))
+    when_all(user(:admin?))
     set :access, true
   end
   
   rule "user_access" do
-    when_all(usr(:logged_in?))
+    when_all(user(:logged_in?))
     set :view, true
   end
 end
@@ -178,7 +178,7 @@ repo = Ruleur::Persistence::ActiveRecordRepository.new(model_class: MyRule)
 # Define rules
 engine = Ruleur.define do
   rule "permission_rule", tags: ['permissions'] do
-    when_all(usr(:admin?))
+    when_all(user(:admin?))
     set :delete, true
   end
 end
@@ -192,13 +192,13 @@ repo = Ruleur::Persistence::ActiveRecordRepository.new
 rules = repo.all
 engine = Ruleur::Engine.new(rules: rules)
 
-ctx = engine.run(user: current_user, record: document)
+ctx = engine.run(user: current_user, recordord: document)
 ctx[:destroy]  # => true or nil
 ```
 
 ## VersionedActiveRecordRepository
 
-The `VersionedActiveRecordRepository` provides full version tracking with audit trails. **This is the recommended approach for production systems.**
+The `VersionedActiveRecordRepository` provides full version tracking with audit trails. **This is the recordommended approach for production systems.**
 
 ::: tip Recommended
 Use `VersionedActiveRecordRepository` in production to track who changed what and when, with full rollback capabilities.
@@ -276,7 +276,7 @@ require "ruleur"
 # Define rule
 engine = Ruleur.define do
   rule "allow_create", salience: 10, tags: ['permissions'] do
-    when_any(usr(:admin?), rec(:draft?))
+    when_any(user(:admin?), record(:draft?))
     set :create, true
   end
 end
@@ -295,8 +295,8 @@ Ruleur::Persistence::YAMLLoader.save_file(
 # Load single file
 rule = Ruleur::Persistence::YAMLLoader.load_file('config/rules/allow_create.yml')
 
-# Load directory
-rules = Ruleur::Persistence::YAMLLoader.load_directory('config/rules/*.yml')
+# Load direcordtory
+rules = Ruleur::Persistence::YAMLLoader.load_direcordtory('config/rules/*.yml')
 
 # Create engine
 engine = Ruleur::Engine.new(rules: rules)
@@ -306,7 +306,7 @@ See [YAML Rules](./yaml-rules.md) for complete YAML documentation.
 
 ## Validating Before Persistence
 
-Always validate rules before saving to ensure they're correct:
+Always validate rules before saving to ensure they're correcordt:
 
 ```ruby
 # Validate before saving
@@ -383,7 +383,7 @@ end
 
 # Use in application
 service = RuleService.new
-ctx = service.engine.run(user: user, record: record)
+ctx = service.engine.run(user: user, recordord: recordord)
 ```
 
 ### Pattern 3: Tenant-Specific Rules
@@ -525,7 +525,7 @@ RSpec.describe "Permission System" do
     # Create rule
 engine = Ruleur.define do
   rule "admin_access" do
-    when_all(usr(:admin?))
+    when_all(user(:admin?))
     set :access, true
   end
 end
@@ -537,7 +537,7 @@ end
     rules = @rule_repo.all
     engine = Ruleur::Engine.new(rules: rules)
     
-    ctx = engine.run(user: admin_user, record: document)
+    ctx = engine.run(user: admin_user, recordord: document)
     expect(ctx[:access]).to be true
   end
 end
@@ -586,8 +586,8 @@ def load_rules_in_batches(batch_size: 100)
   rules = []
   
   RuleurRule.find_in_batches(batch_size: batch_size) do |batch|
-    batch.each do |record|
-      rules << Ruleur::Rule.deserialize(record.payload)
+    batch.each do |recordord|
+      rules << Ruleur::Rule.deserialize(recordord.payload)
     end
   end
   

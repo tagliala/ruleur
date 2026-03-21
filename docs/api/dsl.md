@@ -51,7 +51,7 @@ end
 - `options` (Hash) - Optional configuration
   - `salience` (Integer) - Priority (default: 0)
   - `tags` (Array\<Symbol\>) - Tags for categorization
-  - `no_loop` (Boolean) - Prevent recursive firing
+  - `no_loop` (Boolean) - Prevent recordursive firing
 
 ## Condition Methods
 
@@ -64,8 +64,8 @@ All conditions must be true (AND).
 ```ruby
 when_all(
   user(:admin?),
-  record(:published?),
-  not(record(:archived?))
+  recordord(:published?),
+  not(recordord(:archived?))
 )
 ```
 
@@ -76,7 +76,7 @@ At least one condition must be true (OR).
 ```ruby
 when_any(
   user(:admin?),
-  user(:owner?, record),
+  user(:owner?, recordord),
   flag(:force_access)
 )
 ```
@@ -90,7 +90,7 @@ when_any(
   user(:admin?),
   all(
     user(:moderator?),
-    record(:flagged?)
+    recordord(:flagged?)
   )
 )
 ```
@@ -102,7 +102,7 @@ Same as `when_any` but can be nested.
 ```ruby
 when_all(
   any(user(:admin?), user(:moderator?)),
-  record(:published?)
+  recordord(:published?)
 )
 ```
 
@@ -134,11 +134,11 @@ obj(:settings, :feature, :enabled?)
 Convenience methods for common references:
 
 ```ruby
-# usr() - shorthand for obj(:user)
-usr(:admin?)
+# user() - shorthand for obj(:user)
+user(:admin?)
 
-# rec() - shorthand for obj(:record)
-rec(:published?)
+# record() - shorthand for obj(:recordord)
+record(:published?)
 
 # doc() - shorthand for obj(:document)
 doc(:approved?)
@@ -158,7 +158,7 @@ flag(:email_sent)
 Creates a literal value reference.
 
 ```ruby
-usr(:role).equals(lit("admin"))
+user(:role).equals(lit("admin"))
 order(:total).greater_than(lit(100))
 ```
 
@@ -200,7 +200,7 @@ Within action blocks, you have access to:
 
 ```ruby
 action do
-  # Direct context access
+  # Direcordt context access
   user = context[:user]
   order = context[:order]
   
@@ -221,8 +221,8 @@ engine = Ruleur.define do
   # High priority rule
   rule "validate_user", salience: 100 do
     when_all(
-      usr(:present),
-      not(usr(:banned?))
+      user(:present),
+      not(user(:banned?))
     )
     action do
       set :user_valid, true
@@ -232,11 +232,11 @@ engine = Ruleur.define do
   # Permission rule
   rule "allow_edit", salience: 50, tags: [:permissions] do
     when_any(
-      usr(:admin?),
+      user(:admin?),
       all(
-        usr(:owner?, rec()),
-        rec(:editable?),
-        not(rec(:locked?))
+        user(:owner?, record()),
+        record(:editable?),
+        not(record(:locked?))
       )
     )
     action do
@@ -250,10 +250,10 @@ engine = Ruleur.define do
     when_all(
       flag(:user_valid),
       flag(:update),
-      record(:ready_to_process?)
+      recordord(:ready_to_process?)
     )
     action do
-      order = context[:record]
+      order = context[:recordord]
       call_method(order, :process!)
       set :processed, true
       set :processed_at, Time.now
@@ -262,7 +262,7 @@ engine = Ruleur.define do
 end
 
 # Run the engine
-result = engine.run(user: current_user, record: order)
+result = engine.run(user: current_user, recordord: order)
 puts result[:processed] # => true
 ```
 
@@ -290,9 +290,9 @@ end
 ```ruby
 rule "premium_check" do
   when_all(
-    usr(:subscription, :tier).equals("premium"),
-    usr(:subscription, :active?),
-    usr(:subscription, :expires_at).greater_than(lit(Date.today))
+    user(:subscription, :tier).equals("premium"),
+    user(:subscription, :active?),
+    user(:subscription, :expires_at).greater_than(lit(Date.today))
   )
   action do
     set :premium_features, true

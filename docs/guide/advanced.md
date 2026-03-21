@@ -11,12 +11,12 @@ This guide covers advanced features and techniques for working with Ruleur, incl
 ```ruby
 engine = Ruleur.define do
   rule "low_priority", salience: 0 do
-    when_all(usr(:logged_in?))
+    when_all(user(:logged_in?))
     set :priority, "low"
   end
   
   rule "high_priority", salience: 100 do
-    when_all(usr(:admin?))
+    when_all(user(:admin?))
     set :priority, "high"
   end
 end
@@ -126,7 +126,7 @@ Use `no_loop: true` when:
 
 ```ruby
 rule "grant_base_permissions", no_loop: true do
-  when_all(usr(:registered?))
+  when_all(user(:registered?))
   action do
     set :view, true
     set :comment, true
@@ -135,7 +135,7 @@ end
 
 rule "grant_premium_permissions", no_loop: true do
   when_all(
-    usr(:premium?),
+    user(:premium?),
     flag(:view)  # Depends on previous rule
   )
   action do
@@ -151,7 +151,7 @@ Enable tracing to debug rule execution:
 
 ```ruby
 engine = Ruleur::Engine.new(trace: true)
-ctx = engine.run(user: user, record: record)
+ctx = engine.run(user: user, recordord: recordord)
 ```
 
 **Output:**
@@ -274,7 +274,7 @@ Provide facts when running:
 ```ruby
 ctx = engine.run(
   user: current_user,
-  record: document,
+  recordord: document,
   custom_data: { foo: 'bar' }
 )
 ```
@@ -283,7 +283,7 @@ ctx = engine.run(
 
 ```ruby
 ctx[:user]           # => User object
-ctx[:record]         # => Document object
+ctx[:recordord]         # => Document object
 ctx[:access]         # => true or nil (set by rules)
 ```
 
@@ -292,8 +292,8 @@ ctx[:access]         # => true or nil (set by rules)
 Each engine run creates a new context:
 
 ```ruby
-ctx1 = engine.run(user: user1, record: doc1)
-ctx2 = engine.run(user: user2, record: doc2)
+ctx1 = engine.run(user: user1, recordord: doc1)
+ctx2 = engine.run(user: user2, recordord: doc2)
 
 # ctx1 and ctx2 are independent
 ```
@@ -303,7 +303,7 @@ ctx2 = engine.run(user: user2, record: doc2)
 You can pass a Context object for incremental execution:
 
 ```ruby
-ctx = Ruleur::Context.new(user: user, record: record)
+ctx = Ruleur::Context.new(user: user, recordord: recordord)
 engine1.run(ctx)
 
 # Continue with same context
@@ -322,26 +322,26 @@ Fewer rules = faster execution:
 # Good - single rule
 rule "permission_check" do
   when_any(
-    usr(:admin?),
-    usr(:editor?),
-    usr(:owner?)
+    user(:admin?),
+    user(:editor?),
+    user(:owner?)
   )
   set :edit, true
 end
 
 # Less efficient - three rules
 rule "admin_edit" do
-  when_all(usr(:admin?))
+  when_all(user(:admin?))
   set :edit, true
 end
 
 rule "editor_edit" do
-  when_all(usr(:editor?))
+  when_all(user(:editor?))
   set :edit, true
 end
 
 rule "owner_edit" do
-  when_all(usr(:owner?))
+  when_all(user(:owner?))
   set :edit, true
 end
 ```
@@ -353,15 +353,15 @@ Put cheap, likely-to-fail checks first:
 ```ruby
 # Good - cheap check first
 when_all(
-  usr(:logged_in?),        # Fast boolean check
-  present(rec_val(:title)), # Fast presence check
+  user(:logged_in?),        # Fast boolean check
+  present(record_val(:title)), # Fast presence check
   expensive_db_query()      # Slow check last
 )
 
 # Less efficient - expensive check first
 when_all(
   expensive_db_query(),
-  usr(:logged_in?)
+  user(:logged_in?)
 )
 ```
 
@@ -411,19 +411,19 @@ end
 ctx = RuleService.engine.run(user: user)
 ```
 
-### 6. Precompute Values
+### 6. Precordompute Values
 
 Avoid expensive computations in conditions:
 
 ```ruby
 # Bad - computed on every evaluation
 when_all(
-  gt(rec_val(:items).sum(&:price), 1000)
+  gt(record_val(:items).sum(&:price), 1000)
 )
 
-# Good - precompute before engine run
-total = record.items.sum(&:price)
-ctx = engine.run(user: user, record: record, total: total)
+# Good - precordompute before engine run
+total = recordord.items.sum(&:price)
+ctx = engine.run(user: user, recordord: recordord, total: total)
 
 rule "high_value_order" do
   when_all(gt(ref(:total), 1000))
@@ -445,10 +445,10 @@ engine = Ruleur::Engine.new(rules: rules, trace: true)
 Evaluate conditions outside the engine:
 
 ```ruby
-ctx = Ruleur::Context.new(user: user, record: record)
+ctx = Ruleur::Context.new(user: user, recordord: recordord)
 
 # Test condition
-condition = all(usr(:admin?), rec(:published?))
+condition = all(user(:admin?), record(:published?))
 result = condition.evaluate(ctx)
 
 puts "Condition result: #{result}"  # => true/false
@@ -460,7 +460,7 @@ Check if a rule would fire:
 
 ```ruby
 rule = engine.rules.find { |r| r.name == "my_rule" }
-ctx = Ruleur::Context.new(user: user, record: record)
+ctx = Ruleur::Context.new(user: user, recordord: recordord)
 
 if rule.eligible?(ctx)
   puts "Rule would fire"
@@ -474,7 +474,7 @@ end
 Inspect context before/after execution:
 
 ```ruby
-ctx = Ruleur::Context.new(user: user, record: record)
+ctx = Ruleur::Context.new(user: user, recordord: recordord)
 puts "Before: #{ctx.facts.inspect}"
 
 engine.run(ctx)
@@ -510,7 +510,7 @@ end
 rule "age_range_check" do
   when_all(
     predicate do
-      left = rec_val(:age)
+      left = record_val(:age)
       right = lit(18..65)
       Ruleur::Operators.call(:within_range, left, right)
     end
@@ -527,15 +527,15 @@ Custom operators won't serialize to YAML. Use them only for code-based rules.
 
 ### Batch Processing
 
-Process records in batches:
+Process recordords in batches:
 
 ```ruby
-def process_batch(records, user)
+def process_batch(recordords, user)
   results = []
   
-  records.each do |record|
-    ctx = engine.run(user: user, record: record)
-    results << { record_id: record.id, allowed: ctx[:access] }
+  recordords.each do |recordord|
+    ctx = engine.run(user: user, recordord: recordord)
+    results << { recordord_id: recordord.id, allowed: ctx[:access] }
   end
   
   results
@@ -555,12 +555,12 @@ Use threads for parallel execution:
 ```ruby
 require 'concurrent'
 
-records = Record.all.to_a
+recordords = Record.all.to_a
 thread_pool = Concurrent::FixedThreadPool.new(10)
 
-futures = records.map do |record|
+futures = recordords.map do |recordord|
   Concurrent::Future.execute(executor: thread_pool) do
-    engine.run(user: user, record: record)
+    engine.run(user: user, recordord: recordord)
   end
 end
 

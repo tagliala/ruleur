@@ -25,8 +25,20 @@ RSpec.describe Ruleur::Generators::MigrationGenerator, type: :generator do
     generator = described_class.new(args, config)
     generator.behavior = :invoke
     generator.destination_root = destination_root
-    generator.invoke_all
+    silence(:stdout) { generator.invoke_all }
     generator
+  end
+
+  def silence(stream)
+    old = stream == :stdout ? $stdout : $stderr
+    stream == :stdout ? $stdout = StringIO.new : $stderr = StringIO.new
+    yield
+  ensure
+    if stream == :stdout
+      $stdout = old
+    else
+      $stderr = old
+    end
   end
 
   def assert_migration(relative, pattern = /#{Regexp.escape(relative)}/)

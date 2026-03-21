@@ -7,20 +7,20 @@ module Ruleur
 
     # Small helpers for a "fine" DSL without metaprogramming hazards
     module Shortcuts
-      def rec(*path)
+      def record(*path)
         Condition::Builders.truthy(Condition::Builders.ref(:record, *path))
       end
 
-      def usr(*path)
+      def user(*path)
         Condition::Builders.truthy(Condition::Builders.ref(:user, *path))
       end
 
       # use inside predicates: value of a record/user property
-      def rec_val(*path)
+      def record_val(*path)
         Condition::Builders.ref(:record, *path)
       end
 
-      def usr_val(*path)
+      def user_val(*path)
         Condition::Builders.ref(:user, *path)
       end
 

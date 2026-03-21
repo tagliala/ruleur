@@ -42,7 +42,7 @@ Validates a complete `Ruleur::Rule` object with structural, semantic, and option
 ```ruby
 rule = Ruleur.define do
   rule "test_rule" do
-    when_all(usr(:admin?))
+    when_all(user(:admin?))
     allow! :delete
   end
 end.rules.first
@@ -210,7 +210,7 @@ Record = Struct.new(:status)
 
 rule = Ruleur.define do
   rule "admin_access" do
-    when_all(usr(:admin))
+    when_all(user(:admin))
     allow! :access
   end
 end.rules.first
@@ -240,7 +240,7 @@ end
 ```ruby
 rule = Ruleur.define do
   rule "broken_rule" do
-    when_all(usr(:nonexistent_method))  # This will fail
+    when_all(user(:nonexistent_method))  # This will fail
     allow! :access
   end
 end.rules.first

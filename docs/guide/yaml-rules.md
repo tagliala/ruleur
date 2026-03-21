@@ -297,7 +297,7 @@ You can convert DSL-defined rules to YAML:
 # Define rule with DSL
 engine = Ruleur.define do
   rule 'my_rule', salience: 10 do
-    when_any(usr(:admin?))
+    when_any(user(:admin?))
     action { allow! :access }
   end
 end
