@@ -613,15 +613,7 @@ class DocumentPolicy < ApplicationPolicy
   private
 
   def ctx
-    @ctx ||= begin
-      facts = {
-        record: record,
-        user: user,
-        rec: record,
-        usr: user
-      }
-      Config.rules.run(facts)
-    end
+    @ctx ||= Config.rules.run(record: record, user: user)
   end
 end
 ```
