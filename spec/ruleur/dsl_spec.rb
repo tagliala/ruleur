@@ -4,11 +4,11 @@ require 'spec_helper'
 
 RSpec.describe Ruleur::DSL do
   describe 'shortcuts' do
-    it 'uses rec_val and usr_val in predicates' do
+    it 'uses record_val and user_val in predicates' do
       engine = Ruleur.define do
         rule 'compare_values' do
           when_all(
-            eq(rec_val(:score), usr_val(:threshold))
+            eq(record_val(:score), user_val(:threshold))
           )
           set :match, true
         end
@@ -25,11 +25,11 @@ RSpec.describe Ruleur::DSL do
       expect(ctx2[:match]).to be_nil
     end
 
-    it 'uses rec_val with nested paths' do
+    it 'uses record_val with nested paths' do
       engine = Ruleur.define do
         rule 'nested_check' do
           when_all(
-            eq(rec_val(:profile, :level), 5)
+            eq(record_val(:profile, :level), 5)
           )
           set :senior, true
         end
@@ -42,11 +42,11 @@ RSpec.describe Ruleur::DSL do
       expect(ctx[:senior]).to be(true)
     end
 
-    it 'uses usr_val with nested paths' do
+    it 'uses user_val with nested paths' do
       engine = Ruleur.define do
         rule 'permission_check' do
           when_all(
-            truthy(usr_val(:permissions, :admin))
+            truthy(user_val(:permissions, :admin))
           )
           set :is_admin, true
         end
@@ -84,8 +84,8 @@ RSpec.describe Ruleur::DSL do
         rule 'copy_values' do
           when_all(truthy(:enabled))
           assert(
-            output1: rec_val(:input1),
-            output2: usr_val(:input2)
+            output1: record_val(:input1),
+            output2: user_val(:input2)
           )
         end
       end

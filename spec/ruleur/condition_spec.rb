@@ -68,7 +68,7 @@ RSpec.describe Ruleur::Condition do
     it 'works in rule conditions' do
       engine = Ruleur.define do
         rule 'not_admin' do
-          when_all(!usr(:admin?))
+          when_all(!user(:admin?))
           set :restricted, true
         end
       end
