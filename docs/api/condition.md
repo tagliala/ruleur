@@ -17,11 +17,13 @@ Conditions are organized in a tree structure:
 All child conditions must be true.
 
 ```ruby
-when_all(
-  user(:admin?),
-  record(:published?),
-  record(:approved?)
-)
+match do
+  all(
+    user(:admin?),
+    record(:published?),
+    record(:approved?)
+  )
+end
 ```
 
 #### `any` (OR)
@@ -29,10 +31,12 @@ when_all(
 At least one child condition must be true.
 
 ```ruby
-when_any(
-  user(:admin?),
-  user(:owner?, record)
-)
+match do
+  any(
+    user(:admin?),
+    user(:owner?, record)
+  )
+end
 ```
 
 #### `not` (NEGATION)
@@ -40,10 +44,12 @@ when_any(
 Inverts the child condition.
 
 ```ruby
-when_all(
-  not(record(:archived?)),
-  record(:active?)
-)
+match do
+  all(
+    not(record(:archived?)),
+    record(:active?)
+  )
+end
 ```
 
 ### Predicate Conditions
@@ -148,20 +154,22 @@ See [Operators](./operators) for a complete list of available comparison operato
 Conditions can be nested to arbitrary depth:
 
 ```ruby
-when_any(
-  all(
-    user(:admin?),
-    not(record(:locked?))
-  ),
-  all(
-    user(:owner?, record),
-    record(:editable?),
-    any(
-      flag(:force_edit),
-      not(record(:published?))
+match do
+  any(
+    all(
+      user(:admin?),
+      not(record(:locked?))
+    ),
+    all(
+      user(:owner?, record),
+      record(:editable?),
+      any(
+        flag(:force_edit),
+        not(record(:published?))
+      )
     )
   )
-)
+end
 ```
 
 ## DSL Shortcuts
