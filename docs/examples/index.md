@@ -47,13 +47,23 @@ Complete examples from production systems.
 ```ruby
 engine = Ruleur.define do
   rule "admin_access" do
-    when_all(user(:admin?))
-    set :access, true
+    match do
+      all(user(:admin?))
+    end
+
+    execute do
+      set :access, true
+    end
   end
 
   rule "owner_update" do
-    when_all(user(:owner?, record))
-    set :update, true
+    match do
+      all(user(:owner?, record))
+    end
+
+    execute do
+      set :update, true
+    end
   end
 end
 
@@ -66,13 +76,15 @@ can_update = result[:update] # => true or nil
 ```ruby
 engine = Ruleur.define do
   rule "bulk_discount", salience: 10 do
-    when_all(order(:total).gt?(500))
-    action { set :discount, 0.15 }
+    match { all(order(:total).gt?(500)) }
+
+    execute { set :discount, 0.15 }
   end
   
   rule "vip_discount", salience: 20 do
-    when_all(customer(:vip?))
-    action { set :discount, 0.20 }
+    match { all(customer(:vip?)) }
+
+    execute { set :discount, 0.20 }
   end
 end
 
@@ -85,21 +97,31 @@ discount = result[:discount] # Higher salience wins
 ```ruby
 engine = Ruleur.define do
 rule "can_submit" do
-  when_all(
-    document(:draft?),
-    document(:complete?),
-    not(document(:submitted?))
-  )
-  action { set :submit, true }
+  match do
+    all(
+      document(:draft?),
+      document(:complete?),
+      not(document(:submitted?))
+    )
+  end
+
+  execute do
+    set :submit, true
+  end
 end
 
 rule "can_approve" do
-  when_all(
-    user(:approver?),
-    document(:submitted?),
-    not(document(:approved?))
-  )
-  action { set :approve, true }
+  match do
+    all(
+      user(:approver?),
+      document(:submitted?),
+      not(document(:approved?))
+    )
+  end
+
+  execute do
+    set :approve, true
+  end
 end
 end
 ```
@@ -112,12 +134,15 @@ Check conditions and set result flags:
 
 ```ruby
 rule "validation" do
-  when_all(
-    user(:authenticated?),
-    user(:email_verified?),
-    not(user(:banned?))
-  )
-  action { set :user_valid, true }
+  match do
+    all(
+      user(:authenticated?),
+      user(:email_verified?),
+      not(user(:banned?))
+    )
+  end
+
+  execute { set :user_valid, true }
 end
 ```
 
@@ -127,8 +152,11 @@ Compute values based on inputs:
 
 ```ruby
 rule "calculate_total" do
-  when_all(order(:items).present)
-  action do
+  match do
+    all(order(:items).present)
+  end
+
+  execute do
     order = context[:order]
     subtotal = order.items.sum(&:price)
     tax = subtotal * 0.08
@@ -148,16 +176,20 @@ Rules that depend on other rules' results:
 
 ```ruby
 rule "step1" do
-  when_all(input(:valid?))
-  action { set :step1_complete, true }
+  match { all(input(:valid?)) }
+
+  execute { set :step1_complete, true }
 end
 
 rule "step2" do
-  when_all(
-    flag(:step1_complete),
-    input(:ready?)
-  )
-  action { set :step2_complete, true }
+  match do
+    all(
+      flag(:step1_complete),
+      input(:ready?)
+    )
+  end
+
+  execute { set :step2_complete, true }
 end
 ```
 

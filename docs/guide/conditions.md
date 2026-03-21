@@ -20,10 +20,13 @@ A **predicate** is the basic building block - it compares two values using an op
 
 ```ruby
 rule "adult_check" do
-  when_all(
-    gte(record_value(:age), 18)  # Predicate: recordord.age >= 18
-  )
-  allow! :access
+  match do
+    all(gte(record_value(:age), 18))  # Predicate: recordord.age >= 18
+  end
+
+  execute do
+    allow! :access
+  end
 end
 ```
 
@@ -62,7 +65,7 @@ include?(record_value(:status), ['draft', 'pending'])
 includes(record_value(:roles), 'admin')
 
 # Pattern matching
-matches(record_value(:email), lit(/@example\.com$/))
+matches(record_value(:email), literal(/@example\.com$/))
 
 # Truthiness
 truthy?(record(:published?))
@@ -83,14 +86,17 @@ The `all` condition evaluates to true only if **all** children are true.
 
 ```ruby
 rule "restricted_access" do
-  when_all(
+  match do
     all(
       user(:verified?),
       user(:premium?),
       gte(record_value(:age), 21)
     )
-  )
-  allow! :vip_access
+  end
+
+  execute do
+    allow! :vip_access
+  end
 end
 ```
 
@@ -100,21 +106,21 @@ This rule fires only when:
 - Record age >= 21
 
 ::: tip
-`when_all` is a shorthand for wrapping conditions in `all`. These are equivalent:
+Prefer using `match` together with `all()`/`any()` to make rule structure explicit. Example equivalence:
 
 ```ruby
-# Using when_all (preferred)
-when_all(
-  user(:verified?),
-  user(:premium?)
-)
-
-# Using all explicitly
-when_all(
+# Using match + all (preferred)
+match do
   all(
     user(:verified?),
     user(:premium?)
   )
+end
+
+# Legacy shorthand (still supported):
+when_all(
+  user(:verified?),
+  user(:premium?)
 )
 ```
 :::
@@ -125,12 +131,17 @@ The `any` condition evaluates to true if **at least one** child is true.
 
 ```ruby
 rule "can_edit" do
-  when_any(
-    user(:admin?),
-    user(:editor?),
-    eq?(record_value(:owner_id), user_value(:id))
-  )
-  allow! :edit
+  match do
+    any(
+      user(:admin?),
+      user(:editor?),
+      eq?(record_value(:owner_id), user_value(:id))
+    )
+  end
+
+  execute do
+    allow! :edit
+  end
 end
 ```
 
@@ -145,10 +156,13 @@ The `not_` condition inverts the result of its child.
 
 ```ruby
 rule "not_archived" do
-  when_all(
-    not?(record(:archived?))
-  )
-  allow! :view
+  match do
+    all(not?(record(:archived?)))
+  end
+
+  execute do
+    allow! :view
+  end
 end
 ```
 
@@ -166,16 +180,21 @@ The real power comes from nesting conditions to express complex logic.
 
 ```ruby
 rule "complex_update" do
-  when_all(
-    any(
-      user(:admin?),
-      all(
-        eq?(record_value(:owner_id), user_value(:id)),
-        record(:draft?)
+  match do
+    all(
+      any(
+        user(:admin?),
+        all(
+          eq?(record_value(:owner_id), user_value(:id)),
+          record(:draft?)
+        )
       )
     )
-  )
-  allow! :update
+  end
+
+  execute do
+    allow! :update
+  end
 end
 ```
 
@@ -185,14 +204,19 @@ end
 
 ```ruby
 rule "complex_view" do
-  when_any(
-    record(:public?),
-    all(
-      user(:logged_in?),
-      not?(record(:archived?))
+  match do
+    any(
+      record(:public?),
+      all(
+        user(:logged_in?),
+        not?(record(:archived?))
+      )
     )
-  )
-  allow! :view
+  end
+
+  execute do
+    allow! :view
+  end
 end
 ```
 
@@ -202,18 +226,23 @@ end
 
 ```ruby
 rule "publish_permission" do
-  when_any(
-    user(:admin?),
-    all(
-      user(:editor?),
-      record(:complete?),
-      any(
-        record(:urgent?),
-        user(:senior?)
+  match do
+    any(
+      user(:admin?),
+      all(
+        user(:editor?),
+        record(:complete?),
+        any(
+          record(:urgent?),
+          user(:senior?)
+        )
       )
     )
-  )
-  allow! :publish
+  end
+
+  execute do
+    allow! :publish
+  end
 end
 ```
 
@@ -225,10 +254,12 @@ For simple truthy checks, use the DSL helpers:
 
 ```ruby
 rule "simple" do
-  when_all(
-    user(:admin?),      # Checks user.admin? is truthy
-    record(:published?)   # Checks recordord.published? is truthy
-  )
+  match do
+    all(
+      user(:admin?),      # Checks user.admin? is truthy
+      record(:published?)   # Checks recordord.published? is truthy
+    )
+  end
 end
 ```
 
@@ -238,10 +269,12 @@ For comparisons and complex checks:
 
 ```ruby
 rule "explicit" do
-  when_all(
-    gte(record_value(:age), 18),
-    include?(record_value(:status), ['active', 'trial'])
-  )
+  match do
+    all(
+      gte(record_value(:age), 18),
+      include?(record_value(:status), ['active', 'trial'])
+    )
+  end
 end
 ```
 
@@ -251,11 +284,13 @@ Combine both approaches:
 
 ```ruby
 rule "mixed" do
-  when_all(
-    user(:verified?),                    # Shortcut
-    gte(record_value(:subscription_level), 3), # Explicit
-    not?(record(:banned?))                 # Shortcut with negation
-  )
+  match do
+    all(
+      user(:verified?),                    # Shortcut
+      gte(record_value(:subscription_level), 3), # Explicit
+      not?(record(:banned?))                 # Shortcut with negation
+    )
+  end
 end
 ```
 
@@ -364,17 +399,22 @@ For complex logic that doesn't fit the operator model, use `predicate` blocks:
 
 ```ruby
 rule "custom_logic" do
-  when_all(
-    predicate do |ctx|
-      user = ctx[:user]
-      recordord = ctx[:recordord]
+  match do
+    all(
+      predicate do |ctx|
+        user = ctx[:user]
+        recordord = ctx[:recordord]
 
-      # Custom logic
-      user.credits > recordord.cost &&
-      user.last_purchase_at < 7.days.ago
-    end
-  )
-  allow! :purchase
+        # Custom logic
+        user.credits > recordord.cost &&
+        user.last_purchase_at < 7.days.ago
+      end
+    )
+  end
+
+  execute do
+    allow! :purchase
+  end
 end
 ```
 
@@ -402,15 +442,19 @@ ctx = engine.run(recordord: my_recordord, user: current_user)
 Composite conditions short-circuit for efficiency:
 
 ```ruby
-when_all(
-  expensive_check(),   # Evaluated first
-  cheap_check()        # Not evaluated if expensive_check() returns false
-)
+match do
+  all(
+    expensive_check(),   # Evaluated first
+    cheap_check()        # Not evaluated if expensive_check() returns false
+  )
+end
 
-when_any(
-  cheap_check(),       # Evaluated first
-  expensive_check()    # Not evaluated if cheap_check() returns true
-)
+match do
+  any(
+    cheap_check(),       # Evaluated first
+    expensive_check()    # Not evaluated if cheap_check() returns true
+  )
+end
 ```
 
 ## Common Patterns
@@ -421,12 +465,17 @@ Check permissions in priority order:
 
 ```ruby
 rule "permission_cascade" do
-  when_any(
-    user(:admin?),                           # Highest priority
-    all(user(:editor?), record(:draft?)),       # Medium priority
-    all(eq?(record_value(:owner_id), user_value(:id)), not?(record(:locked?)))  # Lowest
-  )
-  allow! :edit
+  match do
+    any(
+      user(:admin?),                           # Highest priority
+      all(user(:editor?), record(:draft?)),       # Medium priority
+      all(eq?(record_value(:owner_id), user_value(:id)), not?(record(:locked?)))  # Lowest
+    )
+  end
+
+  execute do
+    allow! :edit
+  end
 end
 ```
 
@@ -436,12 +485,17 @@ Combine feature flags with business logic:
 
 ```ruby
 rule "new_feature" do
-  when_all(
-    flag(:new_feature_enabled),  # Feature flag
-    user(:premium?),                # Business rule
-    gte(record_value(:created_at), Time.new(2026, 1, 1))  # Time constraint
-  )
-  set :use_new_feature, true
+  match do
+    all(
+      flag(:new_feature_enabled),  # Feature flag
+      user(:premium?),                # Business rule
+      gte(record_value(:created_at), Time.new(2026, 1, 1))  # Time constraint
+    )
+  end
+
+  execute do
+    set :use_new_feature, true
+  end
 end
 ```
 
@@ -451,34 +505,49 @@ Different access levels based on user tier:
 
 ```ruby
 rule "vip_access" do
-  when_all(
-    user(:vip?),
-    any(
-      record(:public?),
-      record(:premium?),
-      record(:exclusive?)
+  match do
+    all(
+      user(:vip?),
+      any(
+        record(:public?),
+        record(:premium?),
+        record(:exclusive?)
+      )
     )
-  )
-  allow! :access
+  end
+
+  execute do
+    allow! :access
+  end
 end
 
 rule "premium_access" do
-  when_all(
-    user(:premium?),
-    any(
-      record(:public?),
-      record(:premium?)
+  match do
+    all(
+      user(:premium?),
+      any(
+        record(:public?),
+        record(:premium?)
+      )
     )
-  )
-  allow! :access
+  end
+
+  execute do
+    allow! :access
+  end
 end
 
 rule "basic_access" do
-  when_all(
-    user(:registered?),
-    record(:public?)
-  )
-  allow! :access
+  match do
+    all(
+      user(:registered?),
+      record(:public?)
+    )
+  end
+
+  execute do
+    allow! :access
+  end
 end
 ```
 
@@ -488,19 +557,29 @@ Use flags set by earlier rules:
 
 ```ruby
 rule "check_eligibility", salience: 10 do
-  when_all(
-    gte(record_value(:age), 18),
-    user(:verified?)
-  )
-  allow! :eligible
+  match do
+    all(
+      gte(record_value(:age), 18),
+      user(:verified?)
+    )
+  end
+
+  execute do
+    allow! :eligible
+  end
 end
 
 rule "grant_access", salience: 0 do
-  when_all(
-    flag(:eligible),  # Depends on previous rule
-    record(:active?)
-  )
-  allow! :access
+  match do
+    all(
+      flag(:eligible),  # Depends on previous rule
+      record(:active?)
+    )
+  end
+
+  execute do
+    allow! :access
+  end
 end
 ```
 
@@ -574,16 +653,20 @@ Put cheap, likely-to-fail checks first:
 
 ```ruby
 # Good - cheap check first
-when_all(
-  user(:logged_in?),      # Fast, often false
-  expensive_database_check()
-)
+match do
+  all(
+    user(:logged_in?),      # Fast, often false
+    expensive_database_check()
+  )
+end
 
 # Less efficient
-when_all(
-  expensive_database_check(),
-  user(:logged_in?)
-)
+match do
+  all(
+    expensive_database_check(),
+    user(:logged_in?)
+  )
+end
 ```
 
 ### 3. Use Descriptive Names

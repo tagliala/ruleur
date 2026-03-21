@@ -7,7 +7,7 @@ The Ruleur Domain-Specific Language (DSL) provides a Ruby-friendly way to define
 The DSL consists of:
 - **Engine Definition**: `Ruleur.define` block
 - **Rule Definition**: `rule "name"` block
-- **Conditions**: `when_all()`, `when_any()`, `not()`
+- **Conditions**: use `match` with `all()`, `any()`, `not()` builders
 - **Actions**: `action` block with helper methods
 
 ## Engine Definition
@@ -57,64 +57,74 @@ end
 
 ### Composite Conditions
 
-#### `when_all(*conditions)`
-
-All conditions must be true (AND).
-
-```ruby
-when_all(
-  user(:admin?),
-  recordord(:published?),
-  not(recordord(:archived?))
-)
-```
-
-#### `when_any(*conditions)`
-
-At least one condition must be true (OR).
-
-```ruby
-when_any(
-  user(:admin?),
-  user(:owner?, recordord),
-  flag(:force_access)
-)
-```
-
 #### `all(*conditions)`
 
-Same as `when_all` but can be nested.
+All conditions must be true (AND). Wrap them in a `match` block in rules:
 
 ```ruby
-when_any(
-  user(:admin?),
+match do
   all(
-    user(:moderator?),
-    recordord(:flagged?)
+    user(:admin?),
+    record(:published?),
+    not(record(:archived?))
   )
-)
+end
 ```
 
 #### `any(*conditions)`
 
-Same as `when_any` but can be nested.
+At least one condition must be true (OR). Wrap them in a `match` block in rules:
 
 ```ruby
-when_all(
-  any(user(:admin?), user(:moderator?)),
-  recordord(:published?)
-)
+match do
+  any(
+    user(:admin?),
+    user(:owner?, record),
+    flag(:force_access)
+  )
+end
+```
+
+#### `all(*conditions)`
+
+Same as above but can be nested within `any`.
+
+```ruby
+match do
+  any(
+    user(:admin?),
+    all(
+      user(:moderator?),
+      record(:flagged?)
+    )
+  )
+end
+```
+
+#### `any(*conditions)`
+
+Same as above but can be nested within `all`.
+
+```ruby
+match do
+  all(
+    any(user(:admin?), user(:moderator?)),
+    record(:published?)
+  )
+end
 ```
 
 #### `not(condition)`
 
-Negates a condition.
+Negates a condition inside a `match` block.
 
 ```ruby
-when_all(
-  user(:active?),
-  not(user(:banned?))
-)
+match do
+  all(
+    user(:active?),
+    not(user(:banned?))
+  )
+end
 ```
 
 ### Reference Methods
@@ -137,7 +147,7 @@ Convenience methods for common references:
 # user() - shorthand for obj(:user)
 user(:admin?)
 
-# record() - shorthand for obj(:recordord)
+# record() - shorthand for obj(:record)
 record(:published?)
 
 # doc() - shorthand for obj(:document)
@@ -153,13 +163,13 @@ flag(:approval_required)
 flag(:email_sent)
 ```
 
-#### `lit(value)`
+#### `literal(value)`
 
-Creates a literal value reference.
+Creates a literal value reference (use `literal(...)` instead of `lit`):
 
 ```ruby
-user(:role).eq?(lit("admin"))
-order(:total).gt?(lit(100))
+user(:role).eq?(literal("admin"))
+order(:total).gt?(literal(100))
 ```
 
 ## Action Methods
@@ -273,7 +283,7 @@ puts result[:processed] # => true
 ```ruby
 def create_threshold_rule(name, threshold)
   rule name do
-    when_all(order(:total).gt?(lit(threshold)))
+    all(order(:total).gt?(literal(threshold)))
     action { set :tier, name }
   end
 end
@@ -292,7 +302,7 @@ rule "premium_check" do
   when_all(
     user(:subscription, :tier).eq?("premium"),
     user(:subscription, :active?),
-    user(:subscription, :expires_at).gt?(lit(Date.today))
+    user(:subscription, :expires_at).gt?(literal(Date.today))
   )
   action do
     set :premium_features, true

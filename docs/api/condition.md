@@ -180,7 +180,7 @@ obj(:key, :method)    # context[:key].method
 flag(:key)            # context[:key]
 
 # Literal value
-lit(42)               # The value 42
+literal(42)               # The value 42
 ```
 
 ### Comparison Shortcuts
@@ -205,8 +205,13 @@ not(record(:draft?))
 
 ```ruby
 rule "admin_only" do
-  when_all(user(:admin?))
-  action { allow! :access }
+  match do
+    all(user(:admin?))
+  end
+
+  execute do
+    allow! :access
+  end
 end
 ```
 
@@ -214,11 +219,16 @@ end
 
 ```ruby
 rule "bulk_discount" do
-  when_all(
-    order(:total).gt?(500),
-    order(:items_count).gt?(10)
-  )
-  action { set :discount, 0.15 }
+  match do
+    all(
+      order(:total).gt?(500),
+      order(:items_count).gt?(10)
+    )
+  end
+
+  execute do
+    set :discount, 0.15
+  end
 end
 ```
 
@@ -226,20 +236,25 @@ end
 
 ```ruby
 rule "can_edit" do
-  when_any(
-    # Admin can always edit
-    user(:admin?),
-    # Owner can edit if not locked and either draft or has force flag
-    all(
-      user(:owner?, record),
-      not(record(:locked?)),
-      any(
-        record(:draft?),
-        flag(:force_edit)
+  match do
+    any(
+      # Admin can always edit
+      user(:admin?),
+      # Owner can edit if not locked and either draft or has force flag
+      all(
+        user(:owner?, record),
+        not(record(:locked?)),
+        any(
+          record(:draft?),
+          flag(:force_edit)
+        )
       )
     )
-  )
-  action { allow! :edit }
+  end
+
+  execute do
+    allow! :edit
+  end
 end
 ```
 
@@ -247,13 +262,18 @@ end
 
 ```ruby
 rule "premium_feature" do
-  when_all(
-    user(:subscription, :active?),
-    user(:subscription, :tier).eq?("premium"),
-    feature(:enabled?),
-    not(feature(:deprecated?))
-  )
-  action { allow! :premium_feature }
+  match do
+    all(
+      user(:subscription, :active?),
+      user(:subscription, :tier).eq?("premium"),
+      feature(:enabled?),
+      not(feature(:deprecated?))
+    )
+  end
+
+  execute do
+    allow! :premium_feature
+  end
 end
 ```
 

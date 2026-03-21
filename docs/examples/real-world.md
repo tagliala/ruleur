@@ -29,22 +29,26 @@ class OrderValidationEngine
     @engine ||= Ruleur.define do
       # Inventory Check
       rule "check_inventory", salience: 100 do
-        when_all(
-          order(:items).present,
-          order(:items_in_stock?)
-        )
-        action do
+        match do
+          all(
+            order(:items).present,
+            order(:items_in_stock?)
+          )
+        end
+        execute do
           set :inventory_valid, true
           set :validation_step, "inventory_passed"
         end
       end
       
       rule "insufficient_inventory", salience: 100 do
-        when_all(
-          order(:items).present,
-          not(order(:items_in_stock?))
-        )
-        action do
+        match do
+          all(
+            order(:items).present,
+            not(order(:items_in_stock?))
+          )
+        end
+        execute do
           items = context[:order].out_of_stock_items
           set :validation_failed, true
           set :error_code, "INSUFFICIENT_INVENTORY"
@@ -54,22 +58,24 @@ class OrderValidationEngine
       
       # Customer Validation
       rule "validate_customer", salience: 90 do
-        when_all(
-          flag(:inventory_valid),
-          customer(:active?),
-          not(customer(:suspended?))
-        )
-        action do
+        match do
+          all(
+            flag(:inventory_valid),
+            customer(:active?),
+            not(customer(:suspended?))
+          )
+        end
+        execute do
           set :customer_valid, true
           set :validation_step, "customer_passed"
         end
       end
       
       rule "suspended_customer", salience: 90 do
-        when_all(
-          customer(:suspended?)
-        )
-        action do
+        match do
+          all(customer(:suspended?))
+        end
+        execute do
           set :validation_failed, true
           set :error_code, "CUSTOMER_SUSPENDED"
           set :error_message, "Customer account is suspended"
@@ -78,12 +84,14 @@ class OrderValidationEngine
       
       # Payment Method Validation
       rule "validate_payment", salience: 80 do
-        when_all(
-          flag(:customer_valid),
-          order(:payment_method).present,
-          order(:payment_valid?)
-        )
-        action do
+        match do
+          all(
+            flag(:customer_valid),
+            order(:payment_method).present,
+            order(:payment_valid?)
+          )
+        end
+        execute do
           set :payment_valid, true
           set :validation_step, "payment_passed"
         end
@@ -91,11 +99,13 @@ class OrderValidationEngine
       
       # Regional Restrictions
       rule "check_shipping_restrictions", salience: 70 do
-        when_all(
-          flag(:payment_valid),
-          order(:shipping_address).present
-        )
-        action do
+        match do
+          all(
+            flag(:payment_valid),
+            order(:shipping_address).present
+          )
+        end
+        execute do
           address = context[:order].shipping_address
           restricted = context[:order].has_restricted_items?(address.country)
           
@@ -112,11 +122,13 @@ class OrderValidationEngine
       
       # Business Days Check
       rule "business_days_validation", salience: 60 do
-        when_all(
-          flag(:shipping_valid),
-          order(:expedited_shipping?)
-        )
-        action do
+        match do
+          all(
+            flag(:shipping_valid),
+            order(:expedited_shipping?)
+          )
+        end
+        execute do
           today = Date.today
           is_business_day = (1..5).include?(today.wday)
           
@@ -131,14 +143,16 @@ class OrderValidationEngine
       
       # Final Validation
       rule "order_valid", salience: 10 do
-        when_all(
-          flag(:inventory_valid),
-          flag(:customer_valid),
-          flag(:payment_valid),
-          flag(:shipping_valid),
-          not(flag(:validation_failed))
-        )
-        action do
+        match do
+          all(
+            flag(:inventory_valid),
+            flag(:customer_valid),
+            flag(:payment_valid),
+            flag(:shipping_valid),
+            not(flag(:validation_failed))
+          )
+        end
+        execute do
           set :order_valid, true
           set :ready_to_process, true
         end
@@ -196,10 +210,10 @@ class FeatureAccessEngine
     @engine ||= Ruleur.define do
       # Basic Features (All tiers)
       rule "basic_features", salience: 100 do
-        when_all(
-          user(:subscription, :active?)
-        )
-        action do
+        match do
+          all(user(:subscription, :active?))
+        end
+        execute do
           allow! :dashboard
           allow! :basic_reports
           allow! :profile
@@ -210,11 +224,13 @@ class FeatureAccessEngine
       
       # Pro Features
       rule "pro_features", salience: 90 do
-        when_all(
-          user(:subscription, :tier).in(["pro", "enterprise"]),
-          user(:subscription, :active?)
-        )
-        action do
+        match do
+          all(
+            user(:subscription, :tier).in(["pro", "enterprise"]),
+            user(:subscription, :active?)
+          )
+        end
+        execute do
           allow! :advanced_analytics
           allow! :custom_reports
           allow! :api_access
@@ -227,11 +243,13 @@ class FeatureAccessEngine
       
       # Enterprise Features
       rule "enterprise_features", salience: 80 do
-        when_all(
-          user(:subscription, :tier).eq?("enterprise"),
-          user(:subscription, :active?)
-        )
-        action do
+        match do
+          all(
+            user(:subscription, :tier).eq?("enterprise"),
+            user(:subscription, :active?)
+          )
+        end
+        execute do
           allow! :sso
           allow! :audit_logs
           allow! :white_label
@@ -245,11 +263,13 @@ class FeatureAccessEngine
       
       # Trial Limitations
       rule "trial_limitations", salience: 110 do
-        when_all(
-          user(:subscription, :trial?),
-          user(:subscription, :active?)
-        )
-        action do
+        match do
+          all(
+            user(:subscription, :trial?),
+            user(:subscription, :active?)
+          )
+        end
+        execute do
           allow! :dashboard
           allow! :basic_reports
           set :max_projects, 1
@@ -260,10 +280,10 @@ class FeatureAccessEngine
       
       # Add-on: Extra Storage
       rule "storage_addon", salience: 70 do
-        when_all(
-          user(:has_addon?, "extra_storage")
-        )
-        action do
+        match do
+          all(user(:has_addon?, "extra_storage"))
+        end
+        execute do
           current_storage = context[:storage_gb] || 5
           set :storage_gb, current_storage + 50
         end
@@ -271,11 +291,13 @@ class FeatureAccessEngine
       
       # Add-on: API Access for Basic Users
       rule "api_addon", salience: 70 do
-        when_all(
-          user(:subscription, :tier).eq?("basic"),
-          user(:has_addon?, "api_access")
-        )
-        action do
+        match do
+          all(
+            user(:subscription, :tier).eq?("basic"),
+            user(:has_addon?, "api_access")
+          )
+        end
+        execute do
           allow! :api_access
           set :api_rate_limit, 100
         end
@@ -283,11 +305,13 @@ class FeatureAccessEngine
       
       # Usage Limits
       rule "check_project_limit", salience: 50 do
-        when_all(
-          flag(:max_projects).present,
-          user(:projects_count).gte?(flag(:max_projects))
-        )
-        action do
+        match do
+          all(
+            flag(:max_projects).present,
+            user(:projects_count).gte?(flag(:max_projects))
+          )
+        end
+        execute do
           deny! :create_project
           set :limit_reached, "projects"
           set :upgrade_required, true
@@ -295,11 +319,13 @@ class FeatureAccessEngine
       end
       
       rule "check_storage_limit", salience: 50 do
-        when_all(
-          flag(:storage_gb).present,
-          user(:storage_used_gb).gte?(flag(:storage_gb))
-        )
-        action do
+        match do
+          all(
+            flag(:storage_gb).present,
+            user(:storage_used_gb).gte?(flag(:storage_gb))
+          )
+        end
+        execute do
           deny! :upload_files
           set :limit_reached, "storage"
           set :upgrade_required, true
@@ -308,10 +334,10 @@ class FeatureAccessEngine
       
       # Expired Subscription
       rule "expired_subscription", salience: 120 do
-        when_all(
-          not(user(:subscription, :active?))
-        )
-        action do
+        match do
+          all(not(user(:subscription, :active?)))
+        end
+        execute do
           allow! :dashboard
           allow! :billing
           deny! :create_project
@@ -373,12 +399,14 @@ class ContentModerationEngine
     @engine ||= Ruleur.define do
       # Trusted User Auto-Approve
       rule "trusted_user_auto_approve", salience: 100 do
-        when_all(
-          user(:trusted?),
-          user(:violations_count).eq?(0),
-          content(:type).in(["text", "image"])
-        )
-        action do
+        match do
+          all(
+            user(:trusted?),
+            user(:violations_count).eq?(0),
+            content(:type).in(["text", "image"])
+          )
+        end
+        execute do
           set :moderation_action, "approve"
           set :auto_approved, true
           set :reason, "Trusted user with clean history"
@@ -387,14 +415,16 @@ class ContentModerationEngine
       
       # Spam Detection
       rule "spam_detection", salience: 110 do
-        when_all(
-          any(
-            content(:contains_spam_keywords?),
-            content(:excessive_links?),
-            content(:repetitive_content?)
+        match do
+          all(
+            any(
+              content(:contains_spam_keywords?),
+              content(:excessive_links?),
+              content(:repetitive_content?)
+            )
           )
-        )
-        action do
+        end
+        execute do
           set :moderation_action, "reject"
           set :flag_reason, "Potential spam detected"
           set :notify_user, true
@@ -403,10 +433,10 @@ class ContentModerationEngine
       
       # Profanity Check
       rule "profanity_check", salience: 105 do
-        when_all(
-          content(:contains_profanity?)
-        )
-        action do
+        match do
+          all(content(:contains_profanity?))
+        end
+        execute do
           severity = context[:content].profanity_severity
           
           if severity >= 8
@@ -421,12 +451,14 @@ class ContentModerationEngine
       
       # New User Content
       rule "new_user_review", salience: 90 do
-        when_all(
-          user(:account_age_days).lt?(7),
-          not(flag(:auto_approved)),
-          not(flag(:moderation_action).present)
-        )
-        action do
+        match do
+          all(
+            user(:account_age_days).lt?(7),
+            not(flag(:auto_approved)),
+            not(flag(:moderation_action).present)
+          )
+        end
+        execute do
           set :moderation_action, "review"
           set :flag_reason, "New user - pending review"
           set :review_priority, "low"
@@ -435,11 +467,13 @@ class ContentModerationEngine
       
       # Sensitive Content
       rule "sensitive_content", salience: 95 do
-        when_all(
-          content(:type).in(["image", "video"]),
-          content(:ai_flagged?)
-        )
-        action do
+        match do
+          all(
+            content(:type).in(["image", "video"]),
+            content(:ai_flagged?)
+          )
+        end
+        execute do
           confidence = context[:content].ai_confidence
           
           if confidence >= 0.9
@@ -455,11 +489,13 @@ class ContentModerationEngine
       
       # Copyright Claims
       rule "copyright_check", salience: 100 do
-        when_all(
-          content(:type).in(["image", "video", "audio"]),
-          content(:copyright_match?)
-        )
-        action do
+        match do
+          all(
+            content(:type).in(["image", "video", "audio"]),
+            content(:copyright_match?)
+          )
+        end
+        execute do
           set :moderation_action, "remove"
           set :flag_reason, "Copyright violation detected"
           set :dmca_takedown, true
@@ -469,10 +505,10 @@ class ContentModerationEngine
       
       # Rate Limiting
       rule "rate_limit_exceeded", salience: 120 do
-        when_all(
-          user(:posts_last_hour).gt?(10)
-        )
-        action do
+        match do
+          all(user(:posts_last_hour).gt?(10))
+        end
+        execute do
           set :moderation_action, "rate_limit"
           set :flag_reason, "Posting too frequently"
           set :cooldown_minutes, 60
@@ -481,10 +517,10 @@ class ContentModerationEngine
       
       # Default: Queue for Review
       rule "default_review", salience: 1 do
-        when_all(
-          not(flag(:moderation_action).present)
-        )
-        action do
+        match do
+          all(not(flag(:moderation_action).present))
+        end
+        execute do
           set :moderation_action, "review"
           set :flag_reason, "Standard review process"
           set :review_priority, "normal"

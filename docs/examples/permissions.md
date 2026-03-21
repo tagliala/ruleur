@@ -10,8 +10,9 @@ In access control, the default should always be **deny**. Only grant access when
 engine = Ruleur.define do
   # Access is only granted if this rule fires
   rule "admin_update" do
-    when_all(user(:admin?))
-    set :update, true
+    match { all(user(:admin?)) }
+
+    execute { set :update, true }
   end
 end
 
@@ -36,8 +37,9 @@ Permission rules help you:
 ```ruby
 engine = Ruleur.define do
   rule "admin_access" do
-    when_all(user(:admin?))
-    set :admin_access, true
+    match { all(user(:admin?)) }
+
+    execute { set :admin_access, true }
   end
 end
 
@@ -50,12 +52,15 @@ result[:admin_access]  # => true or nil
 ```ruby
 engine = Ruleur.define do
   rule "staff_access" do
-    when_any(
-      user(:admin?),
-      user(:moderator?),
-      user(:support?)
-    )
-    set :staff_access, true
+    match do
+      any(
+        user(:admin?),
+        user(:moderator?),
+        user(:support?)
+      )
+    end
+
+    execute { set :staff_access, true }
   end
 end
 ```
@@ -67,11 +72,15 @@ end
 ```ruby
 engine = Ruleur.define do
   rule "owner_update" do
-    when_all(
-      user(:owns?, record),
-      not(record(:locked?))
-    )
-    set :update, true
+    match do
+      all(
+        user(:owns?, record),
+        not(record(:locked?))
+      )
+    end
+    execute do
+      set :update, true
+    end
   end
 end
 
@@ -84,14 +93,18 @@ result[:update]  # => true or nil
 ```ruby
 engine = Ruleur.define do
   rule "admin_or_owner_destroy" do
-    when_any(
-      user(:admin?),
-      all(
-        user(:owns?, record),
-        record(:deletable?)
+    match do
+      any(
+        user(:admin?),
+        all(
+          user(:owns?, record),
+          record(:deletable?)
+        )
       )
-    )
-    set :destroy, true
+    end
+    execute do
+      set :destroy, true
+    end
   end
 end
 ```
@@ -103,25 +116,37 @@ end
 ```ruby
 engine = Ruleur.define do
   rule "authenticated_show" do
-    when_all(user(:authenticated?))
-    set :show, true
+    match do
+      all(user(:authenticated?))
+    end
+    execute do
+      set :show, true
+    end
   end
 
   rule "contributor_update" do
-    when_any(
-      user(:contributor?),
-      user(:maintainer?),
-      user(:admin?)
-    )
-    set :update, true
+    match do
+      any(
+        user(:contributor?),
+        user(:maintainer?),
+        user(:admin?)
+      )
+    end
+    execute do
+      set :update, true
+    end
   end
 
   rule "maintainer_destroy" do
-    when_any(
-      user(:maintainer?),
-      user(:admin?)
-    )
-    set :destroy, true
+    match do
+      any(
+        user(:maintainer?),
+        user(:admin?)
+      )
+    end
+    execute do
+      set :destroy, true
+    end
   end
 end
 ```
@@ -133,24 +158,32 @@ end
 ```ruby
 engine = Ruleur.define do
   rule "standard_approve", salience: 10 do
-    when_all(
-      include?(user_value(:role), ['approver', 'admin']),
-      not(eq?(record_value(:author_id), user_value(:id))),
-      eq?(record_value(:status), 'pending_approval'),
-      record(:complete?),
-      gte(Time.current.hour, 9),
-      lt(Time.current.hour, 17)
-    )
-    set :approve, true
+    match do
+      all(
+        include?(user_value(:role), ['approver', 'admin']),
+        not(eq?(record_value(:author_id), user_value(:id))),
+        eq?(record_value(:status), 'pending_approval'),
+        record(:complete?),
+        gte(Time.current.hour, 9),
+        lt(Time.current.hour, 17)
+      )
+    end
+    execute do
+      set :approve, true
+    end
   end
 
   rule "emergency_approve", salience: 20 do
-    when_all(
-      user(:admin?),
-      eq?(record_value(:status), 'pending_approval'),
-      flag(:emergency_mode)
-    )
-    set :approve, true
+    match do
+      all(
+        user(:admin?),
+        eq?(record_value(:status), 'pending_approval'),
+        flag(:emergency_mode)
+      )
+    end
+    execute do
+      set :approve, true
+    end
   end
 end
 ```
@@ -162,31 +195,41 @@ end
 ```ruby
 engine = Ruleur.define do
   rule "basic_features" do
-    when_all(
-      user(:subscription_active?)
-    )
-    set :basic_export, true
-    set :basic_analytics, true
+    match do
+      all(user(:subscription_active?))
+    end
+    execute do
+      set :basic_export, true
+      set :basic_analytics, true
+    end
   end
 
   rule "premium_features" do
-    when_all(
-      include?(user_value(:subscription_tier), ['premium', 'enterprise']),
-      user(:subscription_active?)
-    )
-    set :advanced_export, true
-    set :custom_reports, true
-    set :api_access, true
+    match do
+      all(
+        include?(user_value(:subscription_tier), ['premium', 'enterprise']),
+        user(:subscription_active?)
+      )
+    end
+    execute do
+      set :advanced_export, true
+      set :custom_reports, true
+      set :api_access, true
+    end
   end
 
   rule "enterprise_features" do
-    when_all(
-      eq?(user_value(:subscription_tier), 'enterprise'),
-      user(:subscription_active?)
-    )
-    set :white_label, true
-    set :sso, true
-    set :audit_logs, true
+    match do
+      all(
+        eq?(user_value(:subscription_tier), 'enterprise'),
+        user(:subscription_active?)
+      )
+    end
+    execute do
+      set :white_label, true
+      set :sso, true
+      set :audit_logs, true
+    end
   end
 end
 ```
@@ -198,18 +241,26 @@ end
 ```ruby
 engine = Ruleur.define do
   rule "business_hours_access" do
-    when_all(
-      user(:employee?),
-      in?([1, 2, 3, 4, 5], [Time.current.wday]),
-      gte(Time.current.hour, 9),
-      lt(Time.current.hour, 17)
-    )
-    set :system_access, true
+    match do
+      all(
+        user(:employee?),
+        in?([1, 2, 3, 4, 5], [Time.current.wday]),
+        gte(Time.current.hour, 9),
+        lt(Time.current.hour, 17)
+      )
+    end
+    execute do
+      set :system_access, true
+    end
   end
 
   rule "after_hours_admin" do
-    when_all(user(:admin?))
-    set :system_access, true
+    match do
+      all(user(:admin?))
+    end
+    execute do
+      set :system_access, true
+    end
   end
 end
 ```
@@ -221,43 +272,63 @@ class BlogPolicy
   def self.engine
     @engine ||= Ruleur.define do
       rule "published_show" do
-        when_all(record(:published?))
-        set :show, true
+        match do
+          all(record(:published?))
+        end
+        execute do
+          set :show, true
+        end
       end
 
       rule "own_draft_show" do
-        when_all(
-          user(:owns?, record),
-          record(:draft?)
-        )
-        set :show, true
+        match do
+          all(
+            user(:owns?, record),
+            record(:draft?)
+          )
+        end
+        execute do
+          set :show, true
+        end
       end
 
       rule "own_draft_update" do
-        when_all(
-          user(:owns?, record),
-          record(:draft?),
-          not(record(:locked?))
-        )
-        set :update, true
-        set :destroy, true
+        match do
+          all(
+            user(:owns?, record),
+            record(:draft?),
+            not(record(:locked?))
+          )
+        end
+        execute do
+          set :update, true
+          set :destroy, true
+        end
       end
 
       rule "editor_update" do
-        when_all(
-          include?(user_value(:role), ["editor", "admin"]),
-          not(record(:archived?))
-        )
-        set :update, true
-        set :publish, true
+        match do
+          all(
+            include?(user_value(:role), ["editor", "admin"]),
+            not(record(:archived?))
+          )
+        end
+        execute do
+          set :update, true
+          set :publish, true
+        end
       end
 
       rule "admin_crud" do
-        when_all(user(:admin?))
-        set :show, true
-        set :update, true
-        set :destroy, true
-        set :publish, true
+        match do
+          all(user(:admin?))
+        end
+        execute do
+          set :show, true
+          set :update, true
+          set :destroy, true
+          set :publish, true
+        end
       end
     end
   end
