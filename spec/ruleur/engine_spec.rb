@@ -18,10 +18,10 @@ RSpec.describe Ruleur do
         Ruleur.define do
           rule 'allow_create', no_loop: true do
             when_any(
-              usr(:admin?),
+              user(:admin?),
               all(
-                rec(:updatable?),
-                rec(:draft?)
+                record(:updatable?),
+                record(:draft?)
               )
             )
             set :create, true
@@ -29,11 +29,11 @@ RSpec.describe Ruleur do
 
           rule 'allow_update', no_loop: true do
             when_all(
-              rec(:updatable?),
+              record(:updatable?),
               any(
-                usr(:admin?),
+                user(:admin?),
                 all(
-                  rec(:draft?),
+                  record(:draft?),
                   flag(:create)
                 )
               )
@@ -69,8 +69,8 @@ RSpec.describe Ruleur do
         engine = Ruleur.define do
           rule 'allow_create', no_loop: true do
             when_any(
-              usr(:admin?),
-              all(rec(:updatable?), rec(:draft?))
+              user(:admin?),
+              all(record(:updatable?), record(:draft?))
             )
             set :create, true
           end

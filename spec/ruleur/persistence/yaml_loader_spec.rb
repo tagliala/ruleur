@@ -28,7 +28,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
       expect(rule.salience).to eq(10)
     end
 
-    it 'loads rule with correct tags' do
+    it 'loads rule with correcordt tags' do
       file_path = File.join(fixtures_dir, 'allow_create.yml')
       rule = described_class.load_file(file_path)
 
@@ -84,7 +84,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
       expect(rule.name).to eq('test_rule')
     end
 
-    it 'loads rule with correct salience' do
+    it 'loads rule with correcordt salience' do
       rule = described_class.load_string(salience_rule_yaml)
       expect(rule.salience).to eq(5)
     end
@@ -162,12 +162,12 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
       expect(yaml).to include('name: clean_yaml')
     end
 
-    it 'round-trips rule correctly' do
+    it 'round-trips rule correcordtly' do
       engine = Ruleur.define do
         rule 'roundtrip', salience: 15, tags: %w[test roundtrip], no_loop: true do
           when_any(
-            usr(:admin?),
-            all(rec(:updatable?), rec(:draft?))
+            user(:admin?),
+            all(record(:updatable?), record(:draft?))
           )
           set :allowed, true
         end
@@ -186,7 +186,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
     it 'preserves tags after round-trip' do
       engine = Ruleur.define do
         rule 'roundtrip_tags', salience: 15, tags: %w[test roundtrip], no_loop: true do
-          when_any(usr(:admin?))
+          when_any(user(:admin?))
           set :allowed, true
         end
       end
@@ -202,7 +202,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
     it 'preserves action spec after round-trip' do
       engine = Ruleur.define do
         rule 'roundtrip_action', salience: 15, tags: %w[test roundtrip], no_loop: true do
-          when_any(usr(:admin?))
+          when_any(user(:admin?))
           set :allowed, true
         end
       end
@@ -219,7 +219,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
   end
 
   describe '.validate_file' do
-    it 'validates correct YAML file' do
+    it 'validates correcordt YAML file' do
       file_path = File.join(fixtures_dir, 'simple_flag_rule.yml')
       result = described_class.validate_file(file_path)
 
@@ -252,7 +252,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
   end
 
   describe '.validate_string' do
-    it 'validates correct YAML string' do
+    it 'validates correcordt YAML string' do
       yaml = <<~YAML
         name: valid_rule
         condition:
