@@ -9,7 +9,7 @@ In access control, the default should always be **deny**. Only grant access when
 ```ruby
 engine = Ruleur.define do
   # Access is only granted if this rule fires
-  rule "admwithinupdate" do
+  rule "admin_update" do
     when_all(user(:admin?))
     set :update, true
   end
@@ -35,14 +35,14 @@ Permission rules help you:
 
 ```ruby
 engine = Ruleur.define do
-  rule "admwithinaccess" do
+  rule "admin_access" do
     when_all(user(:admin?))
-    set :admwithinaccess, true
+    set :admin_access, true
   end
 end
 
 result = engine.run(user: current_user)
-result[:admwithinaccess]  # => true or nil
+result[:admin_access]  # => true or nil
 ```
 
 ### Multiple Roles
@@ -83,7 +83,7 @@ result[:update]  # => true or nil
 
 ```ruby
 engine = Ruleur.define do
-  rule "admwithinor_owner_destroy" do
+  rule "admin_or_owner_destroy" do
     when_any(
       user(:admin?),
       all(
@@ -134,7 +134,7 @@ end
 engine = Ruleur.define do
   rule "standard_approve", salience: 10 do
     when_all(
-      within(user_value(:role), ['approver', 'admin']),
+      include?(user_value(:role), ['approver', 'admin']),
       not(equals(record_value(:author_id), user_value(:id))),
       equals(record_value(:status), 'pending_approval'),
       record(:complete?),
@@ -171,7 +171,7 @@ engine = Ruleur.define do
 
   rule "premium_features" do
     when_all(
-      within(user_value(:subscription_tier), ['premium', 'enterprise']),
+      include?(user_value(:subscription_tier), ['premium', 'enterprise']),
       user(:subscription_active?)
     )
     set :advanced_export, true
@@ -200,7 +200,7 @@ engine = Ruleur.define do
   rule "business_hours_access" do
     when_all(
       user(:employee?),
-      within([1, 2, 3, 4, 5], [Time.current.wday]),
+      include?([1, 2, 3, 4, 5], [Time.current.wday]),
       gte(Time.current.hour, 9),
       lt(Time.current.hour, 17)
     )
@@ -245,14 +245,14 @@ class BlogPolicy
 
       rule "editor_update" do
         when_all(
-          within(user_value(:role), ["editor", "admin"]),
+          include?(user_value(:role), ["editor", "admin"]),
           not(record(:archived?))
         )
         set :update, true
         set :publish, true
       end
 
-      rule "admwithincrud" do
+      rule "admin_crud" do
         when_all(user(:admin?))
         set :show, true
         set :update, true
@@ -341,7 +341,7 @@ class DocumentPolicy < ApplicationPolicy
 
     if record.draft?
       return record.owner == user
-    elsif record.withinreview?
+    elsif record.include?review?
       return user.reviewer? || record.owner == user
     elsif record.published?
       return record.owner == user if user.editor?
@@ -368,7 +368,7 @@ With Ruleur, you only define **when a value is set**. If no rule matches, the va
 
 ```ruby
 engine = Ruleur.define do
-rule "admwithincrud", salience: 100, no_loop: true, tags: [:admin] do
+rule "admin_crud", salience: 100, no_loop: true, tags: [:admin] do
   when_all(user(:admin?))
   set :show, true
   set :create, true
@@ -388,7 +388,7 @@ end
 
 rule "review_owner_update", salience: 50, no_loop: true, tags: [:lifecycle, :review] do
   when_all(
-    record(:withinreview?),
+    record(:in_review?),
     equals(record_value(:owner_id), user_value(:id))
   )
   set :update, true
@@ -396,7 +396,7 @@ end
 
 rule "review_approver_update", salience: 45, no_loop: true, tags: [:lifecycle, :review] do
   when_all(
-    record(:withinreview?),
+    record(:in_review?),
     user(:approver?),
     equals(record_value(:department_id), user_value(:department_id))
   )
@@ -579,7 +579,7 @@ end
 Place high-priority rules (like admin bypass) at high salience so they fire first:
 
 ```ruby
-rule "admwithincrud", salience: 100 do
+rule "admin_crud", salience: 100 do
   when_all(user(:admin?))
   set :show, true
   set :create, true

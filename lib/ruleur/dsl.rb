@@ -53,6 +53,18 @@ module Ruleur
         Condition::Any.new(*children)
       end
 
+      def not_(child)
+        Condition::Not.new(child)
+      end
+
+      def include?(value, collection)
+        Condition::Predicate.new(value, :in, collection)
+      end
+
+      def exclude?(value, collection)
+        Condition::Not.new(Condition::Predicate.new(value, :in, collection))
+      end
+
       # Inline builder helpers: returns a Condition::Node
       def when_all(*children, &)
         @conds << all(*children, &)
@@ -93,8 +105,6 @@ module Ruleur
         # If the block calls DSL methods, we need to capture them
         instance_eval(&block) if block.arity.zero?
       end
-
-      alias then action
 
       def build
         cond = build_condition

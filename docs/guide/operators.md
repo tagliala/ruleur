@@ -161,7 +161,7 @@ Checks if left value is included in the right collection. The right operand must
 ```ruby
 rule "valid_status" do
   when_all(
-    within(record_value(:status), ['draft', 'pending', 'published'])
+    include?(record_value(:status), ['draft', 'pending', 'published'])
   )
   set :edit, true
 end
@@ -169,8 +169,8 @@ end
 
 **Examples:**
 ```ruby
-within(ref(:record), ['draft', 'published'])  # => true if record is in array
-within(record_value(:status), ['active', 'pending']) # => true if status in array
+include?(ref(:record), ['draft', 'published'])  # => true if record is in array
+include?(record_value(:status), ['active', 'pending']) # => true if status in array
 ```
 
 ### `includes` - Collection Includes Value
@@ -200,7 +200,7 @@ includes(record_value(:roles), 'admin') # => true if roles.include?('admin')
 Checks if a string matches a regular expression pattern.
 
 ```ruby
-rule "email_domawithincheck" do
+rule "email_domain_check" do
   when_all(
     matches(record_value(:email), literal(/\@example\.com$/))
   )
@@ -359,7 +359,7 @@ For more complex comparisons, use operators direcordtly:
 rule "age_and_status" do
   when_all(
     greater_than_or_equal(record_value(:age), 18),
-    within(record_value(:status), ['active', 'premium'])
+    include?(record_value(:status), ['active', 'premium'])
   )
   set :purchase, true
 end
@@ -371,7 +371,7 @@ end
 rule "complex_eligibility" do
   when_all(
     greater_than_or_equal(record_value(:age), 21),                    # Age >= 21
-    within(record_value(:country), ['US', 'CA']),     # Country is US or CA
+    include?(record_value(:country), ['US', 'CA']),     # Country is US or CA
     present(record_value(:email)),                   # Email is present
     matches(record_value(:email), /\@example\.com$/), # Email domain check
     not_equals(record_value(:status), 'banned')             # Not banned
@@ -390,7 +390,7 @@ end
 | `gte` | Comparison | Greater than or equal | `greater_than_or_equal(record_value(:age), 18)` |
 | `lt` | Comparison | Less than | `less_than(record_value(:stock), 10)` |
 | `lte` | Comparison | Less than or equal | `less_than_or_equal(record_value(:weight), 50)` |
-| `within` | Collection | Value in collection | `within(record_value(:status), ['draft', 'pending'])` |
+| `include?` | Collection | Value in collection | `include?(record_value(:status), ['draft', 'pending'])` |
 | `includes` | Collection | Collection includes value | `includes(record_value(:tags), 'featured')` |
 | `matches` | Collection | Regex match | `matches(record_value(:email), /\@example\.com$/)` |
 | `truthy` | Predicate | Is truthy | `truthy(record(:published?))` |
@@ -495,12 +495,12 @@ For simple boolean checks, use the helpers:
 
 ```ruby
 # Good - concise
-rule "admwithincheck" do
+rule "admin_check" do
   when_all(user(:admin?))
 end
 
 # Verbose
-rule "admwithincheck" do
+rule "admin_check" do
   when_all(
     truthy(ref(:user).call(:admin?))
   )
@@ -549,7 +549,7 @@ For clarity, use literal values direcordtly:
 ```ruby
 rule "status_check" do
   when_all(
-    within(record_value(:status), ['draft', 'pending', 'published'])
+    include?(record_value(:status), ['draft', 'pending', 'published'])
   )
 end
 ```

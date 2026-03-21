@@ -147,8 +147,6 @@ module Ruleur
 
       def contains(left, right) = Predicate.new(left, :includes, right)
 
-      def within(left, right) = Predicate.new(left, :in, right)
-
       def matches(left, right) = Predicate.new(left, :matches, right)
       def truthy(left) = Predicate.new(left, :truthy, nil)
       def falsy(left) = Predicate.new(left, :falsy, nil)

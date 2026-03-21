@@ -58,7 +58,7 @@ lt(record_value(:price), 100)
 lte(record_value(:stock), 5)
 
 # Collection membership
-within(record_value(:status), ['draft', 'pending'])
+include?(record_value(:status), ['draft', 'pending'])
 includes(record_value(:roles), 'admin')
 
 # Pattern matching
@@ -160,7 +160,7 @@ Note the underscore: Use `not_` (with underscore) in Ruby DSL because `not` is a
 
 The real power comes from nesting conditions to express complex logic.
 
-### Example 1: OR within AND
+### Example 1: OR include? AND
 
 "Allow update if user is admin OR (user is owner AND document is draft)"
 
@@ -179,7 +179,7 @@ rule "complex_update" do
 end
 ```
 
-### Example 2: AND within OR
+### Example 2: AND include? OR
 
 "Allow view if (document is public) OR (user is logged in AND document is not archived)"
 
@@ -240,7 +240,7 @@ For comparisons and complex checks:
 rule "explicit" do
   when_all(
     gte(record_value(:age), 18),
-    within(record_value(:status), ['active', 'trial'])
+    include?(record_value(:status), ['active', 'trial'])
   )
 end
 ```
@@ -325,7 +325,7 @@ Use values direcordtly (strings, numbers, arrays):
 
 ```ruby
 equals(record_value(:status), "published")  # String value
-within(record_value(:role), ['admin', 'editor'])  # Array value
+include?(record_value(:role), ['admin', 'editor'])  # Array value
 ```
 
 ### Context References

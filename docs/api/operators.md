@@ -88,13 +88,13 @@ user(:roles).contains("admin")
 order(:tags).contains("express")
 ```
 
-### `within`
+### `include?`
 
 Checks if value is in a collection.
 
 ```ruby
-user(:status).within(["active", "pending", "trial"])
-order(:type).within(allowed_types)
+user(:status).include?(["active", "pending", "trial"])
+order(:type).include?(allowed_types)
 ```
 
 ## Pattern Matching

@@ -89,7 +89,7 @@ matches(record_value(:email), literal(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a
 - `blank(value)` - Value is blank (nil/empty)
 
 **Collections:**
-- `within(value, array)` - Value in array
+- `include?(value, array)` - Value in array
 - `contains(array, value)` - Array contains value
 
 **Patterns:**
