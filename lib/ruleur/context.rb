@@ -3,10 +3,49 @@
 module Ruleur
   # Simple fact/context container. Supports resolving references via method chain.
   class Context
-    attr_reader :facts
+    attr_reader :facts, :debug
 
     def initialize(facts = {})
       @facts = facts.transform_keys(&:to_sym)
+      # collect debug info separately from facts; allow callers to pass a preseeded :debug
+      @debug = @facts.delete(:debug) || []
+      # pointer to track which debug entries have been consumed by the engine
+      @debug_consumed = 0
+      # protect debug array and counters when accessed from multiple threads
+      @debug_lock = Mutex.new
+    end
+
+    # Temporarily set the current rule for predicate-level debugging
+    # current_rule is stored per-thread so concurrent requests using the same
+    # Context instance don't clobber each other's active rule marker.
+    def with_current_rule(rule_name)
+      key = :"ruleur_current_rule_#{object_id}"
+      old = Thread.current[key]
+      Thread.current[key] = rule_name
+      yield
+    ensure
+      Thread.current[key] = old
+    end
+
+    def current_rule
+      key = :"ruleur_current_rule_#{object_id}"
+      Thread.current[key]
+    end
+
+    # Add a debug entry in a thread-safe manner
+    def add_debug(entry)
+      @debug_lock.synchronize { @debug << entry }
+    end
+
+    # Return debug entries that have not yet been consumed and mark them consumed.
+    def drain_debug_since_last
+      return [] unless @debug.is_a?(Array)
+
+      @debug_lock.synchronize do
+        new_entries = @debug[@debug_consumed..-1] || []
+        @debug_consumed = @debug.length
+        new_entries
+      end
     end
 
     def [](key)

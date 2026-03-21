@@ -51,9 +51,23 @@ module Ruleur
       end
 
       def evaluate(ctx)
+        # measure predicate evaluation time and register timing under ctx.debug
+        start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         left_val = ctx.resolve_value(left)
         right_val = ctx.resolve_value(right)
-        Operators.call(operator, left_val, right_val)
+        result = Operators.call(operator, left_val, right_val)
+        duration_ms = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000.0
+
+        if ctx.respond_to?(:debug) && ctx.debug
+          entry = { predicate: operator, rule: ctx.current_rule, duration_ms: duration_ms }
+          begin
+            ctx.debug << entry
+          rescue StandardError
+            # ignore write errors
+          end
+        end
+
+        result
       end
     end
 
