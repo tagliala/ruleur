@@ -54,13 +54,15 @@ module Ruleur
     def build_conflict_set(ctx)
       # Sort by salience (desc) and estimated predicate cost (asc) so cheaper rules
       # within the same salience fire earlier. Use recorded averages when available.
-      @rules.select do |r|
+      selected = @rules.select do |r|
         if ctx.respond_to?(:with_current_rule)
           ctx.with_current_rule(r.name) { r.eligible?(ctx) }
         else
           r.eligible?(ctx)
         end
-      end.sort_by { |r| [-r.salience, estimate_rule_cost(r.name), r.name] }
+      end
+
+      selected.sort_by { |r| [-r.salience, estimate_rule_cost(r.name), r.name] }
     end
 
     def estimate_rule_cost(rule_name)
@@ -101,7 +103,7 @@ module Ruleur
                       end
         update_stats_from_debug(new_entries)
 
-        log "Fired: #{rule.name} (salience=#{rule.salience}) in #{'%.3f' % duration_ms}ms"
+        log "Fired: #{rule.name} (salience=#{rule.salience}) in #{format('%.3f', duration_ms)}ms"
         log_fact_changes(before, after)
       end
     end

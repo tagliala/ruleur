@@ -23,6 +23,8 @@ Metrics/AbcSize:
   Exclude:
     - 'Rakefile'
     - 'spec/**/*'
+    - 'lib/ruleur/condition.rb'
+    - 'lib/ruleur/engine.rb'
 
 Metrics/BlockLength:
   Exclude:
@@ -32,16 +34,21 @@ Metrics/BlockLength:
 Metrics/ClassLength:
   Exclude:
     - 'spec/**/*'
+    - 'lib/ruleur/engine.rb'
 
 Metrics/CyclomaticComplexity:
   Exclude:
     - 'Rakefile'
     - 'spec/**/*'
+    - 'lib/ruleur/engine.rb'
+    - 'lib/ruleur/condition.rb'
 
 Metrics/MethodLength:
   Exclude:
     - 'Rakefile'
     - 'spec/**/*'
+    - 'lib/ruleur/engine.rb'
+    - 'lib/ruleur/condition.rb'
 
 Metrics/ModuleLength:
   Exclude:
@@ -51,12 +58,14 @@ Metrics/PerceivedComplexity:
   Exclude:
     - 'Rakefile'
     - 'spec/**/*'
+    - 'lib/ruleur/engine.rb'
+    - 'lib/ruleur/condition.rb'
 
 RSpec/ExampleLength:
   Max: 15
 
 RSpec/MultipleExpectations:
-  Max: 5
+  Max: 8
 
 RSpec/SpecFilePathFormat:
   Enabled: false

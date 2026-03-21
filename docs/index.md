@@ -46,7 +46,7 @@ features:
     
   - icon: 🔍
     title: Inspectable & Testable
-    details: Trace rule execution, serialize rules to JSON, and test rules independently. Debug with confidence.
+    details: Trace rule execution, serialize rules to JSON, and test rules independently. Debug with confidence. The engine records per-rule and per-predicate execution timings which are returned in `ctx.debug` for each run and aggregated in `engine.stats`.
     
   - icon: 🚀
     title: Production Ready
