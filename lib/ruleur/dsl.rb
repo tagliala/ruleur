@@ -81,6 +81,18 @@ module Ruleur
         @conds << predicate(&)
       end
 
+      # New DSL entrypoints: prefer `match do ... end` to collect conditions
+      # and `execute do ... end` to declare the action block. These are
+      # thin adapters that keep backward compatibility with existing
+      # `when_all`/`when_any` helpers.
+      def match(&block)
+        instance_eval(&block) if block
+      end
+
+      def execute(&)
+        action(&)
+      end
+
       # Action helpers
 
       # Set a fact key to a literal or resolved value
