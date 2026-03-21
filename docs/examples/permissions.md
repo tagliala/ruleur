@@ -9,7 +9,7 @@ In access control, the default should always be **deny**. Only grant access when
 ```ruby
 engine = Ruleur.define do
   # Access is only granted if this rule fires
-  rule "admin_update" do
+  rule "admwithinupdate" do
     when_all(user(:admin?))
     set :update, true
   end
@@ -35,14 +35,14 @@ Permission rules help you:
 
 ```ruby
 engine = Ruleur.define do
-  rule "admin_access" do
+  rule "admwithinaccess" do
     when_all(user(:admin?))
-    set :admin_access, true
+    set :admwithinaccess, true
   end
 end
 
 result = engine.run(user: current_user)
-result[:admin_access]  # => true or nil
+result[:admwithinaccess]  # => true or nil
 ```
 
 ### Multiple Roles
@@ -83,7 +83,7 @@ result[:update]  # => true or nil
 
 ```ruby
 engine = Ruleur.define do
-  rule "admin_or_owner_destroy" do
+  rule "admwithinor_owner_destroy" do
     when_any(
       user(:admin?),
       all(
@@ -134,9 +134,9 @@ end
 engine = Ruleur.define do
   rule "standard_approve", salience: 10 do
     when_all(
-      in_(user_val(:role), ['approver', 'admin']),
-      not(eq(record_val(:author_id), user_val(:id))),
-      eq(record_val(:status), 'pending_approval'),
+      within(user_value(:role), ['approver', 'admin']),
+      not(equals(record_value(:author_id), user_value(:id))),
+      equals(record_value(:status), 'pending_approval'),
       record(:complete?),
       gte(Time.current.hour, 9),
       lt(Time.current.hour, 17)
@@ -147,7 +147,7 @@ engine = Ruleur.define do
   rule "emergency_approve", salience: 20 do
     when_all(
       user(:admin?),
-      eq(record_val(:status), 'pending_approval'),
+      equals(record_value(:status), 'pending_approval'),
       flag(:emergency_mode)
     )
     set :approve, true
@@ -171,7 +171,7 @@ engine = Ruleur.define do
 
   rule "premium_features" do
     when_all(
-      in_(user_val(:subscription_tier), ['premium', 'enterprise']),
+      within(user_value(:subscription_tier), ['premium', 'enterprise']),
       user(:subscription_active?)
     )
     set :advanced_export, true
@@ -181,7 +181,7 @@ engine = Ruleur.define do
 
   rule "enterprise_features" do
     when_all(
-      eq(user_val(:subscription_tier), 'enterprise'),
+      equals(user_value(:subscription_tier), 'enterprise'),
       user(:subscription_active?)
     )
     set :white_label, true
@@ -200,7 +200,7 @@ engine = Ruleur.define do
   rule "business_hours_access" do
     when_all(
       user(:employee?),
-      in_([1, 2, 3, 4, 5], [Time.current.wday]),
+      within([1, 2, 3, 4, 5], [Time.current.wday]),
       gte(Time.current.hour, 9),
       lt(Time.current.hour, 17)
     )
@@ -245,14 +245,14 @@ class BlogPolicy
 
       rule "editor_update" do
         when_all(
-          in_(user_val(:role), ["editor", "admin"]),
+          within(user_value(:role), ["editor", "admin"]),
           not(record(:archived?))
         )
         set :update, true
         set :publish, true
       end
 
-      rule "admin_crud" do
+      rule "admwithincrud" do
         when_all(user(:admin?))
         set :show, true
         set :update, true
@@ -341,7 +341,7 @@ class DocumentPolicy < ApplicationPolicy
 
     if record.draft?
       return record.owner == user
-    elsif record.in_review?
+    elsif record.withinreview?
       return user.reviewer? || record.owner == user
     elsif record.published?
       return record.owner == user if user.editor?
@@ -368,7 +368,7 @@ With Ruleur, you only define **when a value is set**. If no rule matches, the va
 
 ```ruby
 engine = Ruleur.define do
-rule "admin_crud", salience: 100, no_loop: true, tags: [:admin] do
+rule "admwithincrud", salience: 100, no_loop: true, tags: [:admin] do
   when_all(user(:admin?))
   set :show, true
   set :create, true
@@ -379,7 +379,7 @@ end
 rule "draft_owner_crud", salience: 50, no_loop: true, tags: [:ownership, :draft] do
   when_all(
     record(:draft?),
-    eq(record_val(:owner_id), user_val(:id))
+    equals(record_value(:owner_id), user_value(:id))
   )
   set :show, true
   set :update, true
@@ -388,17 +388,17 @@ end
 
 rule "review_owner_update", salience: 50, no_loop: true, tags: [:lifecycle, :review] do
   when_all(
-    record(:in_review?),
-    eq(record_val(:owner_id), user_val(:id))
+    record(:withinreview?),
+    equals(record_value(:owner_id), user_value(:id))
   )
   set :update, true
 end
 
 rule "review_approver_update", salience: 45, no_loop: true, tags: [:lifecycle, :review] do
   when_all(
-    record(:in_review?),
+    record(:withinreview?),
     user(:approver?),
-    eq(record_val(:department_id), user_val(:department_id))
+    equals(record_value(:department_id), user_value(:department_id))
   )
   set :update, true
 end
@@ -411,13 +411,13 @@ end
 rule "published_owner_destroy", salience: 45, no_loop: true, tags: [:lifecycle, :published] do
   when_all(
     record(:published?),
-    eq(record_val(:owner_id), user_val(:id))
+    equals(record_value(:owner_id), user_value(:id))
   )
   set :destroy, true
 end
 
 rule "owner_crud", salience: 40, no_loop: true, tags: [:ownership] do
-  when_all(eq(record_val(:owner_id), user_val(:id)))
+  when_all(equals(record_value(:owner_id), user_value(:id)))
   set :show, true
   set :update, true
   set :destroy, true
@@ -426,7 +426,7 @@ end
 rule "department_show", salience: 30, no_loop: true, tags: [:department] do
   when_all(
     record(:visible_to_department?),
-    eq(record_val(:department_id), user_val(:department_id))
+    equals(record_value(:department_id), user_value(:department_id))
   )
   set :show, true
 end
@@ -579,7 +579,7 @@ end
 Place high-priority rules (like admin bypass) at high salience so they fire first:
 
 ```ruby
-rule "admin_crud", salience: 100 do
+rule "admwithincrud", salience: 100 do
   when_all(user(:admin?))
   set :show, true
   set :create, true

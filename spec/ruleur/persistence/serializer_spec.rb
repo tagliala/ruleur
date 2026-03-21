@@ -109,7 +109,7 @@ RSpec.describe Ruleur::Persistence::Serializer do
       engine = Ruleur.define do
         rule 'call_test' do
           when_all(
-            eq(call(ref(:user), :role), 'admin')
+            equals(call(ref(:user), :role), 'admin')
           )
           set :is_admin, true
         end
@@ -139,7 +139,7 @@ RSpec.describe Ruleur::Persistence::Serializer do
       engine = Ruleur.define do
         rule 'with_lambda' do
           when_all(
-            eq(lambda_value { |_ctx| 42 }, 42)
+            equals(literal { |_ctx| 42 }, 42)
           )
           set :result, true
         end

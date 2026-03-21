@@ -16,11 +16,11 @@ module Ruleur
       end
 
       # use inside predicates: value of a record/user property
-      def record_val(*path)
+      def record_value(*path)
         Condition::Builders.ref(:record, *path)
       end
 
-      def user_val(*path)
+      def user_value(*path)
         Condition::Builders.ref(:user, *path)
       end
 

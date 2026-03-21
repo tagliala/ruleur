@@ -44,21 +44,21 @@ when_any(user(:admin?), record(:public?))
 
 # Ownership check
 when_all(
-  eq(record_val(:owner_id), user_val(:id)),
+  equals(record_value(:owner_id), user_value(:id)),
   record(:active?)
 )
 
 # Range check
 when_all(
-  gte(record_val(:price), 100),
-  lte(record_val(:price), 1000)
+  greater_than_or_equal(record_value(:price), 100),
+  less_than_or_equal(record_value(:price), 1000)
 )
 
 # Array membership
-includes(record_val(:roles), lit('editor'))
+includes(record_value(:roles), literal('editor'))
 
 # Pattern matching
-matches(record_val(:email), lit(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i))
+matches(record_value(:email), literal(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i))
 ```
 
 ### DSL Reference
@@ -67,20 +67,20 @@ matches(record_val(:email), lit(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z
 |--------|-------------|---------|
 | `user(:admin?)` | Predicate on user object | `user(:admin?)` |
 | `record(:active?)` | Predicate on record object | `record(:active?)` |
-| `user_val(:id)` | Get field value from user | `user_val(:id)` |
-| `record_val(:owner_id)` | Get field value from record | `record_val(:owner_id)` |
+| `user_value(:id)` | Get field value from user | `user_value(:id)` |
+| `record_value(:owner_id)` | Get field value from record | `record_value(:owner_id)` |
 | `flag(:create)` | Check if permission granted | `flag(:create)` |
 | `set :update, true` | Grant permission | `set :update, true` |
 
 ### Operators Reference
 
 **Comparison:**
-- `eq(a, b)` - Equal
-- `ne(a, b)` - Not equal
-- `gt(a, b)` - Greater than
-- `gte(a, b)` - Greater than or equal
-- `lt(a, b)` - Less than
-- `lte(a, b)` - Less than or equal
+- `equals(a, b)` - Equal
+- `not_equals(a, b)` - Not equal
+- `greater_than(a, b)` - Greater than
+- `greater_than_or_equal(a, b)` - Greater than or equal
+- `less_than(a, b)` - Less than
+- `less_than_or_equal(a, b)` - Less than or equal
 
 **Logical:**
 - `truthy(value)` - Value is truthy
@@ -89,8 +89,8 @@ matches(record_val(:email), lit(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z
 - `blank(value)` - Value is blank (nil/empty)
 
 **Collections:**
-- `in(value, array)` - Value in array
-- `includes(array, value)` - Array includes value
+- `within(value, array)` - Value in array
+- `contains(array, value)` - Array contains value
 
 **Patterns:**
 - `matches(string, regex)` - String matches regex

@@ -21,54 +21,54 @@ A **predicate** is the basic building block - it compares two values using an op
 ```ruby
 rule "adult_check" do
   when_all(
-    gte(record_val(:age), 18)  # Predicate: recordord.age >= 18
+    gte(record_value(:age), 18)  # Predicate: recordord.age >= 18
   )
   allow! :access
 end
 ```
 
 The predicate has three parts:
-- **Left value**: `record_val(:age)` - the value to test
+- **Left value**: `record_value(:age)` - the value to test
 - **Operator**: `gte` - greater than or equal
 - **Right value**: `18` - the comparison value
 
 ### Predicate Anatomy
 
 ```ruby
-# eq(left, right)
+# equals(left, right)
 #  ^  ^     ^
 #  |  |     +-- Right value (comparison value)
 #  |  +-------- Left value (value to test)
 #  +----------- Operator
 
-eq(record_val(:status), "published")
+equals(record_value(:status), "published")
 ```
 
 ### Common Predicates
 
 ```ruby
 # Equality
-eq(record_val(:status), "active")
-ne(record_val(:status), "archived")
+equals(record_value(:status), "active")
+ne(record_value(:status), "archived")
 
 # Numeric comparison
-gt(record_val(:age), 21)
-gte(record_val(:age), 18)
-lt(record_val(:price), 100)
-lte(record_val(:stock), 5)
+gt(record_value(:age), 21)
+gte(record_value(:age), 18)
+lt(record_value(:price), 100)
+lte(record_value(:stock), 5)
 
 # Collection membership
-in_(record_val(:status), ['draft', 'pending'])
-includes(record_val(:roles), 'admin')
+within(record_value(:status), ['draft', 'pending'])
+includes(record_value(:roles), 'admin')
 
 # Pattern matching
-matches(record_val(:email), lit(/@example\.com$/))
+matches(record_value(:email), lit(/@example\.com$/))
 
 # Truthiness
 truthy(record(:published?))
 falsy(record(:locked?))
-present(record_val(:name))
-blank(record_val(:description))
+present(record_value(:name))
+blank(record_value(:description))
 ```
 
 See [Operators](./operators.md) for a complete list.
@@ -87,7 +87,7 @@ rule "restricted_access" do
     all(
       user(:verified?),
       user(:premium?),
-      gte(record_val(:age), 21)
+      gte(record_value(:age), 21)
     )
   )
   allow! :vip_access
@@ -128,7 +128,7 @@ rule "can_edit" do
   when_any(
     user(:admin?),
     user(:editor?),
-    eq(record_val(:owner_id), user_val(:id))
+    equals(record_value(:owner_id), user_value(:id))
   )
   allow! :edit
 end
@@ -170,7 +170,7 @@ rule "complex_update" do
     any(
       user(:admin?),
       all(
-        eq(record_val(:owner_id), user_val(:id)),
+        equals(record_value(:owner_id), user_value(:id)),
         record(:draft?)
       )
     )
@@ -239,8 +239,8 @@ For comparisons and complex checks:
 ```ruby
 rule "explicit" do
   when_all(
-    gte(record_val(:age), 18),
-    in_(record_val(:status), ['active', 'trial'])
+    gte(record_value(:age), 18),
+    within(record_value(:status), ['active', 'trial'])
   )
 end
 ```
@@ -253,7 +253,7 @@ Combine both approaches:
 rule "mixed" do
   when_all(
     user(:verified?),                    # Shortcut
-    gte(record_val(:subscription_level), 3), # Explicit
+    gte(record_value(:subscription_level), 3), # Explicit
     not_(record(:banned?))                 # Shortcut with negation
   )
 end
@@ -324,8 +324,8 @@ Conditions operate on **values** from the execution context.
 Use values direcordtly (strings, numbers, arrays):
 
 ```ruby
-eq(record_val(:status), "published")  # String value
-in_(record_val(:role), ['admin', 'editor'])  # Array value
+equals(record_value(:status), "published")  # String value
+within(record_value(:role), ['admin', 'editor'])  # Array value
 ```
 
 ### Context References
@@ -354,8 +354,8 @@ The DSL provides shortcuts for common patterns:
 ```ruby
 record(:published?)     # => call(ref(:recordord), :published?)
 user(:admin?)         # => call(ref(:user), :admin?)
-record_val(:age)        # => call(ref(:recordord), :age)
-user_val(:id)         # => call(ref(:user), :id)
+record_value(:age)        # => call(ref(:recordord), :age)
+user_value(:id)         # => call(ref(:user), :id)
 ```
 
 ## Custom Conditions with Blocks
@@ -424,7 +424,7 @@ rule "permission_cascade" do
   when_any(
     user(:admin?),                           # Highest priority
     all(user(:editor?), record(:draft?)),       # Medium priority
-    all(eq(record_val(:owner_id), user_val(:id)), not_(record(:locked?)))  # Lowest
+    all(equals(record_value(:owner_id), user_value(:id)), not_(record(:locked?)))  # Lowest
   )
   allow! :edit
 end
@@ -439,7 +439,7 @@ rule "new_feature" do
   when_all(
     flag(:new_feature_enabled),  # Feature flag
     user(:premium?),                # Business rule
-    gte(record_val(:created_at), Time.new(2026, 1, 1))  # Time constraint
+    gte(record_value(:created_at), Time.new(2026, 1, 1))  # Time constraint
   )
   set :use_new_feature, true
 end
@@ -489,7 +489,7 @@ Use flags set by earlier rules:
 ```ruby
 rule "check_eligibility", salience: 10 do
   when_all(
-    gte(record_val(:age), 18),
+    gte(record_value(:age), 18),
     user(:verified?)
   )
   allow! :eligible
@@ -551,7 +551,7 @@ Break complex conditions into smaller rules:
 rule "eligible_for_discount" do
   when_all(
     user(:premium?),
-    gte(record_val(:total), 100)
+    gte(record_value(:total), 100)
   )
   allow! :discount
 end
@@ -560,9 +560,9 @@ end
 rule "complex" do
   when_all(
     any(
-      all(user(:premium?), gte(record_val(:total), 100)),
-      all(user(:vip?), gte(record_val(:total), 50)),
-      all(user(:staff?), present(record_val(:staff_id)))
+      all(user(:premium?), gte(record_value(:total), 100)),
+      all(user(:vip?), gte(record_value(:total), 50)),
+      all(user(:staff?), present(record_value(:staff_id)))
     )
   )
 end
@@ -590,12 +590,12 @@ when_all(
 
 ```ruby
 # Good
-is_adult = gte(record_val(:age), 18)
+is_adult = gte(record_value(:age), 18)
 is_verified = user(:verified?)
 when_all(is_adult, is_verified)
 
 # Less clear
-when_all(gte(record_val(:age), 18), user(:verified?))
+when_all(gte(record_value(:age), 18), user(:verified?))
 ```
 
 ### 4. Avoid Deep Nesting
@@ -658,8 +658,8 @@ puts condition.evaluate(ctx)  # => true or false
 ```ruby
 # Add presence checks
 when_all(
-  present(record_val(:user)),
-  eq(record_val(:user).call(:role), 'admin')
+  present(record_value(:user)),
+  equals(record_value(:user).call(:role), 'admin')
 )
 
 # Or use safe navigation in models

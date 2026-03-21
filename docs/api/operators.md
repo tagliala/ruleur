@@ -13,25 +13,25 @@ Ruleur provides a comprehensive set of operators for:
 
 ## Comparison Operators
 
-### `equals` / `eq`
+### `equals`
 
 Checks equality using `==`.
 
 ```ruby
 user(:role).equals("admin")
-order(:status).eq("pending")
+order(:status).equals("pending")
 ```
 
-### `not_equals` / `ne`
+### `not_equals`
 
 Checks inequality using `!=`.
 
 ```ruby
 user(:role).not_equals("guest")
-order(:status).ne("cancelled")
+order(:status).not_equals("cancelled")
 ```
 
-### `identical` / `eql`
+### `identical`
 
 Checks identity using `eql?`.
 
@@ -41,71 +41,71 @@ value(:type).identical(expected_type)
 
 ## Numeric Operators
 
-### `greater_than` / `gt`
+### `greater_than`
 
 Greater than comparison using `>`.
 
 ```ruby
 order(:total).greater_than(100)
-user(:age).gt(18)
+user(:age).greater_than(18)
 ```
 
-### `greater_than_or_equal` / `gte`
+### `greater_than_or_equal`
 
 Greater than or equal comparison using `>=`.
 
 ```ruby
 order(:total).greater_than_or_equal(50)
-user(:age).gte(21)
+user(:age).greater_than_or_equal(21)
 ```
 
-### `less_than` / `lt`
+### `less_than`
 
 Less than comparison using `<`.
 
 ```ruby
 order(:total).less_than(1000)
-user(:age).lt(65)
+user(:age).less_than(65)
 ```
 
-### `less_than_or_equal` / `lte`
+### `less_than_or_equal`
 
 Less than or equal comparison using `<=`.
 
 ```ruby
 order(:items_count).less_than_or_equal(10)
-user(:attempts).lte(3)
+user(:attempts).less_than_or_equal(3)
 ```
 
 ## Collection Operators
 
-### `includes` / `contains`
+### `contains`
 
 Checks if collection includes a value using `include?`.
 
 ```ruby
-user(:roles).includes("admin")
+user(:roles).contains("admin")
 order(:tags).contains("express")
 ```
 
-### `in`
+### `within`
 
 Checks if value is in a collection.
 
 ```ruby
-user(:status).in(["active", "pending", "trial"])
-order(:type).in(allowed_types)
+user(:status).within(["active", "pending", "trial"])
+order(:type).within(allowed_types)
 ```
 
 ## Pattern Matching
 
-### `matches` / `match`
+### `matches`
 
 Pattern matching using `match?` or `===`.
 
 ```ruby
 email(:address).matches(/^[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+$/i)
-user(:role).match(/admin|super/)
+user(:role).matches(/admin|super/)
 ```
 
 ## Boolean Operators
@@ -119,7 +119,7 @@ user(:admin?)          # Implicit truthy check
 flag(:enabled).truthy
 ```
 
-### `falsy` / `falsey`
+### `falsy`
 
 Checks if value is falsy (`nil` or `false`).
 

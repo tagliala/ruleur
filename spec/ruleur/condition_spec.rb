@@ -115,7 +115,7 @@ RSpec.describe Ruleur::Condition do
       engine = Ruleur.define do
         rule 'lambda_test' do
           when_all(
-            eq(lambda_value { |ctx| ctx[:a] + ctx[:b] }, 10)
+            equals(literal { |ctx| ctx[:a] + ctx[:b] }, 10)
           )
           set :sum_is_ten, true
         end
@@ -132,7 +132,7 @@ RSpec.describe Ruleur::Condition do
       engine = Ruleur.define do
         rule 'lambda_calculation' do
           when_all(
-            gt(lambda_value { |ctx| ctx[:x] * ctx[:y] }, 100)
+            greater_than(literal { |ctx| ctx[:x] * ctx[:y] }, 100)
           )
           set :large_product, true
         end

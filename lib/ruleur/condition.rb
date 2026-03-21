@@ -133,19 +133,31 @@ module Ruleur
         LambdaValue.new(block)
       end
 
-      def eq(left, right) = Predicate.new(left, :eq, right)
-      def ne(left, right) = Predicate.new(left, :ne, right)
-      def gt(left, right) = Predicate.new(left, :gt, right)
-      def gte(left, right) = Predicate.new(left, :gte, right)
-      def lt(left, right) = Predicate.new(left, :lt, right)
-      def lte(left, right) = Predicate.new(left, :lte, right)
-      def includes(left, right) = Predicate.new(left, :includes, right)
-      def in_(left, right) = Predicate.new(left, :in, right)
+      def equals(left, right) = Predicate.new(left, :eq, right)
+
+      def not_equals(left, right) = Predicate.new(left, :ne, right)
+
+      def greater_than(left, right) = Predicate.new(left, :gt, right)
+
+      def greater_than_or_equal(left, right) = Predicate.new(left, :gte, right)
+
+      def less_than(left, right) = Predicate.new(left, :lt, right)
+
+      def less_than_or_equal(left, right) = Predicate.new(left, :lte, right)
+
+      def contains(left, right) = Predicate.new(left, :includes, right)
+
+      def within(left, right) = Predicate.new(left, :in, right)
+
       def matches(left, right) = Predicate.new(left, :matches, right)
       def truthy(left) = Predicate.new(left, :truthy, nil)
       def falsy(left) = Predicate.new(left, :falsy, nil)
       def present(left) = Predicate.new(left, :present, nil)
       def blank(left) = Predicate.new(left, :blank, nil)
+
+      def literal(value = nil, &block)
+        LambdaValue.new(block || -> { value })
+      end
 
       def all(*children) = All.new(*children)
       def any(*children) = Any.new(*children)

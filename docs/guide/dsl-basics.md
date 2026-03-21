@@ -105,22 +105,22 @@ user(:admin?)       # => truthy(user.admin?)
 user(:verified?)    # => truthy(user.verified?)
 :::
 
-### `record_val(method_name)` - Record Value Reference
+### `record_value(method_name)` - Record Value Reference
 
 Gets the actual value (not truthy check) from a record method:
 
 ```ruby
-eq(record_val(:age), 18)
-includes(lit(['draft', 'pending']), record_val(:status))
+equals(record_value(:age), 18)
+includes(lit(['draft', 'pending']), record_value(:status))
 ```
 
-### `user_val(method_name)` - User Value Reference
+### `user_value(method_name)` - User Value Reference
 
 Gets the actual value from a user method:
 
 ```ruby
-eq(user_val(:role), 'admin')
-gte(user_val(:subscription_level), 3)
+equals(user_value(:role), 'admin')
+gte(user_value(:subscription_level), 3)
 ```
 
 ### `flag(name)` - Context Flag Check
@@ -175,7 +175,7 @@ rule "editor_show" do
   when_any(
     user(:admin?),
     record(:public?),
-    eq(record_val(:owner_id), user_val(:id))
+    equals(record_value(:owner_id), user_value(:id))
   )
   set :show, true
 end
@@ -210,9 +210,9 @@ For more complex comparisons, use operators directly:
 ```ruby
 rule "premium_purchase" do
   when_all(
-    gte(record_val(:age), 18),
-    eq(record_val(:country), 'US'),
-    includes(lit(['active', 'trial']), record_val(:status))
+    gte(record_value(:age), 18),
+    equals(record_value(:country), 'US'),
+    includes(lit(['active', 'trial']), record_value(:status))
   )
   set :purchase, true
 end
@@ -300,7 +300,7 @@ Rules can reference any context key using `ref`:
 ```ruby
 rule "check_custom" do
   when_all(
-    eq(ref(:custom_value), 123)
+    equals(ref(:custom_value), 123)
   )
   set :custom_check, true
 end
@@ -346,7 +346,7 @@ engine = Ruleur.define do
     when_all(
       record(:draft?),
       not(record(:locked?)),
-      eq(record_val(:owner_id), user_val(:id))
+      equals(record_value(:owner_id), user_value(:id))
     )
     set :update, true
   end

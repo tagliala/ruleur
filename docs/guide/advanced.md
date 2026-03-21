@@ -354,7 +354,7 @@ Put cheap, likely-to-fail checks first:
 # Good - cheap check first
 when_all(
   user(:logged_in?),        # Fast boolean check
-  present(record_val(:title)), # Fast presence check
+  present(record_value(:title)), # Fast presence check
   expensive_db_query()      # Slow check last
 )
 
@@ -418,7 +418,7 @@ Avoid expensive computations in conditions:
 ```ruby
 # Bad - computed on every evaluation
 when_all(
-  gt(record_val(:items).sum(&:price), 1000)
+  greater_than(record_value(:items).sum(&:price), 1000)
 )
 
 # Good - precordompute before engine run
@@ -426,7 +426,7 @@ total = recordord.items.sum(&:price)
 ctx = engine.run(user: user, recordord: recordord, total: total)
 
 rule "high_value_order" do
-  when_all(gt(ref(:total), 1000))
+  when_all(greater_than(ref(:total), 1000))
 end
 ```
 
@@ -510,7 +510,7 @@ end
 rule "age_range_check" do
   when_all(
     predicate do
-      left = record_val(:age)
+      left = record_value(:age)
       right = lit(18..65)
       Ruleur::Operators.call(:within_range, left, right)
     end
