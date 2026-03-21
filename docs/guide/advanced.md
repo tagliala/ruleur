@@ -128,8 +128,8 @@ Use `no_loop: true` when:
 rule "grant_base_permissions", no_loop: true do
   when_all(usr(:registered?))
   action do
-    allow! :view
-    allow! :comment
+    set :view, true
+    set :comment, true
   end
 end
 
@@ -139,8 +139,8 @@ rule "grant_premium_permissions", no_loop: true do
     flag(:view)  # Depends on previous rule
   )
   action do
-    allow! :download
-    allow! :export
+    set :download, true
+    set :export, true
   end
 end
 ```
@@ -327,23 +327,23 @@ rule "permission_check" do
     usr(:editor?),
     usr(:owner?)
   )
-  allow! :edit
+  set :edit, true
 end
 
 # Less efficient - three rules
 rule "admin_edit" do
   when_all(usr(:admin?))
-  allow! :edit
+  set :edit, true
 end
 
 rule "editor_edit" do
   when_all(usr(:editor?))
-  allow! :edit
+  set :edit, true
 end
 
 rule "owner_edit" do
   when_all(usr(:owner?))
-  allow! :edit
+  set :edit, true
 end
 ```
 
@@ -516,7 +516,7 @@ rule "age_range_check" do
       Ruleur::Operators.call(:within_range, left, right)
     end
   )
-  allow! :eligible
+  set :eligible, true
 end
 ```
 

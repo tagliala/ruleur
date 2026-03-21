@@ -87,11 +87,6 @@ module Ruleur
         hash.each { |k, v| @action_spec[:set][k.to_sym] = v }
       end
 
-      # Convenience to set :#{sym} => true
-      def allow!(sym)
-        set(sym, true)
-      end
-
       # Provide arbitrary action
       def action(&block)
         @action = block

@@ -70,7 +70,7 @@ matches(record_val(:email), lit(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z
 | `user_val(:id)` | Get field value from user | `user_val(:id)` |
 | `record_val(:owner_id)` | Get field value from record | `record_val(:owner_id)` |
 | `flag(:create)` | Check if permission granted | `flag(:create)` |
-| `allow! :update` | Grant permission | `allow! :update` |
+| `set :update, true` | Grant permission | `set :update, true` |
 
 ### Operators Reference
 

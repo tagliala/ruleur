@@ -147,12 +147,12 @@ end
 
 ### Permission Results
 
-For permissions, use `allow!` which sets a flag when granted. Access is denied by default when no flag is set:
+For permissions, use `set :key, true` to grant access. Access is denied by default when no flag is set:
 
 ```ruby
 rule "admin_create" do
   when_all(user(:admin?))
-  allow! :create
+  set :create, true
 end
 ```
 

@@ -13,7 +13,7 @@ engine = Ruleur.define do
       user(:admin?),
       all(record(:updatable?), record(:draft?))
     )
-    allow! :create
+    set :create, true
   end
 end
 
@@ -32,7 +32,7 @@ With Ruleur, you only define **when access is granted**. If no rule sets a permi
 engine = Ruleur.define do
   rule "admin_update" do
     when_all(user(:admin?))
-    allow! :update
+    set :update, true
   end
   # No rule for guest? => access denied by default
 end
@@ -73,7 +73,7 @@ rule "rule_name", salience: 10, tags: ['permissions'], no_loop: true do
   when_all(
     # conditions go here
   )
-  allow! :create
+  set :create, true
 end
 ```
 
@@ -155,7 +155,7 @@ This is useful for chaining rules - one rule sets `:create`, another checks it:
 ```ruby
 rule "admin_create" do
   when_any(user(:admin?))
-  allow! :create
+  set :create, true
 end
 
 rule "draft_update" do
@@ -163,21 +163,9 @@ rule "draft_update" do
     flag(:create),
     record(:draft?)
   )
-  allow! :update
+  set :update, true
 end
 ```
-
-### `allow!(name)` - Grant Permission
-
-Convenience method to grant a permission:
-
-```ruby
-allow! :create
-allow! :update
-allow! :destroy
-```
-
-This is equivalent to `set(:create, true)` but more readable.
 
 ## Conditions
 
@@ -192,7 +180,7 @@ rule "admin_update" do
     record(:published?),
     not(record(:locked?))
   )
-  allow! :update
+  set :update, true
 end
 ```
 
@@ -207,7 +195,7 @@ rule "editor_show" do
     record(:public?),
     eq(record_val(:owner_id), user_val(:id))
   )
-  allow! :show
+  set :show, true
 end
 ```
 
@@ -229,7 +217,7 @@ rule "editor_update" do
       not(record(:archived?))
     )
   )
-  allow! :update
+  set :update, true
 end
 ```
 
@@ -244,7 +232,7 @@ rule "premium_purchase" do
     eq(record_val(:country), 'US'),
     includes(lit(['active', 'trial']), record_val(:status))
   )
-  allow! :purchase
+  set :purchase, true
 end
 ```
 
@@ -252,19 +240,7 @@ See [Operators](./operators.md) for a complete list.
 
 ## Actions
 
-Actions define what happens when a rule fires. Use the `allow!` helper or `action` block.
-
-### `allow!(name)` - Grant Permission
-
-```ruby
-rule "admin_crud" do
-  when_all(user(:admin?))
-  allow! :create
-  allow! :show
-  allow! :update
-  allow! :destroy
-end
-```
+Actions define what happens when a rule fires. Use the `set` method or `action` block.
 
 ### `set(key, value)` - Set a Context Value
 
@@ -369,10 +345,10 @@ end
 engine = Ruleur.define do
   rule "admin_crud", salience: 100 do
     when_all(user(:admin?))
-    allow! :create
-    allow! :show
-    allow! :update
-    allow! :destroy
+    set :create, true
+    set :show, true
+    set :update, true
+    set :destroy, true
   end
 
   rule "editor_create_update", salience: 50 do
@@ -380,8 +356,8 @@ engine = Ruleur.define do
       user(:editor?),
       record(:draft?)
     )
-    allow! :create
-    allow! :update
+    set :create, true
+    set :update, true
   end
 
   rule "owner_update" do
@@ -390,7 +366,7 @@ engine = Ruleur.define do
       not(record(:locked?)),
       eq(record_val(:owner_id), user_val(:id))
     )
-    allow! :update
+    set :update, true
   end
 
   rule "editor_published_update" do
@@ -398,7 +374,7 @@ engine = Ruleur.define do
       record(:published?),
       any(user(:admin?), user(:editor?))
     )
-    allow! :update
+    set :update, true
   end
 end
 
@@ -428,7 +404,7 @@ end
 # Good: Only grant when appropriate
 rule "auth_update" do
   when_all(user(:authenticated?))
-  allow! :update
+  set :update, true
 end
 ```
 
@@ -451,12 +427,12 @@ Each rule should have a single responsibility:
 ```ruby
 rule "admin_create" do
   when_all(user(:admin?))
-  allow! :create
+  set :create, true
 end
 
 rule "verified_user_create" do
   when_all(user(:verified?))
-  allow! :create
+  set :create, true
 end
 ```
 
@@ -497,11 +473,11 @@ end
 
 ```ruby
 rule "admin_create", tags: ['permissions', 'admin'] do
-  allow! :create
+  set :create, true
 end
 
 rule "editor_update", tags: ['permissions', 'editor'] do
-  allow! :update
+  set :update, true
 end
 
 engine.rules_with_tag('admin')

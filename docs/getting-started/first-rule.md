@@ -50,7 +50,7 @@ Ruleur follows **deny by default** - you only define when access is granted:
 engine = Ruleur.define do
   rule 'admin_update' do
     when_any(user(:admin?))
-    allow! :update
+    set :update, true
   end
 
   rule 'author_draft_update' do
@@ -58,7 +58,7 @@ engine = Ruleur.define do
       record(:draft?),
       eq(record_val(:author_id), user_val(:id))
     )
-    allow! :update
+    set :update, true
   end
 end
 ```
@@ -67,7 +67,7 @@ end
 
 - `user(:admin?)` - checks if `user.admin?` returns truthy
 - `record(:draft?)` - checks if `record.draft?` returns truthy
-- `allow! :update` - grants update permission
+- `set :update, true` - grants update permission
 - `salience` - priority (higher fires first)
 
 ## Step 3: Run the Engine
@@ -96,7 +96,7 @@ ctx[:update]  # => nil (denied by default)
 engine = Ruleur.define do
   rule 'admin_update' do
     when_any(user(:admin?))
-    allow! :update
+    set :update, true
   end
 
   rule 'author_draft_update' do
@@ -104,7 +104,7 @@ engine = Ruleur.define do
       record(:draft?),
       eq(record_val(:author_id), user_val(:id))
     )
-    allow! :update
+    set :update, true
   end
 
   rule 'published_requires_admin' do
@@ -112,7 +112,7 @@ engine = Ruleur.define do
       not(record(:draft?)),
       user(:admin?)
     )
-    allow! :update
+    set :update, true
   end
 end
 ```
@@ -143,7 +143,7 @@ end
 engine = Ruleur.define do
   rule 'admin_update' do
     when_any(user(:admin?))
-    allow! :update
+    set :update, true
   end
 
   rule 'author_draft_update' do
@@ -151,7 +151,7 @@ engine = Ruleur.define do
       record(:draft?),
       eq(record_val(:author_id), user_val(:id))
     )
-    allow! :update
+    set :update, true
   end
 end
 
@@ -200,7 +200,7 @@ With Ruleur, you only define **when access is granted**. If no rule sets a permi
 engine = Ruleur.define do
   rule 'admin_update' do
     when_any(user(:admin?))
-    allow! :update
+    set :update, true
   end
   # No rule for guest? => access denied by default
 end

@@ -2,19 +2,18 @@
 
 ## Project Overview
 
-Ruleur is a Ruby gem that implements a Business Rule Management System (BRMS) using the Rete algorithm. The gem allows you to manage business rules in a scalable and efficient manner.
+Ruleur is a Ruby gem that implements a Business Rule Management System (BRMS) using naive forward-chaining. The gem allows you to manage business rules in a declarative manner with YAML authoring and full version tracking.
 
 ### Core Architecture
 
-The Rete algorithm implementation consists of:
+The forward-chaining engine implementation consists of:
 
-- **Network**: Implements the algorithm using nodes
-  - **Alpha Nodes**: Filter facts based on conditions
-  - **Beta Nodes**: Match filtered facts to activate rules
-- **Rule Set**: Top-level container for all rules
+- **Engine**: Executes rules against facts in priority order
 - **Rules**: Business rules with conditions and actions
-- **Facts**: Data processed by the system
-- **Working Memory**: Maintains current state of facts
+- **Conditions**: Composable predicates (all/any/not)
+- **Actions**: Set context values when conditions match
+- **Facts**: Data processed by the engine
+- **Context**: Working memory for intermediate values and results
 
 ## Development Guidelines
 
@@ -122,15 +121,15 @@ When suggesting code changes:
 
 ### Common Patterns in Ruleur
 
-- Node classes inherit from base `Node` class
-- Use factory patterns for creating complex objects
-- Implement visitor pattern for network traversal
-- Use functional programming concepts where appropriate
-- Prefer composition over inheritance
+- Use descriptive rule names
+- Follow deny-by-default for permissions (OWASP principle)
+- Use `allow!` to grant permissions, `nil` means denied
+- Use salience for priority ordering
+- Use `no_loop` to prevent rules from firing twice
 
 ### Performance Considerations
 
-- The Rete algorithm is designed for performance
+- Naive forward-chaining is simple and predictable
 - Avoid unnecessary object creation in hot paths
 - Use memoization for expensive operations
 - Consider memory usage in long-running processes

@@ -24,7 +24,7 @@ RSpec.describe Ruleur do
                 rec(:draft?)
               )
             )
-            action { allow! :create }
+            set :create, true
           end
 
           rule 'allow_update', no_loop: true do
@@ -38,7 +38,7 @@ RSpec.describe Ruleur do
                 )
               )
             )
-            action { allow! :update }
+            set :update, true
           end
         end
       end
@@ -72,7 +72,7 @@ RSpec.describe Ruleur do
               usr(:admin?),
               all(rec(:updatable?), rec(:draft?))
             )
-            action { allow! :create }
+            set :create, true
           end
         end
 

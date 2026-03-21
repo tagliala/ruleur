@@ -48,12 +48,12 @@ Complete examples from production systems.
 engine = Ruleur.define do
   rule "admin_access" do
     when_all(user(:admin?))
-    allow! :access
+    set :access, true
   end
 
   rule "owner_update" do
     when_all(user(:owner?, record))
-    allow! :update
+    set :update, true
   end
 end
 
@@ -84,23 +84,23 @@ discount = result[:discount] # Higher salience wins
 
 ```ruby
 engine = Ruleur.define do
-  rule "can_submit" do
-    when_all(
-      document(:draft?),
-      document(:complete?),
-      not(document(:submitted?))
-    )
-    action { allow! :submit }
-  end
-  
-  rule "can_approve" do
-    when_all(
-      user(:approver?),
-      document(:submitted?),
-      not(document(:approved?))
-    )
-    action { allow! :approve }
-  end
+rule "can_submit" do
+  when_all(
+    document(:draft?),
+    document(:complete?),
+    not(document(:submitted?))
+  )
+  action { set :submit, true }
+end
+
+rule "can_approve" do
+  when_all(
+    user(:approver?),
+    document(:submitted?),
+    not(document(:approved?))
+  )
+  action { set :approve, true }
+end
 end
 ```
 

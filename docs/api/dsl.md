@@ -178,19 +178,7 @@ action do
 end
 ```
 
-#### Shorthand Methods
 
-```ruby
-action do
-  # allow! sets a permission flag to true
-  allow! :create
-  allow! :update
-  
-  # deny! sets a permission flag to false
-  deny! :delete
-  deny! :export
-end
-```
 
 ### Method Calls
 
@@ -252,7 +240,7 @@ engine = Ruleur.define do
       )
     )
     action do
-      allow! :edit
+      set :edit, true
       set :reason, "User has edit permissions"
     end
   end
@@ -307,7 +295,7 @@ rule "premium_check" do
     usr(:subscription, :expires_at).greater_than(lit(Date.today))
   )
   action do
-    allow! :premium_features
+    set :premium_features, true
   end
 end
 ```

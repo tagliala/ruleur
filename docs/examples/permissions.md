@@ -16,7 +16,7 @@ engine = Ruleur.define do
   # Access is granted only if this rule fires
   rule "admin_update" do
     when_all(user(:admin?))
-    allow! :update
+    set :update, true
   end
   # No rule for guest? => access denied by default
 end
@@ -41,7 +41,7 @@ Permission rules help you:
 engine = Ruleur.define do
   rule "admin_access" do
     when_all(user(:admin?))
-    allow! :admin_access
+    set :admin_access, true
   end
 end
 
@@ -53,14 +53,14 @@ result[:admin_access]  # => true or nil
 
 ```ruby
 engine = Ruleur.define do
-  rule "staff_access" do
-    when_any(
-      user(:admin?),
-      user(:moderator?),
-      user(:support?)
-    )
-    allow! :staff_access
-  end
+rule "staff_access" do
+  when_any(
+    user(:admin?),
+    user(:moderator?),
+    user(:support?)
+  )
+  set :staff_access, true
+end
 end
 ```
 
@@ -70,13 +70,13 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "owner_update" do
-    when_all(
-      user(:owns?, record),
-      not(record(:locked?))
-    )
-    allow! :update
-  end
+rule "owner_update" do
+  when_all(
+    user(:owns?, record),
+    not(record(:locked?))
+  )
+  set :update, true
+end
 end
 
 result = engine.run(user: current_user, record: post)
@@ -87,16 +87,16 @@ result[:update]  # => true or nil
 
 ```ruby
 engine = Ruleur.define do
-  rule "admin_or_owner_destroy" do
-    when_any(
-      user(:admin?),
-      all(
-        user(:owns?, record),
-        record(:deletable?)
-      )
+rule "admin_or_owner_destroy" do
+  when_any(
+    user(:admin?),
+    all(
+      user(:owns?, record),
+      record(:deletable?)
     )
-    allow! :destroy
-  end
+  )
+  set :destroy, true
+end
 end
 ```
 
@@ -106,27 +106,27 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "authenticated_show" do
-    when_all(user(:authenticated?))
-    allow! :show
-  end
+rule "authenticated_show" do
+  when_all(user(:authenticated?))
+  set :show, true
+end
 
-  rule "contributor_update" do
-    when_any(
-      user(:contributor?),
-      user(:maintainer?),
-      user(:admin?)
-    )
-    allow! :update
-  end
+rule "contributor_update" do
+  when_any(
+    user(:contributor?),
+    user(:maintainer?),
+    user(:admin?)
+  )
+  set :update, true
+end
 
-  rule "maintainer_destroy" do
-    when_any(
-      user(:maintainer?),
-      user(:admin?)
-    )
-    allow! :destroy
-  end
+rule "maintainer_destroy" do
+  when_any(
+    user(:maintainer?),
+    user(:admin?)
+  )
+  set :destroy, true
+end
 end
 ```
 
@@ -136,26 +136,26 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "standard_approve", salience: 10 do
-    when_all(
-      user(:role).in(["approver", "admin"]),
-      not(eq(record_val(:author_id), user_val(:id))),
-      eq(record_val(:status), "pending_approval"),
-      record(:complete?),
-      gte(lit(Time.current.hour), 9),
-      lt(lit(Time.current.hour), 17)
-    )
-    allow! :approve
-  end
+rule "standard_approve", salience: 10 do
+  when_all(
+    user(:role).in(["approver", "admin"]),
+    not(eq(record_val(:author_id), user_val(:id))),
+    eq(record_val(:status), "pending_approval"),
+    record(:complete?),
+    gte(lit(Time.current.hour), 9),
+    lt(lit(Time.current.hour), 17)
+  )
+  set :approve, true
+end
 
-  rule "emergency_approve", salience: 20 do
-    when_all(
-      user(:admin?),
-      eq(record_val(:status), "pending_approval"),
-      flag(:emergency_mode)
-    )
-    allow! :approve
-  end
+rule "emergency_approve", salience: 20 do
+  when_all(
+    user(:admin?),
+    eq(record_val(:status), "pending_approval"),
+    flag(:emergency_mode)
+  )
+  set :approve, true
+end
 end
 ```
 
@@ -165,31 +165,31 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "basic_features" do
-    when_all(user(:subscription, :active?))
-    allow! :basic_export
-    allow! :basic_analytics
-  end
+rule "basic_features" do
+  when_all(user(:subscription, :active?))
+  set :basic_export, true
+  set :basic_analytics, true
+end
 
-  rule "premium_features" do
-    when_all(
-      user(:subscription, :tier).in(["premium", "enterprise"]),
-      user(:subscription, :active?)
-    )
-    allow! :advanced_export
-    allow! :custom_reports
-    allow! :api_access
-  end
+rule "premium_features" do
+  when_all(
+    user(:subscription, :tier).in(["premium", "enterprise"]),
+    user(:subscription, :active?)
+  )
+  set :advanced_export, true
+  set :custom_reports, true
+  set :api_access, true
+end
 
-  rule "enterprise_features" do
-    when_all(
-      user(:subscription, :tier).equals("enterprise"),
-      user(:subscription, :active?)
-    )
-    allow! :white_label
-    allow! :sso
-    allow! :audit_logs
-  end
+rule "enterprise_features" do
+  when_all(
+    user(:subscription, :tier).equals("enterprise"),
+    user(:subscription, :active?)
+  )
+  set :white_label, true
+  set :sso, true
+  set :audit_logs, true
+end
 end
 ```
 
@@ -199,20 +199,20 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "business_hours_access" do
-    when_all(
-      user(:employee?),
-      in(lit(Time.current.wday), [1, 2, 3, 4, 5]),
-      gte(lit(Time.current.hour), 9),
-      lt(lit(Time.current.hour), 17)
-    )
-    allow! :system_access
-  end
+rule "business_hours_access" do
+  when_all(
+    user(:employee?),
+    in(lit(Time.current.wday), [1, 2, 3, 4, 5]),
+    gte(lit(Time.current.hour), 9),
+    lt(lit(Time.current.hour), 17)
+  )
+  set :system_access, true
+end
 
-  rule "after_hours_admin" do
-    when_all(user(:admin?))
-    allow! :system_access
-  end
+rule "after_hours_admin" do
+  when_all(user(:admin?))
+  set :system_access, true
+end
 end
 ```
 
@@ -222,45 +222,45 @@ end
 class BlogPolicy
   def self.engine
     @engine ||= Ruleur.define do
-      rule "published_show" do
-        when_all(record(:published?))
-        allow! :show
-      end
+rule "published_show" do
+  when_all(record(:published?))
+  set :show, true
+end
 
-      rule "own_draft_show" do
-        when_all(
-          user(:owns?, record),
-          record(:draft?)
-        )
-        allow! :show
-      end
+rule "own_draft_show" do
+  when_all(
+    user(:owns?, record),
+    record(:draft?)
+  )
+  set :show, true
+end
 
-      rule "own_draft_update" do
-        when_all(
-          user(:owns?, record),
-          record(:draft?),
-          not(record(:locked?))
-        )
-        allow! :update
-        allow! :destroy
-      end
+rule "own_draft_update" do
+  when_all(
+    user(:owns?, record),
+    record(:draft?),
+    not(record(:locked?))
+  )
+  set :update, true
+  set :destroy, true
+end
 
-      rule "editor_update" do
-        when_all(
-          user(:role).in(["editor", "admin"]),
-          not(record(:archived?))
-        )
-        allow! :update
-        allow! :publish
-      end
+rule "editor_update" do
+  when_all(
+    user(:role).in(["editor", "admin"]),
+    not(record(:archived?))
+  )
+  set :update, true
+  set :publish, true
+end
 
-      rule "admin_crud" do
-        when_all(user(:admin?))
-        allow! :show
-        allow! :update
-        allow! :destroy
-        allow! :publish
-      end
+rule "admin_crud" do
+  when_all(user(:admin?))
+  set :show, true
+  set :update, true
+  set :destroy, true
+  set :publish, true
+end
     end
   end
 
@@ -370,78 +370,78 @@ With Ruleur, you only define **when access is granted**. Everything else is deni
 
 ```ruby
 engine = Ruleur.define do
-  rule "admin_crud", salience: 100, no_loop: true, tags: [:admin] do
-    when_all(user(:admin?))
-    allow! :show
-    allow! :create
-    allow! :update
-    allow! :destroy
-  end
+rule "admin_crud", salience: 100, no_loop: true, tags: [:admin] do
+  when_all(user(:admin?))
+  set :show, true
+  set :create, true
+  set :update, true
+  set :destroy, true
+end
 
-  rule "draft_owner_crud", salience: 50, no_loop: true, tags: [:ownership, :draft] do
-    when_all(
-      record(:draft?),
-      eq(record_val(:owner_id), user_val(:id))
-    )
-    allow! :show
-    allow! :update
-    allow! :destroy
-  end
+rule "draft_owner_crud", salience: 50, no_loop: true, tags: [:ownership, :draft] do
+  when_all(
+    record(:draft?),
+    eq(record_val(:owner_id), user_val(:id))
+  )
+  set :show, true
+  set :update, true
+  set :destroy, true
+end
 
-  rule "review_owner_update", salience: 50, no_loop: true, tags: [:lifecycle, :review] do
-    when_all(
-      record(:in_review?),
-      eq(record_val(:owner_id), user_val(:id))
-    )
-    allow! :update
-  end
+rule "review_owner_update", salience: 50, no_loop: true, tags: [:lifecycle, :review] do
+  when_all(
+    record(:in_review?),
+    eq(record_val(:owner_id), user_val(:id))
+  )
+  set :update, true
+end
 
-  rule "review_approver_update", salience: 45, no_loop: true, tags: [:lifecycle, :review] do
-    when_all(
-      record(:in_review?),
-      user(:approver?),
-      eq(record_val(:department_id), user_val(:department_id))
-    )
-    allow! :update
-  end
+rule "review_approver_update", salience: 45, no_loop: true, tags: [:lifecycle, :review] do
+  when_all(
+    record(:in_review?),
+    user(:approver?),
+    eq(record_val(:department_id), user_val(:department_id))
+  )
+  set :update, true
+end
 
-  rule "published_show", salience: 50, no_loop: true, tags: [:lifecycle, :published] do
-    when_all(record(:published?))
-    allow! :show
-  end
+rule "published_show", salience: 50, no_loop: true, tags: [:lifecycle, :published] do
+  when_all(record(:published?))
+  set :show, true
+end
 
-  rule "published_owner_destroy", salience: 45, no_loop: true, tags: [:lifecycle, :published] do
-    when_all(
-      record(:published?),
-      eq(record_val(:owner_id), user_val(:id))
-    )
-    allow! :destroy
-  end
+rule "published_owner_destroy", salience: 45, no_loop: true, tags: [:lifecycle, :published] do
+  when_all(
+    record(:published?),
+    eq(record_val(:owner_id), user_val(:id))
+  )
+  set :destroy, true
+end
 
-  rule "owner_crud", salience: 40, no_loop: true, tags: [:ownership] do
-    when_all(eq(record_val(:owner_id), user_val(:id)))
-    allow! :show
-    allow! :update
-    allow! :destroy
-  end
+rule "owner_crud", salience: 40, no_loop: true, tags: [:ownership] do
+  when_all(eq(record_val(:owner_id), user_val(:id)))
+  set :show, true
+  set :update, true
+  set :destroy, true
+end
 
-  rule "department_show", salience: 30, no_loop: true, tags: [:department] do
-    when_all(
-      record(:visible_to_department?),
-      eq(record_val(:department_id), user_val(:department_id))
-    )
-    allow! :show
-  end
+rule "department_show", salience: 30, no_loop: true, tags: [:department] do
+  when_all(
+    record(:visible_to_department?),
+    eq(record_val(:department_id), user_val(:department_id))
+  )
+  set :show, true
+end
 
-  rule "shared_show", salience: 25, no_loop: true, tags: [:sharing] do
-    when_all(record(:shared_with_user))
-    allow! :show
-  end
+rule "shared_show", salience: 25, no_loop: true, tags: [:sharing] do
+  when_all(record(:shared_with_user))
+  set :show, true
+end
 
-  rule "public_show", salience: 20, no_loop: true, tags: [:visibility] do
-    when_all(record(:public?))
-    allow! :show
-  end
+rule "public_show", salience: 20, no_loop: true, tags: [:visibility] do
+  when_all(record(:public?))
+  set :show, true
+end
 end
 ```
 
@@ -548,7 +548,7 @@ end
 # Good: Only grant when appropriate
 rule "auth_update" do
   when_all(user(:authenticated?))
-  allow! :update
+  set :update, true
 end
 ```
 
@@ -559,10 +559,10 @@ Place admin rules at high salience so they fire first:
 ```ruby
 rule "admin_crud", salience: 100 do
   when_all(user(:admin?))
-  allow! :show
-  allow! :create
-  allow! :update
-  allow! :destroy
+  set :show, true
+  set :create, true
+  set :update, true
+  set :destroy, true
 end
 ```
 

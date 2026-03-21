@@ -86,12 +86,12 @@ repo.delete("allow_create")
 engine = Ruleur.define do
   rule "admin_access" do
     when_all(usr(:admin?))
-    allow! :access
+    set :access, true
   end
   
   rule "user_access" do
     when_all(usr(:logged_in?))
-    allow! :view
+    set :view, true
   end
 end
 
@@ -179,7 +179,7 @@ repo = Ruleur::Persistence::ActiveRecordRepository.new(model_class: MyRule)
 engine = Ruleur.define do
   rule "permission_rule", tags: ['permissions'] do
     when_all(usr(:admin?))
-    allow! :delete
+    set :delete, true
   end
 end
 
@@ -277,7 +277,7 @@ require "ruleur"
 engine = Ruleur.define do
   rule "allow_create", salience: 10, tags: ['permissions'] do
     when_any(usr(:admin?), rec(:draft?))
-    allow! :create
+    set :create, true
   end
 end
 
@@ -523,12 +523,12 @@ end
 RSpec.describe "Permission System" do
   it "allows admin access" do
     # Create rule
-    engine = Ruleur.define do
-      rule "admin_access" do
-        when_all(usr(:admin?))
-        allow! :access
-      end
-    end
+engine = Ruleur.define do
+  rule "admin_access" do
+    when_all(usr(:admin?))
+    set :access, true
+  end
+end
     
     # Save to test repo
     @rule_repo.save(engine.rules.first)

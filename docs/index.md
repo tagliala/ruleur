@@ -64,7 +64,7 @@ engine = Ruleur.define do
       user(:admin?),
       all(record(:updatable?), record(:draft?))
     )
-    allow! :create
+    set :create, true
   end
 
   rule "draft_update", no_loop: true do
@@ -72,7 +72,7 @@ engine = Ruleur.define do
       record(:draft?),
       flag(:create)
     )
-    allow! :update
+    set :update, true
   end
 end
 
