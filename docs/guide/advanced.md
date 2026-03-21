@@ -11,13 +11,21 @@ This guide covers advanced features and techniques for working with Ruleur, incl
 ```ruby
 engine = Ruleur.define do
   rule "low_priority", salience: 0 do
-    when_all(user(:logged_in?))
-    set :priority, "low"
+    match do
+      all(user(:logged_in?))
+    end
+    execute do
+      set :priority, "low"
+    end
   end
   
   rule "high_priority", salience: 100 do
-    when_all(user(:admin?))
-    set :priority, "high"
+    match do
+      all(user(:admin?))
+    end
+    execute do
+      set :priority, "high"
+    end
   end
 end
 ```
@@ -95,8 +103,10 @@ Without no-loop, a rule might fire repeatedly if its action makes its condition 
 ```ruby
 # Without no_loop - could fire multiple times!
 rule "increment_counter" do
-  when_all(lt(ref(:counter), 10))
-  action do |ctx|
+  match do
+    all(lt(ref(:counter), 10))
+  end
+  execute do |ctx|
     ctx[:counter] = (ctx[:counter] || 0) + 1
   end
 end
@@ -106,8 +116,10 @@ end
 
 ```ruby
 rule "increment_counter", no_loop: true do
-  when_all(lt(ref(:counter), 10))
-  action do |ctx|
+  match do
+    all(lt(ref(:counter), 10))
+  end
+  execute do |ctx|
     ctx[:counter] = (ctx[:counter] || 0) + 1
   end
 end
@@ -126,19 +138,23 @@ Use `no_loop: true` when:
 
 ```ruby
 rule "grant_base_permissions", no_loop: true do
-  when_all(user(:registered?))
-  action do
+  match do
+    all(user(:registered?))
+  end
+  execute do
     set :view, true
     set :comment, true
   end
 end
 
 rule "grant_premium_permissions", no_loop: true do
-  when_all(
-    user(:premium?),
-    flag(:view)  # Depends on previous rule
-  )
-  action do
+  match do
+    all(
+      user(:premium?),
+      flag(:view)  # Depends on previous rule
+    )
+  end
+  execute do
     set :download, true
     set :export, true
   end
@@ -204,8 +220,10 @@ Monitor execution cycles:
 cycles = 0
 engine = Ruleur.define do
   rule "count_cycles", no_loop: false do
-    when_all(lt(ref(:counter), 100))
-    action do |ctx|
+    match do
+      all(lt(ref(:counter), 100))
+    end
+    execute do |ctx|
       ctx[:counter] = (ctx[:counter] || 0) + 1
       cycles += 1
     end
@@ -223,11 +241,15 @@ Organize rules with tags:
 ```ruby
 engine = Ruleur.define do
   rule "admin_check", tags: ['permissions', 'admin'] do
-    # ...
+    match do
+      all() # placeholder
+    end
   end
   
   rule "payment_rule", tags: ['payment', 'validation'] do
-    # ...
+    match do
+      all() # placeholder
+    end
   end
 end
 ```
@@ -250,13 +272,21 @@ Use consistent tag hierarchies:
 
 ```ruby
 rule "process_user", tags: ['user', 'permissions'] do
-  when_all(user(:active?))
-  set :can_access, true
+  match do
+    all(user(:active?))
+  end
+  execute do
+    set :can_access, true
+  end
 end
 
 rule "process_order", tags: ['order', 'payment'] do
-  when_all(order(:pending?))
-  set :can_charge, true
+  match do
+    all(order(:pending?))
+  end
+  execute do
+    set :can_charge, true
+  end
 end
 ```
 tags: ['production', 'critical']
@@ -321,28 +351,44 @@ Fewer rules = faster execution:
 ```ruby
 # Good - single rule
 rule "permission_check" do
-  when_any(
-    user(:admin?),
-    user(:editor?),
-    user(:owner?)
-  )
-  set :edit, true
+  match do
+    any(
+      user(:admin?),
+      user(:editor?),
+      user(:owner?)
+    )
+  end
+  execute do
+    set :edit, true
+  end
 end
 
 # Less efficient - three rules
 rule "admin_edit" do
-  when_all(user(:admin?))
-  set :edit, true
+  match do
+    all(user(:admin?))
+  end
+  execute do
+    set :edit, true
+  end
 end
 
 rule "editor_edit" do
-  when_all(user(:editor?))
-  set :edit, true
+  match do
+    all(user(:editor?))
+  end
+  execute do
+    set :edit, true
+  end
 end
 
 rule "owner_edit" do
-  when_all(user(:owner?))
-  set :edit, true
+  match do
+    all(user(:owner?))
+  end
+  execute do
+    set :edit, true
+  end
 end
 ```
 
@@ -352,17 +398,21 @@ Put cheap, likely-to-fail checks first:
 
 ```ruby
 # Good - cheap check first
-when_all(
-  user(:logged_in?),        # Fast boolean check
-  present?(record_value(:title)), # Fast presence check
-  expensive_db_query()      # Slow check last
-)
+match do
+  all(
+    user(:logged_in?),        # Fast boolean check
+    present?(record_value(:title)), # Fast presence check
+    expensive_db_query()      # Slow check last
+  )
+end
 
 # Less efficient - expensive check first
-when_all(
-  expensive_db_query(),
-  user(:logged_in?)
-)
+match do
+  all(
+    expensive_db_query(),
+    user(:logged_in?)
+  )
+end
 ```
 
 ### 3. Use Salience Wisely
@@ -417,16 +467,20 @@ Avoid expensive computations in conditions:
 
 ```ruby
 # Bad - computed on every evaluation
-when_all(
-  gt?(record_value(:items).sum(&:price), 1000)
-)
+match do
+  all(
+    gt?(record_value(:items).sum(&:price), 1000)
+  )
+end
 
 # Good - precordompute before engine run
 total = recordord.items.sum(&:price)
 ctx = engine.run(user: user, recordord: recordord, total: total)
 
 rule "high_value_order" do
-  when_all(gt?(ref(:total), 1000))
+  match do
+    all(gt?(ref(:total), 1000))
+  end
 end
 ```
 
@@ -508,14 +562,18 @@ end
 
 # Use in rule
 rule "age_range_check" do
-  when_all(
-    predicate do
-      left = record_value(:age)
-      right = lit(18..65)
-      Ruleur::Operators.call(:within_range, left, right)
-    end
-  )
-  set :eligible, true
+  match do
+    all(
+      predicate do
+        left = record_value(:age)
+        right = lit(18..65)
+        Ruleur::Operators.call(:within_range, left, right)
+      end
+    )
+  end
+  execute do
+    set :eligible, true
+  end
 end
 ```
 
