@@ -16,7 +16,7 @@ Pricing rules help you:
 
 ```ruby
 engine = Ruleur.define do
-  rule "vip_discount" do
+  rule 'vip_discount' do
     match do
       all?(customer(:vip?))
     end
@@ -25,7 +25,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "bulk_discount" do
+  rule 'bulk_discount' do
     match do
       all?(order(:total).gt?(500))
     end
@@ -44,7 +44,7 @@ final_price = order.total * (1 - discount)
 
 ```ruby
 engine = Ruleur.define do
-  rule "base_vip_discount", salience: 10 do
+  rule 'base_vip_discount', salience: 10 do
     match do
       all?(customer(:vip?))
     end
@@ -53,7 +53,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "seasonal_discount", salience: 10 do
+  rule 'seasonal_discount', salience: 10 do
     match do
       all?(literal(Date.today.month).in([11, 12]))
     end
@@ -62,7 +62,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "calculate_total_discount", salience: 5 do
+  rule 'calculate_total_discount', salience: 5 do
     match do
       all?(
         any?(
@@ -89,7 +89,7 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "tier_bronze", salience: 10 do
+  rule 'tier_bronze', salience: 10 do
     match do
       all?(
         order(:quantity).gte?(1),
@@ -98,11 +98,11 @@ engine = Ruleur.define do
     end
     execute do
       set :price_per_unit, 10.00
-      set :tier, "bronze"
+      set :tier, 'bronze'
     end
   end
 
-  rule "tier_silver", salience: 20 do
+  rule 'tier_silver', salience: 20 do
     match do
       all?(
         order(:quantity).gte?(10),
@@ -111,11 +111,11 @@ engine = Ruleur.define do
     end
     execute do
       set :price_per_unit, 8.50
-      set :tier, "silver"
+      set :tier, 'silver'
     end
   end
 
-  rule "tier_gold", salience: 30 do
+  rule 'tier_gold', salience: 30 do
     match do
       all?(
         order(:quantity).gte?(50),
@@ -124,21 +124,21 @@ engine = Ruleur.define do
     end
     execute do
       set :price_per_unit, 7.00
-      set :tier, "gold"
+      set :tier, 'gold'
     end
   end
 
-  rule "tier_platinum", salience: 40 do
+  rule 'tier_platinum', salience: 40 do
     match do
       all?(order(:quantity).gte?(100))
     end
     execute do
       set :price_per_unit, 5.50
-      set :tier, "platinum"
+      set :tier, 'platinum'
     end
   end
 
-  rule "calculate_total", salience: 5 do
+  rule 'calculate_total', salience: 5 do
     match do
       all?(flag(:price_per_unit).present)
     end
@@ -155,10 +155,10 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "basic_tier" do
+  rule 'basic_tier' do
     match do
       all?(
-        customer(:subscription).eq?("basic"),
+        customer(:subscription).eq?('basic'),
         customer(:active?)
       )
     end
@@ -169,10 +169,10 @@ engine = Ruleur.define do
     end
   end
 
-  rule "pro_tier" do
+  rule 'pro_tier' do
     match do
       all?(
-        customer(:subscription).eq?("pro"),
+        customer(:subscription).eq?('pro'),
         customer(:active?)
       )
     end
@@ -183,10 +183,10 @@ engine = Ruleur.define do
     end
   end
 
-  rule "enterprise_tier" do
+  rule 'enterprise_tier' do
     match do
       all?(
-        customer(:subscription).eq?("enterprise"),
+        customer(:subscription).eq?('enterprise'),
         customer(:active?)
       )
     end
@@ -197,9 +197,9 @@ engine = Ruleur.define do
     end
   end
 
-  rule "annual_discount" do
+  rule 'annual_discount' do
     match do
-      all?(customer(:billing_period).eq?("annual"))
+      all?(customer(:billing_period).eq?('annual'))
     end
     execute do
       monthly = context[:monthly_price]
@@ -217,7 +217,7 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "free_shipping_threshold", salience: 100 do
+  rule 'free_shipping_threshold', salience: 100 do
     match do
       all?(order(:total).gt?(100))
     end
@@ -227,7 +227,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "local_shipping", salience: 50 do
+  rule 'local_shipping', salience: 50 do
     match do
       all?(
         not?(flag(:free_shipping)),
@@ -242,7 +242,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "regional_shipping", salience: 40 do
+  rule 'regional_shipping', salience: 40 do
     match do
       all?(
         not?(flag(:free_shipping)),
@@ -258,7 +258,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "national_shipping", salience: 30 do
+  rule 'national_shipping', salience: 30 do
     match do
       all?(
         not?(flag(:free_shipping)),
@@ -281,7 +281,7 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "black_friday", salience: 100 do
+  rule 'black_friday', salience: 100 do
     match do
       all?(
         literal(Date.today).gte?(literal(Date.new(2026, 11, 24))),
@@ -290,21 +290,21 @@ engine = Ruleur.define do
     end
     execute do
       set :discount, 0.25
-      set :promo_code, "BLACKFRIDAY"
+      set :promo_code, 'BLACKFRIDAY'
     end
   end
 
-  rule "cyber_monday", salience: 100 do
+  rule 'cyber_monday', salience: 100 do
     match do
       all?(literal(Date.today).eq?(literal(Date.new(2026, 12, 2))))
     end
     execute do
       set :discount, 0.30
-      set :promo_code, "CYBERMONDAY"
+      set :promo_code, 'CYBERMONDAY'
     end
   end
 
-  rule "first_purchase", salience: 50 do
+  rule 'first_purchase', salience: 50 do
     match do
       all?(
         customer(:first_purchase?),
@@ -313,7 +313,7 @@ engine = Ruleur.define do
     end
     execute do
       set :discount, 0.15
-      set :promo_code, "WELCOME15"
+      set :promo_code, 'WELCOME15'
     end
   end
 end
@@ -323,7 +323,7 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "validate_coupon", salience: 100 do
+  rule 'validate_coupon', salience: 100 do
     match do
       all?(
         coupon(:valid?),
@@ -336,45 +336,45 @@ engine = Ruleur.define do
     end
   end
 
-  rule "percentage_coupon" do
+  rule 'percentage_coupon' do
     match do
       all?(
         flag(:coupon_valid),
-        coupon(:type).eq?("percentage")
+        coupon(:type).eq?('percentage')
       )
     end
     execute do
       discount = context[:coupon].discount_percentage / 100.0
       set :discount, discount
-      set :discount_type, "percentage"
+      set :discount_type, 'percentage'
     end
   end
 
-  rule "fixed_amount_coupon" do
+  rule 'fixed_amount_coupon' do
     match do
       all?(
         flag(:coupon_valid),
-        coupon(:type).eq?("fixed")
+        coupon(:type).eq?('fixed')
       )
     end
     execute do
       amount = context[:coupon].discount_amount
       set :discount_amount, amount
-      set :discount_type, "fixed"
+      set :discount_type, 'fixed'
     end
   end
 
-  rule "free_shipping_coupon" do
+  rule 'free_shipping_coupon' do
     match do
       all?(
         flag(:coupon_valid),
-        coupon(:type).eq?("free_shipping")
+        coupon(:type).eq?('free_shipping')
       )
     end
     execute do
       set :shipping_cost, 0
       set :free_shipping, true
-      set :discount_type, "free_shipping"
+      set :discount_type, 'free_shipping'
     end
   end
 end
@@ -386,17 +386,17 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "normal_pricing", salience: 10 do
+  rule 'normal_pricing', salience: 10 do
     match do
       all?(demand(:current_load).lt?(70))
     end
     execute do
       set :surge_multiplier, 1.0
-      set :pricing_tier, "normal"
+      set :pricing_tier, 'normal'
     end
   end
 
-  rule "moderate_surge", salience: 20 do
+  rule 'moderate_surge', salience: 20 do
     match do
       all?(
         demand(:current_load).gte?(70),
@@ -405,21 +405,21 @@ engine = Ruleur.define do
     end
     execute do
       set :surge_multiplier, 1.5
-      set :pricing_tier, "moderate"
+      set :pricing_tier, 'moderate'
     end
   end
 
-  rule "high_surge", salience: 30 do
+  rule 'high_surge', salience: 30 do
     match do
       all?(demand(:current_load).gte?(90))
     end
     execute do
       set :surge_multiplier, 2.0
-      set :pricing_tier, "high"
+      set :pricing_tier, 'high'
     end
   end
 
-  rule "apply_surge", salience: 5 do
+  rule 'apply_surge', salience: 5 do
     match do
       all?(flag(:surge_multiplier).present)
     end
@@ -441,7 +441,7 @@ class OrderPricingEngine
   def self.engine
     @engine ||= Ruleur.define do
       # Step 1: Calculate base price
-      rule "calculate_base", salience: 100, no_loop: true do
+      rule 'calculate_base', salience: 100, no_loop: true do
         match do
           all?(order(:items).present)
         end
@@ -453,41 +453,43 @@ class OrderPricingEngine
       end
 
       # Step 2: Apply member discounts
-      rule "member_discount", salience: 90 do
+      rule 'member_discount', salience: 90 do
         match do
           all?(
             customer(:member?),
-            customer(:member_tier).in(["gold", "platinum"])
+            customer(:member_tier).in(%w[gold platinum])
           )
         end
         execute do
           discount = case context[:customer].member_tier
-            when "gold" then 0.10
-            when "platinum" then 0.15
-            else 0
-          end
+                     when 'gold' then 0.10
+                     when 'platinum' then 0.15
+                     else 0
+                     end
           set :member_discount, discount
         end
       end
 
       # Step 3: Apply bulk discounts
-      rule "bulk_discount", salience: 85 do
+      rule 'bulk_discount', salience: 85 do
         match do
           all?(flag(:subtotal).gt?(500))
         end
         execute do
           subtotal = context[:subtotal]
-          discount = case
-            when subtotal >= 1000 then 0.20
-            when subtotal >= 500 then 0.10
-            else 0
-          end
+          discount = if subtotal >= 1000
+                       0.20
+                     elsif subtotal >= 500
+                       0.10
+                     else
+                       0
+                     end
           set :bulk_discount, discount
         end
       end
 
       # Step 4: Calculate discount amount
-      rule "calculate_discount", salience: 80, no_loop: true do
+      rule 'calculate_discount', salience: 80, no_loop: true do
         match do
           all?(
             any?(
@@ -513,7 +515,7 @@ class OrderPricingEngine
       end
 
       # Step 5: Calculate shipping
-      rule "calculate_shipping", salience: 70, no_loop: true do
+      rule 'calculate_shipping', salience: 70, no_loop: true do
         match do
           all?(flag(:price_after_discount).present)
         end
@@ -521,12 +523,12 @@ class OrderPricingEngine
           price = context[:price_after_discount]
 
           shipping = if price >= 100
-            0
-          elsif price >= 50
-            5.99
-          else
-            9.99
-          end
+                       0
+                     elsif price >= 50
+                       5.99
+                     else
+                       9.99
+                     end
 
           set :shipping_cost, shipping
           set :free_shipping, shipping == 0
@@ -534,7 +536,7 @@ class OrderPricingEngine
       end
 
       # Step 6: Calculate tax
-      rule "calculate_tax", salience: 60, no_loop: true do
+      rule 'calculate_tax', salience: 60, no_loop: true do
         match do
           all?(
             flag(:price_after_discount).present,
@@ -551,7 +553,7 @@ class OrderPricingEngine
       end
 
       # Step 7: Calculate final total
-      rule "calculate_total", salience: 50, no_loop: true do
+      rule 'calculate_total', salience: 50, no_loop: true do
         match do
           all?(
             flag(:price_after_discount).present,

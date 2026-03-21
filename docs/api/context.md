@@ -103,7 +103,7 @@ hash = context.to_h
 Checks if a rule has already fired.
 
 ```ruby
-if context.rule_fired?("discount_rule")
+if context.rule_fired?('discount_rule')
   # Rule already executed
 end
 ```
@@ -119,18 +119,18 @@ end
 Within rule actions, the context is available and can be modified:
 
 ```ruby
-rule "calculate_discount" do
+rule 'calculate_discount' do
   match do
     all?(customer(:vip?))
   end
   execute do
     # Access facts
     order = context[:order]
-    
+
     # Set new values
     set :discount, 0.2
     set :discount_amount, order.total * 0.2
-    
+
     # Call methods on facts
     call_method order, :apply_discount, context[:discount]
   end
@@ -152,20 +152,20 @@ end
 Use `set :key, true` to set a result when conditions are met:
 
 ```ruby
-rule "admin_create" do
+rule 'admin_create' do
   match do
     all?(user(:admin?))
   end
-    execute do
-  set :create, true
-    end
+  execute do
+    set :create, true
+  end
 end
 ```
 
 Check results:
 ```ruby
-ctx[:create] == true  # rule fired and set the value
-ctx[:create].nil?     # no rule set this value
+ctx[:create] # rule fired and set the value
+ctx[:create].nil? # no rule set this value
 ```
 
 ### General Context Values
@@ -175,8 +175,8 @@ For non-permission values, use `set` with clear names:
 ```ruby
 execute do
   set :discount, 0.20
-  set :discount_reason, "VIP customer"
-  set :error_message, "Something went wrong"
+  set :discount_reason, 'VIP customer'
+  set :error_message, 'Something went wrong'
 end
 ```
 
@@ -207,7 +207,7 @@ execute do
     order = context[:order]
     set :total, order.total
   else
-    set :error, "Order not provided"
+    set :error, 'Order not provided'
   end
 end
 ```
@@ -217,17 +217,17 @@ end
 ### Accessing Facts in Conditions
 
 ```ruby
-rule "premium_check" do
+rule 'premium_check' do
   match do
     all?(
-    customer(:premium?),
-    order(:total).gt?(100)
-  )
+      customer(:premium?),
+      order(:total).gt?(100)
+    )
   end
   execute do
     customer = context[:customer]
     order = context[:order]
-    
+
     discount = customer.discount_rate * order.total
     set :discount_amount, discount
   end
@@ -238,7 +238,7 @@ end
 
 ```ruby
 # First rule sets a flag
-rule "validate_order" do
+rule 'validate_order' do
   match do
     all?(order(:valid?))
   end
@@ -248,7 +248,7 @@ rule "validate_order" do
 end
 
 # Second rule depends on the flag
-rule "process_payment" do
+rule 'process_payment' do
   match do
     all?(flag(:order_valid))
   end

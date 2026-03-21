@@ -145,19 +145,23 @@ require 'ruleur'
 
 class Document
   attr_reader :author_id, :status
+
   def initialize(author_id:, status:)
     @author_id = author_id
     @status = status
   end
+
   def draft? = status == 'draft'
 end
 
 class User
   attr_reader :id, :role
+
   def initialize(id:, role:)
     @id = id
     @role = role
   end
+
   def admin? = role == 'admin'
 end
 
@@ -192,7 +196,7 @@ doc = Document.new(author_id: 2, status: 'draft')
 
 puts engine.run(user: admin, record: doc)[:update]     # => true
 puts engine.run(user: author, record: doc)[:update]    # => true
-puts engine.run(user: User.new(id: 3, role: 'user'), record: doc)[:update]  # => nil
+puts engine.run(user: User.new(id: 3, role: 'user'), record: doc)[:update] # => nil
 ```
 
 ## Understanding Rule Execution

@@ -18,11 +18,11 @@ Creates an engine with rules defined in the block.
 
 ```ruby
 engine = Ruleur.define do
-  rule "first_rule" do
+  rule 'first_rule' do
     # ...
   end
-  
-  rule "second_rule" do
+
+  rule 'second_rule' do
     # ...
   end
 end
@@ -38,7 +38,7 @@ end
 Defines a rule within the engine.
 
 ```ruby
-rule "example", salience: 10, tags: [:important], no_loop: true do
+rule 'example', salience: 10, tags: [:important], no_loop: true do
   match do
     all?(conditions)
   end
@@ -64,13 +64,13 @@ end
 All conditions must be true (AND). Wrap them in a `match` block in rules:
 
 ```ruby
-  match do
-    all?(
-      user(:admin?),
-      record(:published?),
-      not?(record(:archived?))
-    )
-  end
+match do
+  all?(
+    user(:admin?),
+    record(:published?),
+    not?(record(:archived?))
+  )
+end
 ```
 
 #### `any?(*conditions)`
@@ -121,12 +121,12 @@ end
 Negates a condition inside a `match` block.
 
 ```ruby
-  match do
-    all?(
-      user(:active?),
-      not?(user(:banned?))
-    )
-  end
+match do
+  all?(
+    user(:active?),
+    not?(user(:banned?))
+  )
+end
 ```
 
 ### Reference Methods
@@ -170,7 +170,7 @@ flag(:email_sent)
 Creates a literal value reference (use `literal(...)` instead of `lit`):
 
 ```ruby
-user(:role).eq?(literal("admin"))
+user(:role).eq?(literal('admin'))
 order(:total).gt?(literal(100))
 ```
 
@@ -186,7 +186,7 @@ Sets a value in the context.
 execute do
   set :discount, 0.15
   set :approved, true
-  set :message, "Order processed"
+  set :message, 'Order processed'
 end
 ```
 
@@ -202,7 +202,7 @@ Calls a method on an object.
 execute do
   order = context[:order]
   call_method(order, :apply_discount, 0.15)
-  call_method(order, :add_note, "Discount applied")
+  call_method(order, :add_note, 'Discount applied')
 end
 ```
 
@@ -215,14 +215,12 @@ execute do
   # Direcordt context access
   user = context[:user]
   order = context[:order]
-  
+
   # Set values
   set :total, order.total * (1 - discount)
-  
+
   # Conditional logic
-  if user.admin?
-    set :expedited, true
-  end
+  set :expedited, true if user.admin?
 end
 ```
 
@@ -231,25 +229,25 @@ end
 ```ruby
 engine = Ruleur.define do
   # High priority rule
-  rule "validate_user", salience: 100 do
+  rule 'validate_user', salience: 100 do
     match do
       all?(
-      user(:present),
-      not?(user(:banned?))
+        user(:present),
+        not?(user(:banned?))
       )
     end
     execute do
       set :user_valid, true
     end
   end
-  
+
   # Permission rule
-  rule "allow_edit", salience: 50, tags: [:permissions] do
+  rule 'allow_edit', salience: 50, tags: [:permissions] do
     match do
       any?(
         user(:admin?),
         all?(
-          user(:owner?, record()),
+          user(:owner?, record),
           record(:editable?),
           not?(record(:locked?))
         )
@@ -257,12 +255,12 @@ engine = Ruleur.define do
     end
     execute do
       set :edit, true
-      set :reason, "User has edit permissions"
+      set :reason, 'User has edit permissions'
     end
   end
-  
+
   # Workflow rule with no_loop
-  rule "process_order", salience: 10, no_loop: true do
+  rule 'process_order', salience: 10, no_loop: true do
     match do
       all?(
         flag(:user_valid),
@@ -299,19 +297,19 @@ def create_threshold_rule(name, threshold)
 end
 
 engine = Ruleur.define do
-  create_threshold_rule("bronze", 100)
-  create_threshold_rule("silver", 500)
-  create_threshold_rule("gold", 1000)
+  create_threshold_rule('bronze', 100)
+  create_threshold_rule('silver', 500)
+  create_threshold_rule('gold', 1000)
 end
 ```
 
 ### Nested Method Calls
 
 ```ruby
-rule "premium_check" do
+rule 'premium_check' do
   match do
     all?(
-      user(:subscription, :tier).eq?("premium"),
+      user(:subscription, :tier).eq?('premium'),
       user(:subscription, :active?),
       user(:subscription, :expires_at).gt?(literal(Date.today))
     )
@@ -325,20 +323,22 @@ end
 ### Complex Conditionals in Actions
 
 ```ruby
-rule "calculate_shipping" do
+rule 'calculate_shipping' do
   match do
     all?(flag(:order_valid))
   end
   execute do
     order = context[:order]
     total = order.total
-    
-    shipping = case
-      when total > 100 then 0
-      when total > 50 then 5
-      else 10
-    end
-    
+
+    shipping = if total > 100
+                 0
+               elsif total > 50
+                 5
+               else
+                 10
+               end
+
     set :shipping_cost, shipping
     set :free_shipping, shipping == 0
   end

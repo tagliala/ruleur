@@ -48,7 +48,7 @@ The `MemoryRepository` stores rules in memory. Useful for testing or temporary s
 ### Basic Usage
 
 ```ruby
-require "ruleur"
+require 'ruleur'
 
 # Create repository
 repo = Ruleur::Persistence::MemoryRepository.new
@@ -63,10 +63,10 @@ rules = repo.all
 engine = Ruleur::Engine.new(rules: rules)
 
 # Find a specific rule
-rule = repo.find("allow_create")
+rule = repo.find('allow_create')
 
 # Delete a rule
-repo.delete("allow_create")
+repo.delete('allow_create')
 ```
 
 ### API Methods
@@ -84,22 +84,22 @@ repo.delete("allow_create")
 ```ruby
 # Create some rules
 engine = Ruleur.define do
-  rule "admin_access" do
+  rule 'admin_access' do
     match do
       all?(user(:admin?))
     end
-      execute do
-    set :access, true
-      end
+    execute do
+      set :access, true
+    end
   end
-  
-  rule "user_access" do
+
+  rule 'user_access' do
     match do
       all?(user(:logged_in?))
     end
-      execute do
-    set :view, true
-      end
+    execute do
+      set :view, true
+    end
   end
 end
 
@@ -107,7 +107,7 @@ end
 repo = Ruleur::Persistence::MemoryRepository.new
 engine.rules.each { |r| repo.save(r) }
 
-puts repo.all.count  # => 2
+puts repo.all.count # => 2
 
 # Load later
 rules = repo.all
@@ -130,7 +130,7 @@ class CreateRuleurRules < ActiveRecord::Migration[7.0]
       t.jsonb :payload, null: false, default: {}
       t.timestamps
     end
-    
+
     add_index :ruleur_rules, :name, unique: true
   end
 end
@@ -162,10 +162,10 @@ rules = repo.all
 engine = Ruleur::Engine.new(rules: rules)
 
 # Find specific rule
-rule = repo.find("allow_create")
+rule = repo.find('allow_create')
 
 # Delete a rule
-repo.delete("allow_create")
+repo.delete('allow_create')
 ```
 
 ### Custom Model
@@ -185,13 +185,13 @@ repo = Ruleur::Persistence::ActiveRecordRepository.new(model_class: MyRule)
 ```ruby
 # Define rules
 engine = Ruleur.define do
-  rule "permission_rule", tags: ['permissions'] do
+  rule 'permission_rule', tags: ['permissions'] do
     match do
       all?(user(:admin?))
     end
-      execute do
-    set :delete, true
-      end
+    execute do
+      set :delete, true
+    end
   end
 end
 
@@ -205,7 +205,7 @@ rules = repo.all
 engine = Ruleur::Engine.new(rules: rules)
 
 ctx = engine.run(user: current_user, recordord: document)
-ctx[:destroy]  # => true or nil
+ctx[:destroy] # => true or nil
 ```
 
 ## VersionedActiveRecordRepository
@@ -283,17 +283,17 @@ Rules can also be persisted as YAML files. This is useful for version control an
 ### Export to YAML
 
 ```ruby
-require "ruleur"
+require 'ruleur'
 
 # Define rule
 engine = Ruleur.define do
-  rule "allow_create", salience: 10, tags: ['permissions'] do
+  rule 'allow_create', salience: 10, tags: ['permissions'] do
     match do
       any?(user(:admin?), record(:draft?))
     end
-      execute do
-    set :create, true
-      end
+    execute do
+      set :create, true
+    end
   end
 end
 
@@ -301,7 +301,7 @@ end
 Ruleur::Persistence::YAMLLoader.save_file(
   engine.rules.first,
   'config/rules/allow_create.yml',
-  include_metadata: true  # Adds helpful comments
+  include_metadata: true # Adds helpful comments
 )
 ```
 
@@ -330,9 +330,9 @@ result = Ruleur::Validation.validate_rule(rule)
 
 if result.valid?
   repo.save(rule)
-  puts "Rule saved successfully"
+  puts 'Rule saved successfully'
 else
-  puts "Validation failed:"
+  puts 'Validation failed:'
   result.errors.each { |e| puts "  - #{e}" }
 end
 ```
@@ -352,11 +352,11 @@ repo = Ruleur::Persistence::VersionedActiveRecordRepository.new
 
 Dir.glob(Rails.root.join('config/rules/*.yml')).each do |file|
   rule = Ruleur::Persistence::YAMLLoader.load_file(file)
-  
+
   # Validate
   result = Ruleur::Validation.validate_rule(rule)
   next unless result.valid?
-  
+
   # Save to database
   repo.save(
     rule,
@@ -377,23 +377,23 @@ class RuleService
     @engine = nil
     @last_loaded = nil
   end
-  
+
   def engine
     reload_if_needed
     @engine
   end
-  
+
   private
-  
+
   def reload_if_needed
     latest_update = @repo.model_class.maximum(:updated_at)
-    
-    if @last_loaded.nil? || latest_update > @last_loaded
-      rules = @repo.all
-      @engine = Ruleur::Engine.new(rules: rules)
-      @last_loaded = latest_update
-      Rails.logger.info "Reloaded #{rules.count} rules"
-    end
+
+    return unless @last_loaded.nil? || latest_update > @last_loaded
+
+    rules = @repo.all
+    @engine = Ruleur::Engine.new(rules: rules)
+    @last_loaded = latest_update
+    Rails.logger.info "Reloaded #{rules.count} rules"
   end
 end
 
@@ -412,15 +412,15 @@ class TenantRuleRepository
     @tenant_id = tenant_id
     @repo = Ruleur::Persistence::ActiveRecordRepository.new
   end
-  
+
   def save(rule)
     # Add tenant_id to payload
     rule_hash = rule.serialize
     rule_hash[:tenant_id] = @tenant_id
-    
+
     @repo.save(Ruleur::Rule.deserialize(rule_hash))
   end
-  
+
   def all
     # Filter by tenant
     @repo.all.select do |rule|
@@ -447,19 +447,19 @@ class CachedRuleRepository
     @cache = nil
     @last_refresh = nil
   end
-  
+
   def all
     refresh_cache if cache_expired?
     @cache
   end
-  
+
   private
-  
+
   def cache_expired?
-    @last_refresh.nil? || 
-    Time.now - @last_refresh > @refresh_interval
+    @last_refresh.nil? ||
+      Time.now - @last_refresh > @refresh_interval
   end
-  
+
   def refresh_cache
     @cache = @repo.all
     @last_refresh = Time.now
@@ -467,7 +467,7 @@ class CachedRuleRepository
 end
 
 # Use with caching
-repo = CachedRuleRepository.new(refresh_interval: 300)  # 5 minutes
+repo = CachedRuleRepository.new(refresh_interval: 300) # 5 minutes
 rules = repo.all
 ```
 
@@ -529,34 +529,34 @@ RSpec.configure do |config|
   config.before(:each) do
     @rule_repo = Ruleur::Persistence::MemoryRepository.new
   end
-  
+
   config.after(:each) do
     @rule_repo.clear
   end
 end
 
 # In tests
-RSpec.describe "Permission System" do
-  it "allows admin access" do
+RSpec.describe 'Permission System' do
+  it 'allows admin access' do
     # Create rule
-engine = Ruleur.define do
-  rule "admin_access" do
-    match do
-      all?(user(:admin?))
-    end
-      execute do
-    set :access, true
+    engine = Ruleur.define do
+      rule 'admin_access' do
+        match do
+          all?(user(:admin?))
+        end
+        execute do
+          set :access, true
+        end
       end
-  end
-end
-    
+    end
+
     # Save to test repo
     @rule_repo.save(engine.rules.first)
-    
+
     # Load and test
     rules = @rule_repo.all
     engine = Ruleur::Engine.new(rules: rules)
-    
+
     ctx = engine.run(user: admin_user, recordord: document)
     expect(ctx[:access]).to be true
   end
@@ -604,13 +604,13 @@ Load rules in batches for large datasets:
 ```ruby
 def load_rules_in_batches(batch_size: 100)
   rules = []
-  
+
   RuleurRule.find_in_batches(batch_size: batch_size) do |batch|
     batch.each do |recordord|
       rules << Ruleur::Rule.deserialize(recordord.payload)
     end
   end
-  
+
   rules
 end
 ```
@@ -640,12 +640,12 @@ rules = repository.all
 ```ruby
 # Won't serialize
 execute do |ctx|
-  puts "Hello"  # Arbitrary code
-  ctx[:result] = "something"
+  puts 'Hello' # Arbitrary code
+  ctx[:result] = 'something'
 end
 
 # Will serialize
-set :result, "something"
+set :result, 'something'
 ```
 
 ### Stale Rules

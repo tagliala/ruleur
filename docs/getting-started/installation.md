@@ -37,12 +37,14 @@ engine = Ruleur.define do
     match do
       any?(truthy?(true))
     end
-    execute do set :greeting, 'Hello Ruleur!' end
+    execute do
+      set :greeting, 'Hello Ruleur!'
+    end
   end
 end
 
 ctx = engine.run
-puts ctx[:greeting]  # => "Hello Ruleur!"
+puts ctx[:greeting] # => "Hello Ruleur!"
 ```
 
 Run it:

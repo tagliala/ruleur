@@ -10,21 +10,21 @@ This guide covers advanced features and techniques for working with Ruleur, incl
 
 ```ruby
 engine = Ruleur.define do
-  rule "low_priority", salience: 0 do
+  rule 'low_priority', salience: 0 do
     match do
       all?(user(:logged_in?))
     end
     execute do
-      set :priority, "low"
+      set :priority, 'low'
     end
   end
-  
-  rule "high_priority", salience: 100 do
+
+  rule 'high_priority', salience: 100 do
     match do
       all?(user(:admin?))
     end
     execute do
-      set :priority, "high"
+      set :priority, 'high'
     end
   end
 end
@@ -37,7 +37,7 @@ end
 Rules have salience `0` by default:
 
 ```ruby
-rule "default_rule" do
+rule 'default_rule' do
   # Implicit salience: 0
 end
 ```
@@ -48,22 +48,22 @@ Use consistent ranges for different priority levels:
 
 ```ruby
 # Critical business rules
-rule "payment_validation", salience: 1000 do
+rule 'payment_validation', salience: 1000 do
   # ...
 end
 
 # Important rules
-rule "permission_check", salience: 100 do
+rule 'permission_check', salience: 100 do
   # ...
 end
 
 # Normal rules
-rule "log_activity", salience: 10 do
+rule 'log_activity', salience: 10 do
   # ...
 end
 
 # Cleanup rules
-rule "set_defaults", salience: 0 do
+rule 'set_defaults', salience: 0 do
   # ...
 end
 ```
@@ -73,11 +73,11 @@ end
 When multiple rules have the same salience, they're sorted alphabetically by name:
 
 ```ruby
-rule "a_rule", salience: 10 do
+rule 'a_rule', salience: 10 do
   # Fires first (alphabetically)
 end
 
-rule "b_rule", salience: 10 do
+rule 'b_rule', salience: 10 do
   # Fires second
 end
 ```
@@ -86,9 +86,9 @@ end
 Use descriptive names with numeric prefixes for fine-grained control:
 
 ```ruby
-rule "10_validate_user", salience: 100
-rule "20_check_permissions", salience: 100
-rule "30_apply_rules", salience: 100
+rule '10_validate_user', salience: 100
+rule '20_check_permissions', salience: 100
+rule '30_apply_rules', salience: 100
 ```
 :::
 
@@ -102,7 +102,7 @@ Without no-loop, a rule might fire repeatedly if its action makes its condition 
 
 ```ruby
 # Without no_loop - could fire multiple times!
-rule "increment_counter" do
+rule 'increment_counter' do
   match do
     all?(lt(ref(:counter), 10))
   end
@@ -115,7 +115,7 @@ end
 ### With No-Loop
 
 ```ruby
-rule "increment_counter", no_loop: true do
+rule 'increment_counter', no_loop: true do
   match do
     all?(lt(ref(:counter), 10))
   end
@@ -137,7 +137,7 @@ Use `no_loop: true` when:
 **Example: Permission chains**
 
 ```ruby
-rule "grant_base_permissions", no_loop: true do
+rule 'grant_base_permissions', no_loop: true do
   match do
     all?(user(:registered?))
   end
@@ -147,11 +147,11 @@ rule "grant_base_permissions", no_loop: true do
   end
 end
 
-rule "grant_premium_permissions", no_loop: true do
+rule 'grant_premium_permissions', no_loop: true do
   match do
     all?(
       user(:premium?),
-      flag(:view)  # Depends on previous rule
+      flag(:view) # Depends on previous rule
     )
   end
   execute do
@@ -219,7 +219,7 @@ Monitor execution cycles:
 ```ruby
 cycles = 0
 engine = Ruleur.define do
-  rule "count_cycles", no_loop: false do
+  rule 'count_cycles', no_loop: false do
     match do
       all?(lt(ref(:counter), 100))
     end
@@ -231,7 +231,7 @@ engine = Ruleur.define do
 end
 
 ctx = engine.run({}, max_cycles: 5)
-puts "Executed #{cycles} times"  # => 5
+puts "Executed #{cycles} times" # => 5
 ```
 
 ## Rule Tags
@@ -240,15 +240,15 @@ Organize rules with tags:
 
 ```ruby
 engine = Ruleur.define do
-  rule "admin_check", tags: ['permissions', 'admin'] do
+  rule 'admin_check', tags: %w[permissions admin] do
     match do
-      all?() # placeholder
+      all? # placeholder
     end
   end
-  
-  rule "payment_rule", tags: ['payment', 'validation'] do
+
+  rule 'payment_rule', tags: %w[payment validation] do
     match do
-      all?() # placeholder
+      all? # placeholder
     end
   end
 end
@@ -271,7 +271,7 @@ end
 Use consistent tag hierarchies:
 
 ```ruby
-rule "process_user", tags: ['user', 'permissions'] do
+rule 'process_user', tags: %w[user permissions] do
   match do
     all?(user(:active?))
   end
@@ -280,7 +280,7 @@ rule "process_user", tags: ['user', 'permissions'] do
   end
 end
 
-rule "process_order", tags: ['order', 'payment'] do
+rule 'process_order', tags: %w[order payment] do
   match do
     all?(order(:pending?))
   end
@@ -312,9 +312,9 @@ ctx = engine.run(
 ### Reading Context Values
 
 ```ruby
-ctx[:user]           # => User object
-ctx[:recordord]         # => Document object
-ctx[:access]         # => true or nil (set by rules)
+ctx[:user] # => User object
+ctx[:recordord] # => Document object
+ctx[:access] # => true or nil (set by rules)
 ```
 
 ### Context Isolation
@@ -350,7 +350,7 @@ Fewer rules = faster execution:
 
 ```ruby
 # Good - single rule
-rule "permission_check" do
+rule 'permission_check' do
   match do
     any?(
       user(:admin?),
@@ -364,7 +364,7 @@ rule "permission_check" do
 end
 
 # Less efficient - three rules
-rule "admin_edit" do
+rule 'admin_edit' do
   match do
     all?(user(:admin?))
   end
@@ -373,7 +373,7 @@ rule "admin_edit" do
   end
 end
 
-rule "editor_edit" do
+rule 'editor_edit' do
   match do
     all?(user(:editor?))
   end
@@ -382,7 +382,7 @@ rule "editor_edit" do
   end
 end
 
-rule "owner_edit" do
+rule 'owner_edit' do
   match do
     all?(user(:owner?))
   end
@@ -400,16 +400,16 @@ Put cheap, likely-to-fail checks first:
 # Good - cheap check first
 match do
   all?(
-    user(:logged_in?),        # Fast boolean check
+    user(:logged_in?), # Fast boolean check
     present?(record_value(:title)), # Fast presence check
-    expensive_db_query()      # Slow check last
+    expensive_db_query # Slow check last
   )
 end
 
 # Less efficient - expensive check first
 match do
   all?(
-    expensive_db_query(),
+    expensive_db_query,
     user(:logged_in?)
   )
 end
@@ -421,12 +421,12 @@ Higher salience rules execute first - use for critical paths:
 
 ```ruby
 # Execute validation first (high salience)
-rule "validate_input", salience: 100 do
+rule 'validate_input', salience: 100 do
   # Fast validation
 end
 
 # Then business logic (normal salience)
-rule "process_order", salience: 10 do
+rule 'process_order', salience: 10 do
   # Heavier processing
 end
 ```
@@ -477,7 +477,7 @@ end
 total = recordord.items.sum(&:price)
 ctx = engine.run(user: user, recordord: recordord, total: total)
 
-rule "high_value_order" do
+rule 'high_value_order' do
   match do
     all?(gt?(ref(:total), 1000))
   end
@@ -505,7 +505,7 @@ ctx = Ruleur::Context.new(user: user, recordord: recordord)
 condition = all?(user(:admin?), record(:published?))
 result = condition.evaluate(ctx)
 
-puts "Condition result: #{result}"  # => true/false
+puts "Condition result: #{result}" # => true/false
 ```
 
 ### 3. Inspect Rule Eligibility
@@ -513,13 +513,13 @@ puts "Condition result: #{result}"  # => true/false
 Check if a rule would fire:
 
 ```ruby
-rule = engine.rules.find { |r| r.name == "my_rule" }
+rule = engine.rules.find { |r| r.name == 'my_rule' }
 ctx = Ruleur::Context.new(user: user, recordord: recordord)
 
 if rule.eligible?(ctx)
-  puts "Rule would fire"
+  puts 'Rule would fire'
 else
-  puts "Rule would not fire"
+  puts 'Rule would not fire'
 end
 ```
 
@@ -561,7 +561,7 @@ Ruleur::Operators.register(:within_range) do |value, range|
 end
 
 # Use in rule
-rule "age_range_check" do
+rule 'age_range_check' do
   match do
     all?(
       predicate do
@@ -590,12 +590,12 @@ Process recordords in batches:
 ```ruby
 def process_batch(recordords, user)
   results = []
-  
+
   recordords.each do |recordord|
     ctx = engine.run(user: user, recordord: recordord)
     results << { recordord_id: recordord.id, allowed: ctx[:access] }
   end
-  
+
   results
 end
 

@@ -19,7 +19,7 @@ YAML rules enable:
 Loads a rule from a YAML file.
 
 ```ruby
-rule = Ruleur::Persistence::YAMLLoader.load_file("config/rules/discount.yml")
+rule = Ruleur::Persistence::YAMLLoader.load_file('config/rules/discount.yml')
 engine = Ruleur::Engine.new(rules: [rule])
 ```
 
@@ -38,7 +38,7 @@ engine = Ruleur::Engine.new(rules: [rule])
 Loads a rule from a YAML string.
 
 ```ruby
-yaml = File.read("rule.yml")
+yaml = File.read('rule.yml')
 rule = Ruleur::Persistence::YAMLLoader.load_string(yaml)
 ```
 
@@ -56,7 +56,7 @@ rule = Ruleur::Persistence::YAMLLoader.load_string(yaml)
 Loads a rule from a Hash (parsed YAML).
 
 ```ruby
-rule_data = YAML.load_file("rule.yml")
+rule_data = YAML.load_file('rule.yml')
 rule = Ruleur::Persistence::YAMLLoader.load(rule_data)
 ```
 
@@ -180,7 +180,7 @@ action:
 ```ruby
 # Load and use
 rule = Ruleur::Persistence::YAMLLoader.load_file(
-  "config/rules/admin_access.yml"
+  'config/rules/admin_access.yml'
 )
 engine = Ruleur::Engine.new(rules: [rule])
 result = engine.run(user: current_user)
@@ -273,7 +273,7 @@ action:
 ### From Directory
 
 ```ruby
-rule_files = Dir["config/rules/*.yml"]
+rule_files = Dir['config/rules/*.yml']
 rules = rule_files.map do |file|
   Ruleur::Persistence::YAMLLoader.load_file(file)
 end
@@ -300,17 +300,19 @@ Convert DSL rules to YAML:
 ```ruby
 # Define rule in DSL
 engine = Ruleur.define do
-  rule "example" do
+  rule 'example' do
     match do
       all?(user(:admin?))
     end
-    execute do allow! :access end
+    execute do
+      allow! :access
+    end
   end
 end
 
 # Export to YAML
 yaml = engine.rules.first.to_yaml
-File.write("config/rules/example.yml", yaml)
+File.write('config/rules/example.yml', yaml)
 ```
 
 ## Validation
@@ -319,7 +321,7 @@ YAML rules are validated on load:
 
 ```ruby
 begin
-  rule = Ruleur::Persistence::YAMLLoader.load_file("invalid.yml")
+  rule = Ruleur::Persistence::YAMLLoader.load_file('invalid.yml')
 rescue Ruleur::ValidationError => e
   puts "Invalid rule: #{e.message}"
   puts e.errors.full_messages

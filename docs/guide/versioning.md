@@ -48,7 +48,7 @@ create_table :ruleur_rule_versions do |t|
   t.text :change_description
   t.datetime :created_at, null: false
 
-  t.index [:rule_name, :version], unique: true
+  t.index %i[rule_name version], unique: true
   t.index :rule_name
 end
 ```
@@ -113,7 +113,7 @@ puts versioned_rule.updated_by    # => "bob@example.com"
 
 ```ruby
 # Get all current rules (latest versions)
-rules = repo.all  # Returns Array<VersionedRule>
+rules = repo.all # Returns Array<VersionedRule>
 
 # Get specific rule
 rule = repo.find('allow_create')
@@ -140,7 +140,7 @@ history.each do |version|
   puts "  Created: #{version.created_at}"
   puts "  By: #{version.created_by}"
   puts "  Changes: #{version.change_description}"
-  puts "  ---"
+  puts '  ---'
 end
 ```
 
@@ -170,7 +170,7 @@ Version 1
 old_rule = repo.find_version('allow_create', 2)
 
 if old_rule
-  puts old_rule.version           # => 2
+  puts old_rule.version # => 2
   puts old_rule.change_description # => "Fixed permission logic"
 
   # You can run this old version
@@ -232,7 +232,7 @@ rule.created_by         # String: who created the rule
 rule.updated_by         # String: who last updated the rule
 
 # Check if versioned
-rule.versioned?         # => true
+rule.versioned? # => true
 
 # Get all metadata
 info = rule.version_info
@@ -246,7 +246,7 @@ info = rule.version_info
 # }
 
 # VersionedRule is still a Rule
-rule.name               # Rule methods work normally
+rule.name # Rule methods work normally
 rule.condition
 rule.action_spec
 ```
@@ -368,7 +368,7 @@ File.write('rules_backup.json', JSON.pretty_generate(backup))
 
 # Restore from backup
 backup = JSON.parse(File.read('rules_backup.json'))
-backup['rules'].each do |name, data|
+backup['rules'].each_value do |data|
   rule = Ruleur::Persistence::Serializer.rule_from_h(data['current'].deep_symbolize_keys)
   repo.save(
     rule,
@@ -447,7 +447,7 @@ Use transactions and let the repository handle locking:
 
 ```ruby
 # Wrong: manual version management
-rule.version += 1  # Don't do this!
+rule.version += 1 # Don't do this!
 
 # Right: let repository handle it
 repo.save(rule, user: user, change_description: desc)
@@ -478,7 +478,7 @@ Consider archiving old versions:
 history = repo.version_history('my_rule')
 
 if history.size > 100
-  old_versions = history[100..-1]
+  old_versions = history[100..]
 
   # Archive to S3/file storage
   archive_versions(old_versions)
@@ -496,12 +496,10 @@ end
 ```ruby
 # Alert if rule changes more than 5 times in an hour
 recent_versions = RuleVersion
-  .where(rule_name: 'critical_rule')
-  .where('created_at > ?', 1.hour.ago)
+                  .where(rule_name: 'critical_rule')
+                  .where('created_at > ?', 1.hour.ago)
 
-if recent_versions.count > 5
-  alert "Rule #{rule_name} changed #{recent_versions.count} times in the last hour!"
-end
+alert "Rule #{rule_name} changed #{recent_versions.count} times in the last hour!" if recent_versions.count > 5
 ```
 
 ### Who's Changing What
@@ -509,9 +507,9 @@ end
 ```ruby
 # Report of changes by user
 changes_by_user = RuleVersion
-  .where('created_at > ?', 1.week.ago)
-  .group(:created_by)
-  .count
+                  .where('created_at > ?', 1.week.ago)
+                  .group(:created_by)
+                  .count
 
 changes_by_user.each do |user, count|
   puts "#{user}: #{count} changes"

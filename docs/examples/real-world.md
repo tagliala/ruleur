@@ -28,7 +28,7 @@ class OrderValidationEngine
   def self.engine
     @engine ||= Ruleur.define do
       # Inventory Check
-      rule "check_inventory", salience: 100 do
+      rule 'check_inventory', salience: 100 do
         match do
           all?(
             order(:items).present,
@@ -37,11 +37,11 @@ class OrderValidationEngine
         end
         execute do
           set :inventory_valid, true
-          set :validation_step, "inventory_passed"
+          set :validation_step, 'inventory_passed'
         end
       end
-      
-      rule "insufficient_inventory", salience: 100 do
+
+      rule 'insufficient_inventory', salience: 100 do
         match do
           all?(
             order(:items).present,
@@ -51,13 +51,13 @@ class OrderValidationEngine
         execute do
           items = context[:order].out_of_stock_items
           set :validation_failed, true
-          set :error_code, "INSUFFICIENT_INVENTORY"
+          set :error_code, 'INSUFFICIENT_INVENTORY'
           set :error_message, "Items out of stock: #{items.join(', ')}"
         end
       end
-      
+
       # Customer Validation
-      rule "validate_customer", salience: 90 do
+      rule 'validate_customer', salience: 90 do
         match do
           all?(
             flag(:inventory_valid),
@@ -67,23 +67,23 @@ class OrderValidationEngine
         end
         execute do
           set :customer_valid, true
-          set :validation_step, "customer_passed"
+          set :validation_step, 'customer_passed'
         end
       end
-      
-      rule "suspended_customer", salience: 90 do
+
+      rule 'suspended_customer', salience: 90 do
         match do
           all?(customer(:suspended?))
         end
         execute do
           set :validation_failed, true
-          set :error_code, "CUSTOMER_SUSPENDED"
-          set :error_message, "Customer account is suspended"
+          set :error_code, 'CUSTOMER_SUSPENDED'
+          set :error_message, 'Customer account is suspended'
         end
       end
-      
+
       # Payment Method Validation
-      rule "validate_payment", salience: 80 do
+      rule 'validate_payment', salience: 80 do
         match do
           all?(
             flag(:customer_valid),
@@ -93,12 +93,12 @@ class OrderValidationEngine
         end
         execute do
           set :payment_valid, true
-          set :validation_step, "payment_passed"
+          set :validation_step, 'payment_passed'
         end
       end
-      
+
       # Regional Restrictions
-      rule "check_shipping_restrictions", salience: 70 do
+      rule 'check_shipping_restrictions', salience: 70 do
         match do
           all?(
             flag(:payment_valid),
@@ -108,20 +108,20 @@ class OrderValidationEngine
         execute do
           address = context[:order].shipping_address
           restricted = context[:order].has_restricted_items?(address.country)
-          
+
           if restricted
             set :validation_failed, true
-            set :error_code, "SHIPPING_RESTRICTED"
+            set :error_code, 'SHIPPING_RESTRICTED'
             set :error_message, "Some items cannot be shipped to #{address.country}"
           else
             set :shipping_valid, true
-            set :validation_step, "shipping_passed"
+            set :validation_step, 'shipping_passed'
           end
         end
       end
-      
+
       # Business Days Check
-      rule "business_days_validation", salience: 60 do
+      rule 'business_days_validation', salience: 60 do
         match do
           all?(
             flag(:shipping_valid),
@@ -131,18 +131,18 @@ class OrderValidationEngine
         execute do
           today = Date.today
           is_business_day = (1..5).include?(today.wday)
-          
+
           if is_business_day
             set :expedited_available, true
           else
             set :expedited_available, false
-            set :warning_message, "Expedited shipping not available on weekends"
+            set :warning_message, 'Expedited shipping not available on weekends'
           end
         end
       end
-      
+
       # Final Validation
-      rule "order_valid", salience: 10 do
+      rule 'order_valid', salience: 10 do
         match do
           all?(
             flag(:inventory_valid),
@@ -159,12 +159,12 @@ class OrderValidationEngine
       end
     end
   end
-  
-  ValidationResult = Struct.new(:valid, :errors, :error_code, :warnings, keyword_init: true)
+
+  ValidationResult = Struct.new(:valid, :errors, :error_code, :warnings)
 
   def self.validate(order, customer)
     result = engine.run(order: order, customer: customer)
-    
+
     ValidationResult.new(
       valid: result[:order_valid] == true,
       errors: result[:validation_failed] ? [result[:error_message]] : [],
@@ -178,14 +178,14 @@ end
 class OrdersController < ApplicationController
   def create
     @order = Order.new(order_params)
-    
+
     validation = OrderValidationEngine.validate(@order, current_user)
-    
+
     if validation.valid?
       @order.save
-      redirect_to @order, notice: "Order created successfully"
+      redirect_to @order, notice: 'Order created successfully'
     else
-      flash.now[:error] = validation.errors.join(", ")
+      flash.now[:error] = validation.errors.join(', ')
       render :new
     end
   end
@@ -209,7 +209,7 @@ class FeatureAccessEngine
   def self.engine
     @engine ||= Ruleur.define do
       # Basic Features (All tiers)
-      rule "basic_features", salience: 100 do
+      rule 'basic_features', salience: 100 do
         match do
           all?(user(:subscription, :active?))
         end
@@ -221,12 +221,12 @@ class FeatureAccessEngine
           set :storage_gb, 5
         end
       end
-      
+
       # Pro Features
-      rule "pro_features", salience: 90 do
+      rule 'pro_features', salience: 90 do
         match do
           all?(
-            user(:subscription, :tier).in(["pro", "enterprise"]),
+            user(:subscription, :tier).in(%w[pro enterprise]),
             user(:subscription, :active?)
           )
         end
@@ -240,12 +240,12 @@ class FeatureAccessEngine
           set :api_rate_limit, 1000
         end
       end
-      
+
       # Enterprise Features
-      rule "enterprise_features", salience: 80 do
+      rule 'enterprise_features', salience: 80 do
         match do
           all?(
-            user(:subscription, :tier).eq?("enterprise"),
+            user(:subscription, :tier).eq?('enterprise'),
             user(:subscription, :active?)
           )
         end
@@ -257,12 +257,12 @@ class FeatureAccessEngine
           allow! :custom_contracts
           set :max_projects, Float::INFINITY
           set :storage_gb, 1000
-          set :api_rate_limit, 10000
+          set :api_rate_limit, 10_000
         end
       end
-      
+
       # Trial Limitations
-      rule "trial_limitations", salience: 110 do
+      rule 'trial_limitations', salience: 110 do
         match do
           all?(
             user(:subscription, :trial?),
@@ -277,24 +277,24 @@ class FeatureAccessEngine
           set :trial_days_remaining, (user.subscription.trial_end - Date.today).to_i
         end
       end
-      
+
       # Add-on: Extra Storage
-      rule "storage_addon", salience: 70 do
+      rule 'storage_addon', salience: 70 do
         match do
-          all?(user(:has_addon?, "extra_storage"))
+          all?(user(:has_addon?, 'extra_storage'))
         end
         execute do
           current_storage = context[:storage_gb] || 5
           set :storage_gb, current_storage + 50
         end
       end
-      
+
       # Add-on: API Access for Basic Users
-      rule "api_addon", salience: 70 do
+      rule 'api_addon', salience: 70 do
         match do
           all?(
-            user(:subscription, :tier).eq?("basic"),
-            user(:has_addon?, "api_access")
+            user(:subscription, :tier).eq?('basic'),
+            user(:has_addon?, 'api_access')
           )
         end
         execute do
@@ -302,9 +302,9 @@ class FeatureAccessEngine
           set :api_rate_limit, 100
         end
       end
-      
+
       # Usage Limits
-      rule "check_project_limit", salience: 50 do
+      rule 'check_project_limit', salience: 50 do
         match do
           all?(
             flag(:max_projects).present,
@@ -313,12 +313,12 @@ class FeatureAccessEngine
         end
         execute do
           deny! :create_project
-          set :limit_reached, "projects"
+          set :limit_reached, 'projects'
           set :upgrade_required, true
         end
       end
-      
-      rule "check_storage_limit", salience: 50 do
+
+      rule 'check_storage_limit', salience: 50 do
         match do
           all?(
             flag(:storage_gb).present,
@@ -327,13 +327,13 @@ class FeatureAccessEngine
         end
         execute do
           deny! :upload_files
-          set :limit_reached, "storage"
+          set :limit_reached, 'storage'
           set :upgrade_required, true
         end
       end
-      
+
       # Expired Subscription
-      rule "expired_subscription", salience: 120 do
+      rule 'expired_subscription', salience: 120 do
         match do
           all?(not?(user(:subscription, :active?)))
         end
@@ -348,17 +348,17 @@ class FeatureAccessEngine
       end
     end
   end
-  
-  def self.check_access(user, feature)
+
+  def self.check_access?(user, feature)
     result = engine.run(user: user)
     result[:"allow_#{feature}"] == true
   end
-  
-  LimitsResult = Struct.new(:max_projects, :storage_gb, :api_rate_limit, :upgrade_required, keyword_init: true)
+
+  LimitsResult = Struct.new(:max_projects, :storage_gb, :api_rate_limit, :upgrade_required)
 
   def self.get_limits(user)
     result = engine.run(user: user)
-    
+
     LimitsResult.new(
       max_projects: result[:max_projects],
       storage_gb: result[:storage_gb],
@@ -371,12 +371,12 @@ end
 # Usage in application
 class ProjectsController < ApplicationController
   before_action :check_project_limit, only: [:create]
-  
+
   def check_project_limit
-    unless FeatureAccessEngine.check_access(current_user, :create_project)
-      limits = FeatureAccessEngine.get_limits(current_user)
-      redirect_to upgrade_path, alert: "Project limit reached (#{limits.max_projects})"
-    end
+    return if FeatureAccessEngine.check_access(current_user, :create_project)
+
+    limits = FeatureAccessEngine.get_limits(current_user)
+    redirect_to upgrade_path, alert: "Project limit reached (#{limits.max_projects})"
   end
 end
 ```
@@ -398,23 +398,23 @@ class ContentModerationEngine
   def self.engine
     @engine ||= Ruleur.define do
       # Trusted User Auto-Approve
-      rule "trusted_user_auto_approve", salience: 100 do
+      rule 'trusted_user_auto_approve', salience: 100 do
         match do
           all?(
             user(:trusted?),
             user(:violations_count).eq?(0),
-            content(:type).in(["text", "image"])
+            content(:type).in(%w[text image])
           )
         end
         execute do
-          set :moderation_action, "approve"
+          set :moderation_action, 'approve'
           set :auto_approved, true
-          set :reason, "Trusted user with clean history"
+          set :reason, 'Trusted user with clean history'
         end
       end
-      
+
       # Spam Detection
-      rule "spam_detection", salience: 110 do
+      rule 'spam_detection', salience: 110 do
         match do
           all?(
             any?(
@@ -425,32 +425,32 @@ class ContentModerationEngine
           )
         end
         execute do
-          set :moderation_action, "reject"
-          set :flag_reason, "Potential spam detected"
+          set :moderation_action, 'reject'
+          set :flag_reason, 'Potential spam detected'
           set :notify_user, true
         end
       end
-      
+
       # Profanity Check
-      rule "profanity_check", salience: 105 do
+      rule 'profanity_check', salience: 105 do
         match do
           all?(content(:contains_profanity?))
         end
         execute do
           severity = context[:content].profanity_severity
-          
+
           if severity >= 8
-            set :moderation_action, "reject"
-            set :flag_reason, "Severe profanity"
+            set :moderation_action, 'reject'
+            set :flag_reason, 'Severe profanity'
           else
-            set :moderation_action, "review"
-            set :flag_reason, "Mild profanity - manual review"
+            set :moderation_action, 'review'
+            set :flag_reason, 'Mild profanity - manual review'
           end
         end
       end
-      
+
       # New User Content
-      rule "new_user_review", salience: 90 do
+      rule 'new_user_review', salience: 90 do
         match do
           all?(
             user(:account_age_days).lt?(7),
@@ -459,79 +459,79 @@ class ContentModerationEngine
           )
         end
         execute do
-          set :moderation_action, "review"
-          set :flag_reason, "New user - pending review"
-          set :review_priority, "low"
+          set :moderation_action, 'review'
+          set :flag_reason, 'New user - pending review'
+          set :review_priority, 'low'
         end
       end
-      
+
       # Sensitive Content
-      rule "sensitive_content", salience: 95 do
+      rule 'sensitive_content', salience: 95 do
         match do
           all?(
-            content(:type).in(["image", "video"]),
+            content(:type).in(%w[image video]),
             content(:ai_flagged?)
           )
         end
         execute do
           confidence = context[:content].ai_confidence
-          
+
           if confidence >= 0.9
-            set :moderation_action, "reject"
+            set :moderation_action, 'reject'
             set :flag_reason, "AI detected policy violation (#{confidence})"
           elsif confidence >= 0.5
-            set :moderation_action, "review"
+            set :moderation_action, 'review'
             set :flag_reason, "AI flagged for review (#{confidence})"
-            set :review_priority, "high"
+            set :review_priority, 'high'
           end
         end
       end
-      
+
       # Copyright Claims
-      rule "copyright_check", salience: 100 do
+      rule 'copyright_check', salience: 100 do
         match do
           all?(
-            content(:type).in(["image", "video", "audio"]),
+            content(:type).in(%w[image video audio]),
             content(:copyright_match?)
           )
         end
         execute do
-          set :moderation_action, "remove"
-          set :flag_reason, "Copyright violation detected"
+          set :moderation_action, 'remove'
+          set :flag_reason, 'Copyright violation detected'
           set :dmca_takedown, true
           set :notify_user, true
         end
       end
-      
+
       # Rate Limiting
-      rule "rate_limit_exceeded", salience: 120 do
+      rule 'rate_limit_exceeded', salience: 120 do
         match do
           all?(user(:posts_last_hour).gt?(10))
         end
         execute do
-          set :moderation_action, "rate_limit"
-          set :flag_reason, "Posting too frequently"
+          set :moderation_action, 'rate_limit'
+          set :flag_reason, 'Posting too frequently'
           set :cooldown_minutes, 60
         end
       end
-      
+
       # Default: Queue for Review
-      rule "default_review", salience: 1 do
+      rule 'default_review', salience: 1 do
         match do
           all?(not?(flag(:moderation_action).present))
         end
         execute do
-          set :moderation_action, "review"
-          set :flag_reason, "Standard review process"
-          set :review_priority, "normal"
+          set :moderation_action, 'review'
+          set :flag_reason, 'Standard review process'
+          set :review_priority, 'normal'
         end
       end
     end
   end
-  
+
   def self.moderate(content, user)
     result = engine.run(content: content, user: user)
-    
+
     ModerationResult.new(
       execute: result[:moderation_action],
       reason: result[:flag_reason],
@@ -547,21 +547,21 @@ end
 class PostsController < ApplicationController
   def create
     @post = current_user.posts.build(post_params)
-    
+
     moderation = ContentModerationEngine.moderate(@post, current_user)
-    
+
     case moderation.action
-    when "approve"
+    when 'approve'
       @post.approved!
-      redirect_to @post, notice: "Post published"
-    when "reject"
+      redirect_to @post, notice: 'Post published'
+    when 'reject'
       flash[:error] = "Post rejected: #{moderation.reason}"
       render :new
-    when "review"
+    when 'review'
       @post.pending_review!
       ModerationQueue.enqueue(@post, priority: moderation.review_priority)
-      redirect_to root_path, notice: "Post submitted for review"
-    when "rate_limit"
+      redirect_to root_path, notice: 'Post submitted for review'
+    when 'rate_limit'
       flash[:error] = moderation.reason
       render :new
     end
@@ -586,7 +586,7 @@ class InsurancePolicyEngine
   def self.engine
     @engine ||= Ruleur.define do
       # Base Risk Assessment
-      rule "age_risk_low", salience: 100 do
+      rule 'age_risk_low', salience: 100 do
         match do
           all?(
             applicant(:age).gte?(25),
@@ -595,8 +595,8 @@ class InsurancePolicyEngine
         end
         execute { set :age_risk_score, 0 }
       end
-      
-      rule "age_risk_high", salience: 100 do
+
+      rule 'age_risk_high', salience: 100 do
         match do
           all?(
             any?(
@@ -607,9 +607,9 @@ class InsurancePolicyEngine
         end
         execute { set :age_risk_score, 20 }
       end
-      
+
       # Driving History
-      rule "clean_driving_record", salience: 90 do
+      rule 'clean_driving_record', salience: 90 do
         match do
           all?(
             applicant(:accidents_last_5_years).eq?(0),
@@ -621,8 +621,8 @@ class InsurancePolicyEngine
           set :safe_driver_discount, 0.15
         end
       end
-      
-      rule "moderate_driving_risk", salience: 90 do
+
+      rule 'moderate_driving_risk', salience: 90 do
         match do
           all?(
             applicant(:accidents_last_5_years).in([1, 2]),
@@ -631,8 +631,8 @@ class InsurancePolicyEngine
         end
         execute { set :driving_risk_score, 30 }
       end
-      
-      rule "high_driving_risk", salience: 90 do
+
+      rule 'high_driving_risk', salience: 90 do
         match do
           all?(
             any?(
@@ -647,9 +647,9 @@ class InsurancePolicyEngine
           set :requires_underwriting, true
         end
       end
-      
+
       # Credit Score Impact
-      rule "excellent_credit", salience: 85 do
+      rule 'excellent_credit', salience: 85 do
         match do
           all?(
             applicant(:credit_score).gte?(750)
@@ -660,8 +660,8 @@ class InsurancePolicyEngine
           set :credit_discount, 0.10
         end
       end
-      
-      rule "poor_credit", salience: 85 do
+
+      rule 'poor_credit', salience: 85 do
         match do
           all?(
             applicant(:credit_score).lt?(600)
@@ -669,9 +669,9 @@ class InsurancePolicyEngine
         end
         execute { set :credit_risk_score, 25 }
       end
-      
+
       # Calculate Total Risk Score
-      rule "calculate_risk", salience: 50, no_loop: true do
+      rule 'calculate_risk', salience: 50, no_loop: true do
         match do
           all?(
             flag(:age_risk_score).present,
@@ -682,14 +682,14 @@ class InsurancePolicyEngine
           age = context[:age_risk_score]
           driving = context[:driving_risk_score]
           credit = context[:credit_risk_score] || 0
-          
+
           total_risk = age + driving + credit
           set :total_risk_score, total_risk
         end
       end
-      
+
       # Eligibility Determination
-      rule "eligible_standard", salience: 40 do
+      rule 'eligible_standard', salience: 40 do
         match do
           all?(
             flag(:total_risk_score).lt?(50),
@@ -698,11 +698,11 @@ class InsurancePolicyEngine
         end
         execute do
           set :eligible, true
-          set :policy_tier, "standard"
+          set :policy_tier, 'standard'
         end
       end
-      
-      rule "eligible_high_risk", salience: 40 do
+
+      rule 'eligible_high_risk', salience: 40 do
         match do
           all?(
             flag(:total_risk_score).gte?(50),
@@ -712,11 +712,11 @@ class InsurancePolicyEngine
         end
         execute do
           set :eligible, true
-          set :policy_tier, "high_risk"
+          set :policy_tier, 'high_risk'
         end
       end
-      
-      rule "requires_manual_review", salience: 40 do
+
+      rule 'requires_manual_review', salience: 40 do
         match do
           all?(
             any?(
@@ -728,12 +728,12 @@ class InsurancePolicyEngine
         execute do
           set :eligible, false
           set :manual_underwriting_required, true
-          set :reason, "Risk score too high - manual review needed"
+          set :reason, 'Risk score too high - manual review needed'
         end
       end
-      
+
       # Premium Calculation
-      rule "calculate_premium", salience: 30 do
+      rule 'calculate_premium', salience: 30 do
         match do
           all?(
             flag(:eligible),
@@ -744,22 +744,22 @@ class InsurancePolicyEngine
           base_premium = 1000
           risk_score = context[:total_risk_score]
           tier = context[:policy_tier]
-          
+
           # Risk multiplier
           risk_multiplier = 1 + (risk_score / 100.0)
-          
+
           # Tier multiplier
-          tier_multiplier = tier == "high_risk" ? 1.5 : 1.0
-          
+          tier_multiplier = tier == 'high_risk' ? 1.5 : 1.0
+
           premium = base_premium * risk_multiplier * tier_multiplier
-          
+
           # Apply discounts
           safe_driver = context[:safe_driver_discount] || 0
           credit = context[:credit_discount] || 0
           total_discount = safe_driver + credit
-          
+
           final_premium = premium * (1 - total_discount)
-          
+
           set :monthly_premium, final_premium.round(2)
           set :annual_premium, (final_premium * 12).round(2)
           set :discounts_applied, total_discount
@@ -767,10 +767,10 @@ class InsurancePolicyEngine
       end
     end
   end
-  
+
   def self.evaluate(applicant)
     result = engine.run(applicant: applicant)
-    
+
     PolicyEvaluation.new(
       eligible: result[:eligible] == true,
       policy_tier: result[:policy_tier],
@@ -804,35 +804,35 @@ end
 
 ```ruby
 RSpec.describe ContentModerationEngine do
-  describe ".moderate" do
-    it "auto-approves trusted users" do
+  describe '.moderate' do
+    it 'auto-approves trusted users' do
       user = build(:user, :trusted, violations_count: 0)
       content = build(:post, :text)
-      
+
       result = ContentModerationEngine.moderate(content, user)
-      
-      expect(result.action).to eq("approve")
+
+      expect(result.action).to eq('approve')
       expect(result.auto_approved).to be true
     end
-    
-    it "rejects spam content" do
+
+    it 'rejects spam content' do
       user = build(:user)
       content = build(:post, spam_keywords: true)
-      
+
       result = ContentModerationEngine.moderate(content, user)
-      
-      expect(result.action).to eq("reject")
-      expect(result.reason).to include("spam")
+
+      expect(result.action).to eq('reject')
+      expect(result.reason).to include('spam')
     end
-    
-    it "queues new user content for review" do
+
+    it 'queues new user content for review' do
       user = build(:user, created_at: 2.days.ago)
       content = build(:post, :text)
-      
+
       result = ContentModerationEngine.moderate(content, user)
-      
-      expect(result.action).to eq("review")
-      expect(result.review_priority).to eq("low")
+
+      expect(result.action).to eq('review')
+      expect(result.review_priority).to eq('low')
     end
   end
 end
@@ -849,11 +849,11 @@ class CachedRuleEngine
       load_engine
     end
   end
-  
+
   def self.cache_key
-    Rule.maximum(:updated_at)&.to_i || 0
+    Rule.maximum(:updated_at).to_i
   end
-  
+
   def self.reload!
     @engine = nil
     Rails.cache.delete("rule_engine/#{cache_key}")
@@ -868,9 +868,9 @@ class AsyncModerationJob < ApplicationJob
   def perform(content_id, user_id)
     content = Content.find(content_id)
     user = User.find(user_id)
-    
+
     result = ContentModerationEngine.moderate(content, user)
-    
+
     content.update(
       moderation_status: result.action,
       moderation_reason: result.reason

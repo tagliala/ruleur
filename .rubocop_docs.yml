@@ -9,5 +9,26 @@ Lint/UselessAssignment:
 Layout/ArrayAlignment:
   Enabled: false
 
+Layout/FirstArgumentIndentation:
+  EnforcedStyle: consistent
+
+Metrics:
+  Enabled: false
+
+Naming/VariableNumber:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/EmptyElse:
+  AllowComments: true
+
 Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/NumericPredicate:
+  Enabled: false
+
+Style/OneClassPerFile:
   Enabled: false

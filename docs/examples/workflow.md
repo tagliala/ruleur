@@ -16,7 +16,7 @@ Workflow rules help you:
 
 ```ruby
 engine = Ruleur.define do
-  rule "can_submit" do
+  rule 'can_submit' do
     match do
       all?(
         document(:draft?),
@@ -28,8 +28,8 @@ engine = Ruleur.define do
       allow! :submit
     end
   end
-  
-  rule "can_approve" do
+
+  rule 'can_approve' do
     match do
       all?(
         user(:approver?),
@@ -41,8 +41,8 @@ engine = Ruleur.define do
       allow! :approve
     end
   end
-  
-  rule "can_reject" do
+
+  rule 'can_reject' do
     match do
       all?(
         user(:approver?),
@@ -63,86 +63,86 @@ end
 ```ruby
 engine = Ruleur.define do
   # Draft -> Submitted
-  rule "submit_document", salience: 100 do
+  rule 'submit_document', salience: 100 do
     match do
       all?(
-        document(:status).eq?("draft"),
+        document(:status).eq?('draft'),
         document(:complete?),
         flag(:action_submit)
       )
     end
     execute do
-      call_method document, :update_status, "submitted"
+      call_method document, :update_status, 'submitted'
       set :status_changed, true
-      set :new_status, "submitted"
+      set :new_status, 'submitted'
     end
   end
-  
+
   # Submitted -> Under Review
-  rule "start_review", salience: 90 do
+  rule 'start_review', salience: 90 do
     match do
       all?(
-        document(:status).eq?("submitted"),
+        document(:status).eq?('submitted'),
         user(:reviewer?),
         flag(:action_start_review)
       )
     end
     execute do
-      call_method document, :update_status, "under_review"
+      call_method document, :update_status, 'under_review'
       call_method document, :assign_reviewer, context[:user]
       set :status_changed, true
-      set :new_status, "under_review"
+      set :new_status, 'under_review'
     end
   end
-  
+
   # Under Review -> Approved
-  rule "approve_document", salience: 80 do
+  rule 'approve_document', salience: 80 do
     match do
       all?(
-        document(:status).eq?("under_review"),
+        document(:status).eq?('under_review'),
         user(:approver?),
         flag(:action_approve)
       )
     end
     execute do
-      call_method document, :update_status, "approved"
+      call_method document, :update_status, 'approved'
       call_method document, :set_approved_by, context[:user]
       set :status_changed, true
-      set :new_status, "approved"
+      set :new_status, 'approved'
     end
   end
-  
+
   # Under Review -> Rejected
-  rule "reject_document", salience: 80 do
+  rule 'reject_document', salience: 80 do
     match do
       all?(
-        document(:status).eq?("under_review"),
+        document(:status).eq?('under_review'),
         user(:approver?),
         flag(:action_reject),
         flag(:rejection_reason).present
       )
     end
     execute do
-      call_method document, :update_status, "rejected"
+      call_method document, :update_status, 'rejected'
       call_method document, :add_rejection_reason, context[:rejection_reason]
       set :status_changed, true
-      set :new_status, "rejected"
+      set :new_status, 'rejected'
     end
   end
-  
+
   # Rejected -> Draft (resubmit)
-  rule "resubmit_document", salience: 70 do
+  rule 'resubmit_document', salience: 70 do
     match do
       all?(
-        document(:status).eq?("rejected"),
+        document(:status).eq?('rejected'),
         user(:owns?, document),
         flag(:action_resubmit)
       )
     end
     execute do
-      call_method document, :update_status, "draft"
+      call_method document, :update_status, 'draft'
       set :status_changed, true
-      set :new_status, "draft"
+      set :new_status, 'draft'
     end
   end
 end
@@ -155,22 +155,22 @@ end
 ```ruby
 engine = Ruleur.define do
   # Step 1: Validate Order
-  rule "validate_order", salience: 100, no_loop: true do
+  rule 'validate_order', salience: 100, no_loop: true do
     match do
       all?(
-        order(:status).eq?("pending"),
+        order(:status).eq?('pending'),
         order(:items).present,
         order(:shipping_address).present
       )
     end
     execute do
       set :order_valid, true
-      set :step_validate, "completed"
+      set :step_validate, 'completed'
     end
   end
-  
+
   # Step 2: Check Inventory
-  rule "check_inventory", salience: 90, no_loop: true do
+  rule 'check_inventory', salience: 90, no_loop: true do
     match do
       all?(
         flag(:order_valid),
@@ -179,12 +179,12 @@ engine = Ruleur.define do
     end
     execute do
       set :inventory_available, true
-      set :step_inventory, "completed"
+      set :step_inventory, 'completed'
     end
   end
-  
+
   # Step 3: Calculate Pricing
-  rule "calculate_pricing", salience: 80, no_loop: true do
+  rule 'calculate_pricing', salience: 80, no_loop: true do
     match do
       all?(
         flag(:inventory_available),
@@ -195,31 +195,31 @@ engine = Ruleur.define do
       order = context[:order]
       discount = calculate_discount(order)
       shipping = calculate_shipping(order)
-      
+
       set :discount_amount, discount
       set :shipping_cost, shipping
       set :final_total, order.total - discount + shipping
-      set :step_pricing, "completed"
+      set :step_pricing, 'completed'
     end
   end
-  
+
   # Step 4: Process Payment
-  rule "process_payment", salience: 70, no_loop: true do
+  rule 'process_payment', salience: 70, no_loop: true do
     match do
       all?(
-        flag(:step_pricing).eq?("completed"),
+        flag(:step_pricing).eq?('completed'),
         order(:payment_method).present
       )
     end
     execute do
       # Payment processing logic
       set :payment_processed, true
-      set :step_payment, "completed"
+      set :step_payment, 'completed'
     end
   end
-  
+
   # Step 5: Fulfill Order
-  rule "fulfill_order", salience: 60, no_loop: true do
+  rule 'fulfill_order', salience: 60, no_loop: true do
     match do
       all?(
         flag(:payment_processed),
@@ -229,12 +229,12 @@ engine = Ruleur.define do
     execute do
       call_method order, :fulfill!
       set :fulfillment_started, true
-      set :step_fulfillment, "completed"
+      set :step_fulfillment, 'completed'
     end
   end
-  
+
   # Final Step: Complete Order
-  rule "complete_order", salience: 50, no_loop: true do
+  rule 'complete_order', salience: 50, no_loop: true do
     match do
       all?(flag(:fulfillment_started))
     end
@@ -253,7 +253,7 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "technical_approval" do
+  rule 'technical_approval' do
     match do
       all?(
         user(:technical_lead?),
@@ -266,8 +266,8 @@ engine = Ruleur.define do
       set :technical_approved, true
     end
   end
-  
-  rule "business_approval" do
+
+  rule 'business_approval' do
     match do
       all?(
         user(:business_lead?),
@@ -280,8 +280,8 @@ engine = Ruleur.define do
       set :business_approved, true
     end
   end
-  
-  rule "final_approval" do
+
+  rule 'final_approval' do
     match do
       all?(
         flag(:technical_approved),
@@ -304,7 +304,7 @@ end
 ```ruby
 engine = Ruleur.define do
   # Small amounts - auto-approve
-  rule "auto_approve_small", salience: 100 do
+  rule 'auto_approve_small', salience: 100 do
     match do
       all?(
         expense(:amount).lt?(100),
@@ -315,12 +315,12 @@ engine = Ruleur.define do
     execute do
       call_method expense, :auto_approve!
       set :approved, true
-      set :approval_type, "automatic"
+      set :approval_type, 'automatic'
     end
   end
-  
+
   # Medium amounts - manager approval
-  rule "manager_approval_required", salience: 90 do
+  rule 'manager_approval_required', salience: 90 do
     match do
       all?(
         expense(:amount).gte?(100),
@@ -328,32 +328,32 @@ engine = Ruleur.define do
       )
     end
     execute do
-      set :approval_required, "manager"
+      set :approval_required, 'manager'
       set :approval_level, 1
     end
   end
-  
+
   # Large amounts - director approval
-  rule "director_approval_required", salience: 80 do
+  rule 'director_approval_required', salience: 80 do
     match do
       all?(
         expense(:amount).gte?(1000),
-        expense(:amount).lt?(10000)
+        expense(:amount).lt?(10_000)
       )
     end
     execute do
-      set :approval_required, "director"
+      set :approval_required, 'director'
       set :approval_level, 2
     end
   end
-  
+
   # Very large - CFO approval
-  rule "cfo_approval_required", salience: 70 do
+  rule 'cfo_approval_required', salience: 70 do
     match do
-      all?(expense(:amount).gte?(10000))
+      all?(expense(:amount).gte?(10_000))
     end
     execute do
-      set :approval_required, "cfo"
+      set :approval_required, 'cfo'
       set :approval_level, 3
     end
   end
@@ -366,7 +366,7 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "track_progress", no_loop: true do
+  rule 'track_progress', no_loop: true do
     match do
       all?(workflow(:in_progress?))
     end
@@ -374,7 +374,7 @@ engine = Ruleur.define do
       workflow = context[:workflow]
       completed = workflow.steps.count(&:completed?)
       total = workflow.steps.count
-      
+
       set :progress_percentage, (completed.to_f / total * 100).round
       set :steps_completed, completed
       set :steps_remaining, total - completed
@@ -405,7 +405,7 @@ condition:
       right:
         type: literal
         value: "submitted"
-    
+
     # User is an approver
     - type: pred
       op: truthy
@@ -413,14 +413,14 @@ condition:
         type: call
         recv: { type: ref, root: user }
         method: approver?
-    
+
     # Approve action requested
     - type: pred
       op: truthy
       left:
         type: ref
         root: action_approve
-    
+
     # Not already approved
     - type: not
       child:
@@ -449,55 +449,55 @@ action:
 class PurchaseOrderWorkflow
   def self.engine
     @engine ||= Ruleur.define do
-      # Create PO
-      rule "create_po", salience: 100 do
+      # Create Purchase Order
+      rule 'create_purchase_order', salience: 100 do
         match do
           all?(
-            po(:draft?),
-            po(:valid?),
+            purchase_order(:draft?),
+            purchase_order(:valid?),
             flag(:action_create)
           )
         end
         execute do
-          call_method po, :submit
-          set :po_created, true
-          set :status, "pending_approval"
+          call_method purchase_order, :submit
+          set :purchase_order_created, true
+          set :status, 'pending_approval'
         end
       end
-      
+
       # Auto-approve under threshold
-      rule "auto_approve", salience: 90 do
+      rule 'auto_approve', salience: 90 do
         match do
           all?(
-            po(:total).lt?(1000),
-            po(:status).eq?("pending_approval"),
+            purchase_order(:total).lt?(1000),
+            purchase_order(:status).eq?('pending_approval'),
             user(:employee?)
           )
         end
         execute do
-          call_method po, :auto_approve
+          call_method purchase_order, :auto_approve
           set :approved, true
-          set :approval_method, "automatic"
+          set :approval_method, 'automatic'
         end
       end
-      
+
       # Manager approval
-      rule "manager_review", salience: 80 do
+      rule 'manager_review', salience: 80 do
         match do
           all?(
-            po(:total).gte?(1000),
-            po(:total).lt?(10000),
-            po(:status).eq?("pending_approval")
+            purchase_order(:total).gte?(1000),
+            purchase_order(:total).lt?(10_000),
+            purchase_order(:status).eq?('pending_approval')
           )
         end
         execute do
           set :requires_manager_approval, true
-          set :approval_level, "manager"
+          set :approval_level, 'manager'
         end
       end
-      
+
       # Manager approves
-      rule "manager_approves", salience: 70 do
+      rule 'manager_approves', salience: 70 do
         match do
           all?(
             flag(:requires_manager_approval),
@@ -506,31 +506,31 @@ class PurchaseOrderWorkflow
           )
         end
         execute do
-          call_method po, :approve_by, context[:user]
+          call_method purchase_order, :approve_by, context[:user]
           set :approved, true
-          set :approved_by, "manager"
+          set :approved_by, 'manager'
         end
       end
-      
+
       # Send to vendor
-      rule "send_to_vendor", salience: 60 do
+      rule 'send_to_vendor', salience: 60 do
         match do
           all?(
             flag(:approved),
-            not?(po(:sent_to_vendor?))
+            not?(purchase_order(:sent_to_vendor?))
           )
         end
         execute do
-          call_method po, :send_to_vendor
+          call_method purchase_order, :send_to_vendor
           set :sent_to_vendor, true
           set :sent_at, Time.current
         end
       end
     end
   end
-  
-  def self.process(po, user, action_flags = {})
-    context = { po: po, user: user }.merge(action_flags)
+
+  def self.process(purchase_order, user, action_flags = {})
+    context = { purchase_order: purchase_order, user: user }.merge(action_flags)
     engine.run(context)
   end
 end
@@ -542,9 +542,7 @@ result = PurchaseOrderWorkflow.process(
   action_create: true
 )
 
-if result[:po_created]
-  redirect_to purchase_order, notice: "PO created successfully"
-end
+redirect_to purchase_order, notice: 'Purchase Order created successfully' if result[:purchase_order_created]
 ```
 
 ## See Also

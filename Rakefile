@@ -26,7 +26,7 @@ end
 
 desc 'Autocorrect documentation examples (safe)'
 task 'docs:rubocop:autocorrect': :extract_docs_examples do
-  cmd = 'bundle exec rubocop -c .rubocop_docs.yml --auto-correct "tmp/docs-examples/**/*.rb"'
+  cmd = 'bundle exec rubocop -c .rubocop_docs.yml --autocorrect "tmp/docs-examples/**/*.rb"'
   puts "Running: #{cmd}"
   success = system(cmd)
   warn 'RuboCop returned non-zero exit status' unless success
@@ -37,7 +37,7 @@ end
 
 desc 'Autocorrect all documentation examples (aggressive)'
 task 'docs:rubocop:autocorrect_all': :extract_docs_examples do
-  cmd = 'bundle exec rubocop -c .rubocop_docs.yml --auto-correct-all "tmp/docs-examples/**/*.rb"'
+  cmd = 'bundle exec rubocop -c .rubocop_docs.yml --autocorrect-all "tmp/docs-examples/**/*.rb"'
   puts "Running: #{cmd}"
   success = system(cmd)
   warn 'RuboCop returned non-zero exit status' unless success

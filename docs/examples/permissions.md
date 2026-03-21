@@ -9,7 +9,7 @@ In access control, the default should always be **deny**. Only grant access when
 ```ruby
 engine = Ruleur.define do
   # Access is only granted if this rule fires
-  rule "admin_update" do
+  rule 'admin_update' do
     match { all?(user(:admin?)) }
 
     execute { set :update, true }
@@ -17,7 +17,7 @@ engine = Ruleur.define do
 end
 
 result = engine.run(user: guest, record: doc)
-result[:update]  # => nil (no rule matched, so denied)
+result[:update] # => nil (no rule matched, so denied)
 ```
 
 This is a fundamental security principle: assume no access unless explicitly granted.
@@ -36,7 +36,7 @@ Permission rules help you:
 
 ```ruby
 engine = Ruleur.define do
-  rule "admin_access" do
+  rule 'admin_access' do
     match { all?(user(:admin?)) }
 
     execute { set :admin_access, true }
@@ -44,14 +44,14 @@ engine = Ruleur.define do
 end
 
 result = engine.run(user: current_user)
-result[:admin_access]  # => true or nil
+result[:admin_access] # => true or nil
 ```
 
 ### Multiple Roles
 
 ```ruby
 engine = Ruleur.define do
-  rule "staff_access" do
+  rule 'staff_access' do
     match do
       any?(
         user(:admin?),
@@ -71,7 +71,7 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "owner_update" do
+  rule 'owner_update' do
     match do
       all?(
         user(:owns?, record),
@@ -85,14 +85,14 @@ engine = Ruleur.define do
 end
 
 result = engine.run(user: current_user, record: post)
-result[:update]  # => true or nil
+result[:update] # => true or nil
 ```
 
 ### Admin or Owner
 
 ```ruby
 engine = Ruleur.define do
-  rule "admin_or_owner_destroy" do
+  rule 'admin_or_owner_destroy' do
     match do
       any?(
         user(:admin?),
@@ -115,7 +115,7 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "authenticated_show" do
+  rule 'authenticated_show' do
     match do
       all?(user(:authenticated?))
     end
@@ -124,7 +124,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "contributor_update" do
+  rule 'contributor_update' do
     match do
       any?(
         user(:contributor?),
@@ -137,7 +137,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "maintainer_destroy" do
+  rule 'maintainer_destroy' do
     match do
       any?(
         user(:maintainer?),
@@ -157,10 +157,10 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "standard_approve", salience: 10 do
+  rule 'standard_approve', salience: 10 do
     match do
       all?(
-        include?(user_value(:role), ['approver', 'admin']),
+        include?(user_value(:role), %w[approver admin]),
         not?(eq?(record_value(:author_id), user_value(:id))),
         eq?(record_value(:status), 'pending_approval'),
         record(:complete?),
@@ -173,7 +173,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "emergency_approve", salience: 20 do
+  rule 'emergency_approve', salience: 20 do
     match do
       all?(
         user(:admin?),
@@ -194,7 +194,7 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "basic_features" do
+  rule 'basic_features' do
     match do
       all?(user(:subscription_active?))
     end
@@ -204,10 +204,10 @@ engine = Ruleur.define do
     end
   end
 
-  rule "premium_features" do
+  rule 'premium_features' do
     match do
       all?(
-        include?(user_value(:subscription_tier), ['premium', 'enterprise']),
+        include?(user_value(:subscription_tier), %w[premium enterprise]),
         user(:subscription_active?)
       )
     end
@@ -218,7 +218,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "enterprise_features" do
+  rule 'enterprise_features' do
     match do
       all?(
         eq?(user_value(:subscription_tier), 'enterprise'),
@@ -240,7 +240,7 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "business_hours_access" do
+  rule 'business_hours_access' do
     match do
       all?(
         user(:employee?),
@@ -254,7 +254,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "after_hours_admin" do
+  rule 'after_hours_admin' do
     match do
       all?(user(:admin?))
     end
@@ -271,7 +271,7 @@ end
 class BlogPolicy
   def self.engine
     @engine ||= Ruleur.define do
-      rule "published_show" do
+      rule 'published_show' do
         match do
           all?(record(:published?))
         end
@@ -280,7 +280,7 @@ class BlogPolicy
         end
       end
 
-      rule "own_draft_show" do
+      rule 'own_draft_show' do
         match do
           all?(
             user(:owns?, record),
@@ -292,7 +292,7 @@ class BlogPolicy
         end
       end
 
-      rule "own_draft_update" do
+      rule 'own_draft_update' do
         match do
           all?(
             user(:owns?, record),
@@ -306,10 +306,10 @@ class BlogPolicy
         end
       end
 
-      rule "editor_update" do
+      rule 'editor_update' do
         match do
           all?(
-            include?(user_value(:role), ["editor", "admin"]),
+            include?(user_value(:role), %w[editor admin]),
             not?(record(:archived?))
           )
         end
@@ -319,7 +319,7 @@ class BlogPolicy
         end
       end
 
-      rule "admin_crud" do
+      rule 'admin_crud' do
         match do
           all?(user(:admin?))
         end
@@ -333,7 +333,7 @@ class BlogPolicy
     end
   end
 
-  def self.authorize(user, record, action)
+  def self.authorize?(user, record, action)
     result = engine.run(user: user, record: record)
     result[action] == true
   end
@@ -352,8 +352,8 @@ end
 RSpec.describe BlogPolicy do
   let(:engine) { BlogPolicy.engine }
 
-  describe ":update" do
-    it "grants update to owner of draft" do
+  describe ':update' do
+    it 'grants update to owner of draft' do
       user = User.new(id: 1)
       record = Post.new(author_id: 1, status: 'draft')
 
@@ -361,7 +361,7 @@ RSpec.describe BlogPolicy do
       expect(result[:update]).to be true
     end
 
-    it "denies update to non-owner of published post" do
+    it 'denies update to non-owner of published post' do
       user = User.new(id: 1)
       record = Post.new(author_id: 2, status: 'published')
 
@@ -403,7 +403,8 @@ class DocumentPolicy < ApplicationPolicy
     return true if record.public?
     return true if record.owner == user
     return true if user.department == record.department && record.visible_to_department?
-    return user.document_accesses.exists?(document_id: record.id)
+
+    user.document_accesses.exists?(document_id: record.id)
   end
 
   def update?
@@ -412,10 +413,11 @@ class DocumentPolicy < ApplicationPolicy
 
     if record.draft?
       return record.owner == user
-    elsif record.include?review?
+    elsif record.include? review?
       return user.reviewer? || record.owner == user
     elsif record.published?
       return record.owner == user if user.editor?
+
       return false
     end
 
@@ -439,7 +441,7 @@ With Ruleur, you only define **when a value is set**. If no rule matches, the va
 
 ```ruby
 engine = Ruleur.define do
-  rule "admin_crud", salience: 100, no_loop: true, tags: [:admin] do
+  rule 'admin_crud', salience: 100, no_loop: true, tags: [:admin] do
     match do
       all?(user(:admin?))
     end
@@ -452,7 +454,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "draft_owner_crud", salience: 50, no_loop: true, tags: [:ownership, :draft] do
+  rule 'draft_owner_crud', salience: 50, no_loop: true, tags: %i[ownership draft] do
     match do
       all?(
         record(:draft?),
@@ -467,7 +469,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "review_owner_update", salience: 50, no_loop: true, tags: [:lifecycle, :review] do
+  rule 'review_owner_update', salience: 50, no_loop: true, tags: %i[lifecycle review] do
     match do
       all?(
         record(:in_review?),
@@ -480,7 +482,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "review_approver_update", salience: 45, no_loop: true, tags: [:lifecycle, :review] do
+  rule 'review_approver_update', salience: 45, no_loop: true, tags: %i[lifecycle review] do
     match do
       all?(
         record(:in_review?),
@@ -494,7 +496,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "published_show", salience: 50, no_loop: true, tags: [:lifecycle, :published] do
+  rule 'published_show', salience: 50, no_loop: true, tags: %i[lifecycle published] do
     match do
       all?(record(:published?))
     end
@@ -504,7 +506,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "published_owner_destroy", salience: 45, no_loop: true, tags: [:lifecycle, :published] do
+  rule 'published_owner_destroy', salience: 45, no_loop: true, tags: %i[lifecycle published] do
     match do
       all?(
         record(:published?),
@@ -517,7 +519,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "owner_crud", salience: 40, no_loop: true, tags: [:ownership] do
+  rule 'owner_crud', salience: 40, no_loop: true, tags: [:ownership] do
     match do
       all?(eq?(record_value(:owner_id), user_value(:id)))
     end
@@ -529,7 +531,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "department_show", salience: 30, no_loop: true, tags: [:department] do
+  rule 'department_show', salience: 30, no_loop: true, tags: [:department] do
     match do
       all?(
         record(:visible_to_department?),
@@ -542,7 +544,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "shared_show", salience: 25, no_loop: true, tags: [:sharing] do
+  rule 'shared_show', salience: 25, no_loop: true, tags: [:sharing] do
     match do
       all?(record(:shared_with_user))
     end
@@ -552,7 +554,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "public_show", salience: 20, no_loop: true, tags: [:visibility] do
+  rule 'public_show', salience: 20, no_loop: true, tags: [:visibility] do
     match do
       all?(record(:public?))
     end
@@ -614,12 +616,12 @@ RSpec.describe DocumentPolicy do
   let(:user) { User.new(admin: false, department: dept) }
   let(:document) { Document.new(owner: user, state: :draft) }
 
-  describe "#update?" do
-    context "when user is owner and document is draft" do
+  describe '#update?' do
+    context 'when user is owner and document is draft' do
       it { expect(subject.update?).to be true }
     end
 
-    context "when document is published" do
+    context 'when document is published' do
       let(:document) { Document.new(owner: user, state: :published) }
       it { expect(subject.update?).to be false }
     end
@@ -631,20 +633,20 @@ end
 **Ruleur test (simple, focused):**
 
 ```ruby
-RSpec.describe "Document Permissions" do
+RSpec.describe 'Document Permissions' do
   let(:engine) { DocumentPolicy.engine }
 
-  it "grants update to owner of draft" do
+  it 'grants update to owner of draft' do
     result = engine.run(user: owner, record: draft_doc)
     expect(result[:update]).to be true
   end
 
-  it "denies update to non-owner of published" do
+  it 'denies update to non-owner of published' do
     result = engine.run(user: other_user, record: published_doc)
     expect(result[:update]).to be_nil
   end
 
-  it "grants update to admin regardless of document state" do
+  it 'grants update to admin regardless of document state' do
     result = engine.run(user: admin, record: published_doc)
     expect(result[:update]).to be true
   end
@@ -659,9 +661,9 @@ Only set values when conditions are met. Don't use `set :key, false`:
 
 ```ruby
 # Avoid: Using false values
-rule "not_authenticated" do
+rule 'not_authenticated' do
   match do
-        all?(not?(user(:authenticated?)))
+    all?(not?(user(:authenticated?)))
   end
 
   execute do
@@ -670,7 +672,7 @@ rule "not_authenticated" do
 end
 
 # Better: Only set when true
-rule "authenticated_update" do
+rule 'authenticated_update' do
   match do
     all?(user(:authenticated?))
   end
@@ -687,7 +689,7 @@ Place cheap/fast checks before expensive ones. This avoids unnecessary work:
 
 ```ruby
 # Bad: Expensive check first
-rule "check_permission" do
+rule 'check_permission' do
   match do
     all?(
       expensive_database_query(:has_permission?),  # Expensive - do last
@@ -701,7 +703,7 @@ rule "check_permission" do
 end
 
 # Good: Cheap checks first
-rule "check_permission" do
+rule 'check_permission' do
   match do
     all?(
       user(:admin?),                              # Cheap - check first
@@ -720,7 +722,7 @@ end
 Place high-priority rules (like admin bypass) at high salience so they fire first:
 
 ```ruby
-rule "admin_crud", salience: 100 do
+rule 'admin_crud', salience: 100 do
   match do
     all?(user(:admin?))
   end
@@ -737,11 +739,11 @@ end
 ### 4. Test Both Set and Unset Cases
 
 ```ruby
-it "grants update to admin" do
+it 'grants update to admin' do
   expect(engine.run(user: admin, record: doc)[:update]).to be true
 end
 
-it "denies update to guest" do
+it 'denies update to guest' do
   expect(engine.run(user: guest, record: doc)[:update]).to be_nil
 end
 ```

@@ -56,31 +56,31 @@ features:
 ## Quick Example
 
 ```ruby
-require "ruleur"
+require 'ruleur'
 
 engine = Ruleur.define do
-  rule "admin_create", no_loop: true do
+  rule 'admin_create', no_loop: true do
     match do
       any?(
-      user(:admin?),
-      all?(record(:updatable?), record(:draft?))
-    )
+        user(:admin?),
+        all?(record(:updatable?), record(:draft?))
+      )
     end
-      execute do
-    set :create, true
-      end
+    execute do
+      set :create, true
+    end
   end
 
-  rule "draft_update", no_loop: true do
+  rule 'draft_update', no_loop: true do
     match do
       all?(
-      record(:draft?),
-      flag(:create)
-    )
+        record(:draft?),
+        flag(:create)
+      )
     end
-      execute do
-    set :update, true
-      end
+    execute do
+      set :update, true
+    end
   end
 end
 

@@ -16,7 +16,7 @@ A Rule consists of:
 
 ```ruby
 rule = Ruleur::Rule.new(
-  name: "example_rule",
+  name: 'example_rule',
   condition: condition_tree,
   execute: action_proc,
   salience: 10,
@@ -101,12 +101,12 @@ The recommended way to create rules is using the DSL within `Ruleur.define`:
 
 ```ruby
 engine = Ruleur.define do
-  rule "discount_rule", salience: 10, tags: [:pricing] do
+  rule 'discount_rule', salience: 10, tags: [:pricing] do
     match do
       all?(
-      customer(:vip?),
-      order(:total).gt?(100)
-    )
+        customer(:vip?),
+        order(:total).gt?(100)
+      )
     end
     execute do
       set :discount, 0.2
@@ -123,11 +123,11 @@ end
 Controls execution order. Higher salience rules fire first.
 
 ```ruby
-rule "urgent", salience: 100 do
+rule 'urgent', salience: 100 do
   # Fires first
 end
 
-rule "normal" do
+rule 'normal' do
   # Default salience: 0
 end
 ```
@@ -137,7 +137,7 @@ end
 Organize and filter rules:
 
 ```ruby
-rule "example", tags: [:permissions, :admin] do
+rule 'example', tags: %i[permissions admin] do
   # ...
 end
 ```
@@ -147,7 +147,7 @@ end
 Prevents a rule from firing again after it modifies facts:
 
 ```ruby
-rule "counter", no_loop: true do
+rule 'counter', no_loop: true do
   execute do
     increment :count
   end
@@ -159,15 +159,15 @@ end
 ### Rule with Complex Condition
 
 ```ruby
-rule "shipping_discount" do
+rule 'shipping_discount' do
   match do
     all?(
-    order(:total).gt?(50),
-    any?(
-      customer(:premium?),
-      order(:items_count).gt?(3)
+      order(:total).gt?(50),
+      any?(
+        customer(:premium?),
+        order(:items_count).gt?(3)
+      )
     )
-  )
   end
   execute do
     set :free_shipping, true
@@ -178,12 +178,12 @@ end
 ### Rule with Multiple Actions
 
 ```ruby
-rule "approval_workflow" do
+rule 'approval_workflow' do
   match do
     all?(
-    document(:ready_for_review?),
-    not?(document(:approved?))
-  )
+      document(:ready_for_review?),
+      not?(document(:approved?))
+    )
   end
   execute do
     call_method document, :mark_pending_review
@@ -199,13 +199,13 @@ end
 
 ```ruby
 yaml = rule.to_yaml
-File.write("rules/my_rule.yml", yaml)
+File.write('rules/my_rule.yml', yaml)
 ```
 
 ### From YAML
 
 ```ruby
-rule = Ruleur::Persistence::YAMLLoader.load_file("rules/my_rule.yml")
+rule = Ruleur::Persistence::YAMLLoader.load_file('rules/my_rule.yml')
 ```
 
 ## See Also

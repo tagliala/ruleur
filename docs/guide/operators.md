@@ -17,7 +17,7 @@ Ruleur provides three categories of operators:
 Checks if two values are equal using Ruby's `==` operator.
 
 ```ruby
-rule "adult_only" do
+rule 'adult_only' do
   match do
     all?(
       eq?(record_value(:age), 18)
@@ -45,9 +45,9 @@ condition:
 
 **Examples:**
 ```ruby
-eq?(literal(5), 5)           # => true
-eq?(literal("hello"), "hello") # => true
-eq?(record_value(:status), "active") # => true/false depending on record.status
+eq?(literal(5), 5) # => true
+eq?(literal('hello'), 'hello') # => true
+eq?(record_value(:status), 'active') # => true/false depending on record.status
 ```
 
 ### `ne` - Not Equals
@@ -55,10 +55,10 @@ eq?(record_value(:status), "active") # => true/false depending on record.status
 Checks if two values are not equal using Ruby's `!=` operator.
 
 ```ruby
-rule "exclude_archived" do
+rule 'exclude_archived' do
   match do
     all?(
-      not_eq?(record_value(:status), "archived")
+      not_eq?(record_value(:status), 'archived')
     )
   end
   execute do
@@ -69,9 +69,9 @@ end
 
 **Examples:**
 ```ruby
-not_eq?(literal(5), 10)          # => true
-not_eq?(literal("draft"), "published") # => true
-not_eq?(record_value(:status), "archived") # => true if status != "archived"
+not_eq?(literal(5), 10) # => true
+not_eq?(literal('draft'), 'published') # => true
+not_eq?(record_value(:status), 'archived') # => true if status != "archived"
 ```
 
 ### `gt` - Greater Than
@@ -79,7 +79,7 @@ not_eq?(record_value(:status), "archived") # => true if status != "archived"
 Checks if left value is greater than right value. Returns `false` if either value is `nil`.
 
 ```ruby
-rule "senior_discount" do
+rule 'senior_discount' do
   match do
     all?(
       gt?(record_value(:age), 65)
@@ -98,7 +98,7 @@ end
 gt?(literal(10), 5)          # => true
 gt?(literal(5), 10)          # => false
 gt?(literal(10), 10)         # => false
-gt?(record_value(:age), 18)   # => true if age > 18
+gt?(record_value(:age), 18) # => true if age > 18
 ```
 
 ### `gte` - Greater Than or Equal
@@ -106,7 +106,7 @@ gt?(record_value(:age), 18)   # => true if age > 18
 Checks if left value is greater than or equal to right value. Returns `false` if either value is `nil`.
 
 ```ruby
-rule "voting_age" do
+rule 'voting_age' do
   match do
     all?(
       gte?(record_value(:age), 18)
@@ -123,7 +123,7 @@ end
 gte?(literal(10), 5)         # => true
 gte?(literal(10), 10)        # => true
 gte?(literal(5), 10)         # => false
-gte?(record_value(:age), 21)  # => true if age >= 21
+gte?(record_value(:age), 21) # => true if age >= 21
 ```
 
 ### `lt` - Less Than
@@ -131,7 +131,7 @@ gte?(record_value(:age), 21)  # => true if age >= 21
 Checks if left value is less than right value. Returns `false` if either value is `nil`.
 
 ```ruby
-rule "child_ticket" do
+rule 'child_ticket' do
   match do
     all?(
       lt?(record_value(:age), 12)
@@ -156,14 +156,14 @@ lt?(record_value(:price), 100) # => true if price < 100
 Checks if left value is less than or equal to right value. Returns `false` if either value is `nil`.
 
 ```ruby
-rule "standard_shipping" do
+rule 'standard_shipping' do
   match do
     all?(
       lte?(record_value(:weight), 50)
     )
   end
   execute do
-    set :shipping_method, "standard"
+    set :shipping_method, 'standard'
   end
 end
 ```
@@ -183,10 +183,10 @@ lte?(record_value(:quantity), 100) # => true if quantity <= 100
 Checks if left value is included in the right collection. The right operand must respond to `include?`.
 
 ```ruby
-rule "valid_status" do
+rule 'valid_status' do
   match do
     all?(
-      include?(record_value(:status), ['draft', 'pending', 'published'])
+      include?(record_value(:status), %w[draft pending published])
     )
   end
   execute do
@@ -197,8 +197,8 @@ end
 
 **Examples:**
 ```ruby
-include?(ref(:record), ['draft', 'published'])  # => true if record is in array
-include?(record_value(:status), ['active', 'pending']) # => true if status in array
+include?(ref(:record), %w[draft published]) # => true if record is in array
+include?(record_value(:status), %w[active pending]) # => true if status in array
 ```
 
 ### `includes` - Collection Includes Value
@@ -206,10 +206,10 @@ include?(record_value(:status), ['active', 'pending']) # => true if status in ar
 Checks if left collection includes the right value. The left operand must respond to `include?`. This is the inverse of `in`.
 
 ```ruby
-rule "has_permission" do
+rule 'has_permission' do
   match do
     all?(
-      includes(record_value(:permissions), "admin")
+      includes(record_value(:permissions), 'admin')
     )
   end
   execute do
@@ -222,8 +222,8 @@ end
 
 **Examples:**
 ```ruby
-includes(literal(['admin', 'editor']), literal('admin'))  # => true
-includes(literal([1, 2, 3]), literal(4))  # => false
+includes(literal(%w[admin editor]), literal('admin')) # => true
+includes(literal([1, 2, 3]), literal(4)) # => false
 includes(record_value(:roles), 'admin') # => true if roles.include?('admin')
 ```
 
@@ -232,10 +232,10 @@ includes(record_value(:roles), 'admin') # => true if roles.include?('admin')
 Checks if a string matches a regular expression pattern.
 
 ```ruby
-rule "email_domain_check" do
+rule 'email_domain_check' do
   match do
     all?(
-      matches(record_value(:email), literal(/\@example\.com$/))
+      matches(record_value(:email), literal(/@example\.com$/))
     )
   end
   execute do
@@ -250,9 +250,9 @@ end
 
 **Examples:**
 ```ruby
-matches(literal("hello@example.com"), literal(/\@example\.com$/)) # => true
-matches(literal("test@gmail.com"), literal(/\@example\.com$/))    # => false
-matches(record_value(:phone), literal(/^\d{3}-\d{3}-\d{4}$/))      # => true if phone matches format
+matches(literal('hello@example.com'), literal(/@example\.com$/)) # => true
+matches(literal('test@gmail.com'), literal(/@example\.com$/))    # => false
+matches(record_value(:phone), literal(/^\d{3}-\d{3}-\d{4}$/)) # => true if phone matches format
 ```
 
 ## Predicate Operators
@@ -264,7 +264,7 @@ Predicate operators check the state or presence of a single value. The second op
 Checks if a value is truthy (not `nil` and not `false`).
 
 ```ruby
-rule "published_only" do
+rule 'published_only' do
   match do
     all?(
       truthy?(record(:published?))
@@ -280,8 +280,8 @@ end
 The `record(method)` and `user(method)` helpers use `truthy` automatically:
 
 ```ruby
-record(:admin?)  # Equivalent to: truthy?(ref(:record).call(:admin?))
-user(:verified?)  # Equivalent to: truthy?(ref(:user).call(:verified?))
+record(:admin?) # Equivalent to: truthy?(ref(:record).call(:admin?))
+user(:verified?) # Equivalent to: truthy?(ref(:user).call(:verified?))
 ```
 :::
 
@@ -291,8 +291,8 @@ truthy?(literal(true))        # => true
 truthy?(literal(false))       # => false
 truthy?(literal(nil))         # => false
 truthy?(literal(0))           # => true (0 is truthy in Ruby)
-truthy?(literal(""))          # => true (empty string is truthy)
-truthy?(record(:admin?))     # => true if record.admin? is truthy
+truthy?(literal(''))          # => true (empty string is truthy)
+truthy?(record(:admin?)) # => true if record.admin? is truthy
 ```
 
 ### `falsy` - Falsy Check
@@ -300,7 +300,7 @@ truthy?(record(:admin?))     # => true if record.admin? is truthy
 Checks if a value is falsy (`nil` or `false`).
 
 ```ruby
-rule "unpublished_draft" do
+rule 'unpublished_draft' do
   match do
     all?(
       falsy?(record(:published?))
@@ -317,8 +317,8 @@ end
 falsy?(literal(false))        # => true
 falsy?(literal(nil))          # => true
 falsy?(literal(0))            # => false (0 is truthy)
-falsy?(literal(""))           # => false (empty string is truthy)
-falsy?(record(:locked?))     # => true if record.locked? is nil or false
+falsy?(literal(''))           # => false (empty string is truthy)
+falsy?(record(:locked?)) # => true if record.locked? is nil or false
 ```
 
 ### `present` - Presence Check
@@ -326,7 +326,7 @@ falsy?(record(:locked?))     # => true if record.locked? is nil or false
 Checks if a value is present (not `nil` and not empty). Similar to Rails' `present?`.
 
 ```ruby
-rule "requires_description" do
+rule 'requires_description' do
   match do
     all?(
       present?(record_value(:description))
@@ -346,12 +346,12 @@ end
 **Examples:**
 ```ruby
 present?(literal(nil))         # => false
-present?(literal(""))          # => false
+present?(literal(''))          # => false
 present?(literal([]))          # => false
 present?(literal({}))          # => false
-present?(literal("hello"))     # => true
+present?(literal('hello'))     # => true
 present?(literal([1, 2, 3]))   # => true
-present?(record_value(:name))   # => true if name is not nil/empty
+present?(record_value(:name)) # => true if name is not nil/empty
 ```
 
 ### `blank` - Blank Check
@@ -359,14 +359,14 @@ present?(record_value(:name))   # => true if name is not nil/empty
 Checks if a value is blank (`nil` or empty). Similar to Rails' `blank?`.
 
 ```ruby
-rule "set_default_title" do
+rule 'set_default_title' do
   match do
     all?(
       blank?(record_value(:title))
     )
   end
   execute do
-    set :title, "Untitled"
+    set :title, 'Untitled'
   end
 end
 ```
@@ -379,12 +379,12 @@ end
 **Examples:**
 ```ruby
 blank?(literal(nil))          # => true
-blank?(literal(""))           # => true
+blank?(literal(''))           # => true
 blank?(literal([]))           # => true
 blank?(literal({}))           # => true
-blank?(literal("hello"))      # => false
+blank?(literal('hello'))      # => false
 blank?(literal([1, 2, 3]))    # => false
-blank?(record_value(:name))    # => true if name is nil or empty
+blank?(record_value(:name)) # => true if name is nil or empty
 ```
 
 ## Using Operators in DSL
@@ -394,11 +394,11 @@ blank?(record_value(:name))    # => true if name is nil or empty
 The simplest way to use operators with the DSL helpers:
 
 ```ruby
-rule "simple_check" do
+rule 'simple_check' do
   match do
     all?(
-      record(:admin?),           # truthy check on record.admin?
-      user(:verified?)         # truthy check on user.verified?
+      record(:admin?), # truthy check on record.admin?
+      user(:verified?) # truthy check on user.verified?
     )
   end
   execute do
@@ -412,11 +412,11 @@ end
 For more complex comparisons, use operators direcordtly:
 
 ```ruby
-rule "age_and_status" do
+rule 'age_and_status' do
   match do
     all?(
       gte?(record_value(:age), 18),
-      include?(record_value(:status), ['active', 'premium'])
+      include?(record_value(:status), %w[active premium])
     )
   end
   execute do
@@ -428,14 +428,14 @@ end
 ### Combining Multiple Operators
 
 ```ruby
-rule "complex_eligibility" do
+rule 'complex_eligibility' do
   match do
     all?(
-      gte?(record_value(:age), 21),                    # Age >= 21
-      include?(record_value(:country), ['US', 'CA']),     # Country is US or CA
-      present?(record_value(:email)),                   # Email is present
-      matches(record_value(:email), /\@example\.com$/), # Email domain check
-      not_eq?(record_value(:status), 'banned')             # Not banned
+      gte?(record_value(:age), 21), # Age >= 21
+      include?(record_value(:country), %w[US CA]), # Country is US or CA
+      present?(record_value(:email)), # Email is present
+      matches(record_value(:email), /@example\.com$/), # Email domain check
+      not_eq?(record_value(:status), 'banned') # Not banned
     )
   end
   execute do
@@ -473,7 +473,7 @@ Ruleur::Operators.register(:between) do |value, range|
 end
 
 # Use in a rule
-rule "age_range" do
+rule 'age_range' do
   match do
     all?(
       predicate do
@@ -498,10 +498,10 @@ Custom operators won't serialize to YAML unless you handle deserialization separ
 Comparison operators (`gt`, `gte`, `lt`, `lte`) return `false` when either operand is `nil`:
 
 ```ruby
-rule "safe_comparison" do
+rule 'safe_comparison' do
   match do
     all?(
-      gt?(record_value(:age), 18)  # Returns false if age is nil
+      gt?(record_value(:age), 18) # Returns false if age is nil
     )
   end
   execute do
@@ -517,18 +517,18 @@ This prevents `NoMethodError` exceptions during comparison.
 Operators don't perform type coercion. Values are compared as-is:
 
 ```ruby
-eq?(literal(5), "5")        # => false (Integer vs String)
-eq?(literal("5"), "5")      # => true
+eq?(literal(5), '5')        # => false (Integer vs String)
+eq?(literal('5'), '5')      # => true
 ```
 
 Ensure types match when using comparison operators:
 
 ```ruby
 # Good
-rule "numeric_check" do
+rule 'numeric_check' do
   match do
     all?(
-      gt?(record_value(:age).to_i, 18)  # Coerce in DSL if needed
+      gt?(record_value(:age).to_i, 18) # Coerce in DSL if needed
     )
   end
 end
@@ -536,7 +536,7 @@ end
 # Or handle in your models
 class User
   def age
-    @age.to_i  # Always return integer
+    @age.to_i # Always return integer
   end
 end
 ```
@@ -549,7 +549,7 @@ Choose the operator that best expresses your intent:
 
 ```ruby
 # Good - clear intent
-rule "has_role" do
+rule 'has_role' do
   match do
     all?(
       includes(record_value(:roles), 'admin')
@@ -558,7 +558,7 @@ rule "has_role" do
 end
 
 # Less clear - works but awkward
-rule "has_role" do
+rule 'has_role' do
   match do
     all?(
       eq?(record_value(:roles).include?('admin'), true)
@@ -573,14 +573,14 @@ For simple boolean checks, use the helpers:
 
 ```ruby
 # Good - concise
-rule "admin_check" do
+rule 'admin_check' do
   match do
     all?(user(:admin?))
   end
 end
 
 # Verbose
-rule "admin_check" do
+rule 'admin_check' do
   match do
     all?(
       truthy?(ref(:user).call(:admin?))
@@ -595,19 +595,19 @@ When comparing actual values, use the `_val` variants:
 
 ```ruby
 # Good
-rule "status_check" do
+rule 'status_check' do
   match do
     all?(
-      eq?(record_value(:status), "published")
+      eq?(record_value(:status), 'published')
     )
   end
 end
 
 # Wrong - record(:status) checks truthiness, not value
-rule "status_check" do
+rule 'status_check' do
   match do
     all?(
-      record(:status)  # This checks if status is truthy, not if it equals "published"
+      record(:status) # This checks if status is truthy, not if it equals "published"
     )
   end
 end
@@ -618,7 +618,7 @@ end
 Use `present`/`blank` to handle nil values explicitly:
 
 ```ruby
-rule "requires_fields" do
+rule 'requires_fields' do
   match do
     all?(
       present?(record_value(:title)),
@@ -637,10 +637,10 @@ end
 For clarity, use literal values direcordtly:
 
 ```ruby
-rule "status_check" do
+rule 'status_check' do
   match do
     all?(
-      include?(record_value(:status), ['draft', 'pending', 'published'])
+      include?(record_value(:status), %w[draft pending published])
     )
   end
 end

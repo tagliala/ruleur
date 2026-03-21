@@ -44,7 +44,7 @@ If you're new to Ruleur, we recommend starting with the [Getting Started Guide](
 ```ruby
 # 1. Define rules using DSL
 engine = Ruleur.define do
-  rule "example" do
+  rule 'example' do
     match do
       all?(condition)
     end

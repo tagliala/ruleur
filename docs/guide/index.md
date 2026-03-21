@@ -47,24 +47,24 @@ end
 # Ownership check
 match do
   all?(
-  eq?(record_value(:owner_id), user_value(:id)),
-  record(:active?)
-)
+    eq?(record_value(:owner_id), user_value(:id)),
+    record(:active?)
+  )
 end
 
 # Range check
 match do
   all?(
-  gte?(record_value(:price), 100),
-  lte?(record_value(:price), 1000)
-)
+    gte?(record_value(:price), 100),
+    lte?(record_value(:price), 1000)
+  )
 end
 
 # Array membership
 includes(record_value(:roles), literal('editor'))
 
 # Pattern matching
-matches(record_value(:email), literal(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i))
+matches(record_value(:email), literal(/\A[\w+\-.]+@[a-z\d-]+(\.[a-z\d-]+)*\.[a-z]+\z/i))
 ```
 
 ### DSL Reference

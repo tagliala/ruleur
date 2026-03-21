@@ -18,8 +18,8 @@ Ruleur provides a comprehensive set of operators for:
 Checks equality using `==`.
 
 ```ruby
-user(:role).eq?("admin")
-order(:status).eq?("pending")
+user(:role).eq?('admin')
+order(:status).eq?('pending')
 ```
 
 ### `not_equals`
@@ -27,8 +27,8 @@ order(:status).eq?("pending")
 Checks inequality using `!=`.
 
 ```ruby
-user(:role).not_eq?("guest")
-order(:status).not_eq?("cancelled")
+user(:role).not_eq?('guest')
+order(:status).not_eq?('cancelled')
 ```
 
 ### `identical`
@@ -84,8 +84,8 @@ user(:attempts).lte?(3)
 Checks if collection includes a value using `include?`.
 
 ```ruby
-user(:roles).contains?("admin")
-order(:tags).contains?("express")
+user(:roles).contains?('admin')
+order(:tags).contains?('express')
 ```
 
 ### `include?`
@@ -93,7 +93,7 @@ order(:tags).contains?("express")
 Checks if value is in a collection.
 
 ```ruby
-user(:status).include?(["active", "pending", "trial"])
+user(:status).include?(%w[active pending trial])
 order(:type).include?(allowed_types)
 ```
 
@@ -104,7 +104,7 @@ order(:type).include?(allowed_types)
 Pattern matching using `match?` or `===`.
 
 ```ruby
-email(:address).matches(/^[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+$/i)
+email(:address).matches(/^[\w+\-.]+@[a-z\d-]+(\.[a-z\d-]+)*\.[a-z]+$/i)
 user(:role).matches(/admin|super/)
 ```
 
@@ -115,7 +115,7 @@ user(:role).matches(/admin|super/)
 Checks if value is truthy (not `nil` or `false`).
 
 ```ruby
-user(:admin?)          # Implicit truthy check
+user(:admin?) # Implicit truthy check
 flag(:enabled).truthy
 ```
 
@@ -185,15 +185,17 @@ calculator(:compute, value1, value2, operator: :add)
 ### In DSL
 
 ```ruby
-rule "example" do
+rule 'example' do
   match do
     all?(
-    order(:total).gt?(100),
-    user(:email).matches(/@company\.com$/),
-    user(:roles).includes("premium")
-  )
+      order(:total).gt?(100),
+      user(:email).matches(/@company\.com$/),
+      user(:roles).includes('premium')
+    )
   end
-  execute do set :qualified, true end
+  execute do
+    set :qualified, true
+  end
 end
 ```
 
@@ -228,12 +230,12 @@ When combining operators, use explicit grouping with `all?()` and `any?()`:
 # Clear precedence with grouping
 match do
   all?(
-  any?(
-    user(:admin?),
-    user(:moderator?)
-  ),
-  record(:published?)
-)
+    any?(
+      user(:admin?),
+      user(:moderator?)
+    ),
+    record(:published?)
+  )
 end
 ```
 
@@ -242,59 +244,67 @@ end
 ### Numeric Range Check
 
 ```ruby
-rule "medium_order" do
+rule 'medium_order' do
   match do
     all?(
-    order(:total).gte?(50),
-    order(:total).lt?(200)
-  )
+      order(:total).gte?(50),
+      order(:total).lt?(200)
+    )
   end
-  execute do set :tier, "medium" end
+  execute do
+    set :tier, 'medium'
+  end
 end
 ```
 
 ### Email Validation
 
 ```ruby
-rule "valid_email" do
+rule 'valid_email' do
   match do
     all?(
-    user(:email).present,
-    user(:email).matches(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i)
-  )
+      user(:email).present,
+      user(:email).matches(/\A[\w+\-.]+@[a-z\d-]+(\.[a-z\d-]+)*\.[a-z]+\z/i)
+    )
   end
-  execute do set :email_valid, true end
+  execute do
+    set :email_valid, true
+  end
 end
 ```
 
 ### Role-Based Access
 
 ```ruby
-rule "can_approve" do
+rule 'can_approve' do
   match do
     all?(
-    user(:roles).includes("approver"),
-    document(:status).in(["pending", "submitted"]),
-    not?(document(:approved_at).present)
-  )
+      user(:roles).includes('approver'),
+      document(:status).in(%w[pending submitted]),
+      not?(document(:approved_at).present)
+    )
   end
-  execute do allow! :approve end
+  execute do
+    allow! :approve
+  end
 end
 ```
 
 ### Type and Presence Checks
 
 ```ruby
-rule "process_data" do
+rule 'process_data' do
   match do
     all?(
-    input(:data).present,
-    input(:data).is_a(Hash),
-    input(:data, :items).is_a(Array),
-    not?(input(:data, :items).blank)
-  )
+      input(:data).present,
+      input(:data).is_a(Hash),
+      input(:data, :items).is_a(Array),
+      not?(input(:data, :items).blank)
+    )
   end
-  execute do set :ready_to_process, true end
+  execute do
+    set :ready_to_process, true
+  end
 end
 ```
 

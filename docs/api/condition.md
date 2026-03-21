@@ -105,10 +105,10 @@ Logical AND of child conditions.
 
 ```ruby
 all_condition = Ruleur::Condition::All.new([
-  condition1,
+                                             condition1,
   condition2,
   condition3
-])
+                                           ])
 ```
 
 ### `Ruleur::Condition::Any`
@@ -117,9 +117,9 @@ Logical OR of child conditions.
 
 ```ruby
 any_condition = Ruleur::Condition::Any.new([
-  condition1,
+                                             condition1,
   condition2
-])
+                                           ])
 ```
 
 ### `Ruleur::Condition::Not`
@@ -154,11 +154,11 @@ Conditions can be nested to arbitrary depth:
 
 ```ruby
 match do
-        any?(
-      all?(
-        user(:admin?),
-        not?(record(:locked?))
-      ),
+  any?(
+    all?(
+      user(:admin?),
+      not?(record(:locked?))
+    ),
     all?(
       user(:owner?, record),
       record(:editable?),
@@ -184,25 +184,25 @@ record(:method_name)  # context[:record].method_name
 obj(:key, :method)    # context[:key].method
 
 # Flag check
-flag(:key)            # context[:key]
+flag(:key) # context[:key]
 
 # Literal value
-literal(42)               # The value 42
+literal(42) # The value 42
 ```
 
 ### Comparison Shortcuts
 
 ```ruby
 # Equality
-user(:role).eq?("admin")
+user(:role).eq?('admin')
 
 # Comparisons
 order(:total).gt?(100)
 order(:total).lt?(1000)
-order(:items).includes("premium_item")
+order(:items).includes('premium_item')
 
 # Boolean checks
-user(:admin?)        # Implicitly checks truthiness
+user(:admin?) # Implicitly checks truthiness
 not?(record(:draft?))
 ```
 
@@ -211,7 +211,7 @@ not?(record(:draft?))
 ### Simple Boolean Check
 
 ```ruby
-rule "admin_only" do
+rule 'admin_only' do
   match do
     all?(user(:admin?))
   end
@@ -225,7 +225,7 @@ end
 ### Comparison with Operators
 
 ```ruby
-rule "bulk_discount" do
+rule 'bulk_discount' do
   match do
     all?(
       order(:total).gt?(500),
@@ -242,7 +242,7 @@ end
 ### Complex Nested Logic
 
 ```ruby
-rule "can_edit" do
+rule 'can_edit' do
   match do
     any?(
       # Admin can always edit
@@ -250,11 +250,11 @@ rule "can_edit" do
       # Owner can edit if not locked and either draft or has force flag
       all?(
         user(:owner?, record),
-      not?(record(:locked?)),
-       any?(
-         record(:draft?),
-         flag(:force_edit)
-       )
+        not?(record(:locked?)),
+        any?(
+          record(:draft?),
+          flag(:force_edit)
+        )
       )
     )
   end
@@ -268,11 +268,11 @@ end
 ### Chaining Conditions
 
 ```ruby
-rule "premium_feature" do
+rule 'premium_feature' do
   match do
     all?(
       user(:subscription, :active?),
-      user(:subscription, :tier).eq?("premium"),
+      user(:subscription, :tier).eq?('premium'),
       feature(:enabled?),
       not?(feature(:deprecated?))
     )

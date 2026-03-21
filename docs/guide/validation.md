@@ -14,7 +14,7 @@ Validation catches these issues before they cause problems in production.
 ## Quick Example
 
 ```ruby
-require "ruleur"
+require 'ruleur'
 
 # Load a rule from YAML
 rule = Ruleur::Persistence::YAMLLoader.load_file('config/rules/my_rule.yml')
@@ -23,10 +23,10 @@ rule = Ruleur::Persistence::YAMLLoader.load_file('config/rules/my_rule.yml')
 result = Ruleur::Validation.validate_rule(rule)
 
 if result.valid?
-  puts "Rule is valid!"
+  puts 'Rule is valid!'
   puts "Warnings: #{result.warnings.join(', ')}" unless result.warnings.empty?
 else
-  puts "Validation failed!"
+  puts 'Validation failed!'
   result.errors.each { |error| puts "  - #{error}" }
 end
 ```
@@ -41,7 +41,7 @@ Validates a complete `Ruleur::Rule` object with structural, semantic, and option
 
 ```ruby
 rule = Ruleur.define do
-  rule "test_rule" do
+  rule 'test_rule' do
     match do
       all?(user(:admin?))
     end
@@ -136,7 +136,7 @@ The `YAMLLoader` includes a convenience method for validating YAML files directl
 result = Ruleur::Persistence::YAMLLoader.validate_file('config/rules/my_rule.yml')
 
 if result[:valid]
-  puts "YAML is structurally valid"
+  puts 'YAML is structurally valid'
 else
   puts "Errors: #{result[:errors].join(', ')}"
 end
@@ -168,9 +168,7 @@ Returns `true` if validation passed (no errors).
 ```ruby
 result = Ruleur::Validation.validate_rule(rule)
 
-if result.valid?
-  puts "All checks passed"
-end
+puts 'All checks passed' if result.valid?
 ```
 
 ### `errors`
@@ -191,7 +189,7 @@ Array of warning messages. Warnings don't make a rule invalid but indicate poten
 
 ```ruby
 if result.valid? && result.warnings.any?
-  puts "Rule is valid but has warnings:"
+  puts 'Rule is valid but has warnings:'
   result.warnings.each { |w| puts "  - #{w}" }
 end
 ```
@@ -214,7 +212,7 @@ User = Struct.new(:admin)
 Record = Struct.new(:status)
 
 rule = Ruleur.define do
-  rule "admin_access" do
+  rule 'admin_access' do
     match do
       all?(user(:admin))
     end
@@ -234,9 +232,9 @@ test_context = {
 result = Ruleur::Validation.validate_rule(rule, test_context: test_context)
 
 if result.valid?
-  puts "Rule validated and executed successfully"
+  puts 'Rule validated and executed successfully'
   # Check warnings for execution feedback
-  puts result.warnings  # => ["Test execution passed"]
+  puts result.warnings # => ["Test execution passed"]
 end
 ```
 
@@ -249,9 +247,9 @@ end
 
 ```ruby
 rule = Ruleur.define do
-  rule "broken_rule" do
+  rule 'broken_rule' do
     match do
-      all?(user(:nonexistent_method))  # This will fail
+      all?(user(:nonexistent_method)) # This will fail
     end
 
     execute do
@@ -355,14 +353,12 @@ Always validate rules before persisting to database:
 def save_rule(rule, repository)
   # Validate first
   result = Ruleur::Validation.validate_rule(rule)
-  
-  unless result.valid?
-    raise "Invalid rule: #{result.errors.join(', ')}"
-  end
-  
+
+  raise "Invalid rule: #{result.errors.join(', ')}" unless result.valid?
+
   # Log warnings
   result.warnings.each { |w| Rails.logger.warn("Rule warning: #{w}") }
-  
+
   # Safe to save
   repository.save(rule)
 end
@@ -377,10 +373,10 @@ def import_rules_from_directory(dir_path, repository)
   Dir.glob("#{dir_path}/*.yml").each do |file|
     # Load rule
     rule = Ruleur::Persistence::YAMLLoader.load_file(file)
-    
+
     # Validate
     result = Ruleur::Validation.validate_rule(rule)
-    
+
     if result.valid?
       repository.save(rule)
       puts "✓ Imported: #{rule.name}"
@@ -397,18 +393,18 @@ end
 Create test cases for your rules and validate execution:
 
 ```ruby
-describe "Permission Rules" do
-  it "validates admin access rule" do
+describe 'Permission Rules' do
+  it 'validates admin access rule' do
     rule = Ruleur::Persistence::YAMLLoader.load_file('rules/admin_access.yml')
-    
+
     # Test case 1: Admin user
     test_context = {
       user: User.new(role: 'admin'),
       record: Document.new(status: 'draft')
     }
-    
+
     result = Ruleur::Validation.validate_rule(rule, test_context: test_context)
-    
+
     expect(result.valid?).to be true
   end
 end
@@ -422,10 +418,10 @@ Periodically validate all stored rules to catch issues:
 class RuleHealthCheck
   def self.validate_all_rules(repository)
     report = { valid: 0, invalid: 0, warnings: 0, errors: [] }
-    
+
     repository.all.each do |rule|
       result = Ruleur::Validation.validate_rule(rule)
-      
+
       if result.valid?
         report[:valid] += 1
         report[:warnings] += result.warnings.size
@@ -437,7 +433,7 @@ class RuleHealthCheck
         }
       end
     end
-    
+
     report
   end
 end
@@ -459,7 +455,7 @@ result = Ruleur::Validation.validate_rule(rule)
 repository.save(rule) if result.valid?
 
 # Bad - no validation
-repository.save(rule)  # Might save broken rule!
+repository.save(rule) # Might save broken rule!
 ```
 
 ### 2. Use Test Context for Critical Rules
@@ -476,7 +472,7 @@ test_cases = [
 
 test_cases.each do |context|
   result = Ruleur::Validation.validate_rule(rule, test_context: context)
-  raise "Failed test case" unless result.valid?
+  raise 'Failed test case' unless result.valid?
 end
 ```
 
@@ -489,7 +485,7 @@ result = Ruleur::Validation.validate_rule(rule)
 
 if result.valid?
   repository.save(rule)
-  
+
   # Log warnings for investigation
   result.warnings.each do |warning|
     Rails.logger.warn("[Rule: #{rule.name}] #{warning}")
@@ -505,7 +501,7 @@ Provide clear feedback when validation fails:
 def create_rule(params)
   rule = build_rule_from_params(params)
   result = Ruleur::Validation.validate_rule(rule)
-  
+
   if result.valid?
     repository.save(rule)
     { success: true, rule: rule }
@@ -525,14 +521,14 @@ Add validation to your deployment pipeline:
 
 ```ruby
 # spec/rules_spec.rb
-describe "All YAML Rules" do
+describe 'All YAML Rules' do
   Dir.glob('config/rules/*.yml').each do |file|
     it "validates #{File.basename(file)}" do
       rule = Ruleur::Persistence::YAMLLoader.load_file(file)
       result = Ruleur::Validation.validate_rule(rule)
-      
+
       expect(result.valid?).to be true,
-        "Rule validation failed: #{result.errors.join(', ')}"
+                                  "Rule validation failed: #{result.errors.join(', ')}"
     end
   end
 end
@@ -546,16 +542,16 @@ If you're building a rule management UI, integrate validation:
 class RulesController < ApplicationController
   def create
     rule_hash = params.require(:rule).permit!.to_h
-    
+
     # Validate hash before deserialization
     result = Ruleur::Validation.validate_hash(rule_hash)
-    
+
     if result.valid?
       rule = Ruleur::Rule.deserialize(rule_hash)
-      
+
       # Further validation with test execution
       result = Ruleur::Validation.validate_rule(rule, test_context: build_test_context)
-      
+
       if result.valid?
         @repository.save(rule)
         render json: { success: true, warnings: result.warnings }
@@ -566,9 +562,9 @@ class RulesController < ApplicationController
       render json: { success: false, errors: result.errors }, status: :bad_request
     end
   end
-  
+
   private
-  
+
   def build_test_context
     {
       user: User.new(role: 'test'),

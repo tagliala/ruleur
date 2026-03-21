@@ -300,7 +300,9 @@ engine = Ruleur.define do
     match do
       any?(user(:admin?))
     end
-    execute do allow! :access end
+    execute do
+      allow! :access
+    end
   end
 end
 
@@ -308,7 +310,7 @@ end
 Ruleur::Persistence::YAMLLoader.save_file(
   engine.rules.first,
   'config/rules/my_rule.yml',
-  include_metadata: true  # Adds helpful comments
+  include_metadata: true # Adds helpful comments
 )
 
 # Or get YAML string
@@ -348,7 +350,7 @@ Validate YAML syntax and basic structure:
 result = Ruleur::Persistence::YAMLLoader.validate_file('config/rules/my_rule.yml')
 
 if result[:valid]
-  puts "Rule is valid!"
+  puts 'Rule is valid!'
 else
   puts "Errors: #{result[:errors].join(', ')}"
 end
@@ -363,10 +365,10 @@ rule = Ruleur::Persistence::YAMLLoader.load_file('config/rules/my_rule.yml')
 result = Ruleur::Validation.validate_rule(rule)
 
 if result.valid?
-  puts "Rule is valid!"
+  puts 'Rule is valid!'
   puts "Warnings: #{result.warnings}" unless result.warnings.empty?
 else
-  puts "Errors:"
+  puts 'Errors:'
   result.errors.each { |error| puts "  - #{error}" }
 end
 ```

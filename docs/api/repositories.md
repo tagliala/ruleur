@@ -48,7 +48,7 @@ rule = repository.find(123)
 Finds a rule by name.
 
 ```ruby
-rule = repository.find_by_name("discount_rule")
+rule = repository.find_by_name('discount_rule')
 ```
 
 **Parameters:**
@@ -135,7 +135,7 @@ end
 Finds rules by tags.
 
 ```ruby
-rules = repository.find_by_tags([:permissions, :admin])
+rules = repository.find_by_tags(%i[permissions admin])
 ```
 
 #### `#active`
@@ -173,7 +173,7 @@ Saves a new version of a rule.
 repository.save_version(
   rule,
   changed_by: current_user.id,
-  reason: "Updated discount threshold"
+  reason: 'Updated discount threshold'
 )
 ```
 
@@ -249,11 +249,13 @@ repo = Ruleur::Persistence::Repository::ActiveRecord.new
 
 # Save a rule
 rule = Ruleur.define do
-  rule "discount" do
+  rule 'discount' do
     match do
       all?(order(:total).gt?(100))
     end
-    execute do set :discount, 0.1 end
+    execute do
+      set :discount, 0.1
+    end
   end
 end.rules.first
 
@@ -261,7 +263,7 @@ saved_rule = repo.save(rule)
 
 # Find rule
 found = repo.find(saved_rule.id)
-found = repo.find_by_name("discount")
+found = repo.find_by_name('discount')
 
 # Load all rules into engine
 rules = repo.all
@@ -278,7 +280,7 @@ rule = create_discount_rule(threshold: 100)
 repo.save_version(
   rule,
   changed_by: user.id,
-  reason: "Initial version"
+  reason: 'Initial version'
 )
 
 # Update rule
@@ -286,7 +288,7 @@ rule = create_discount_rule(threshold: 150)
 repo.save_version(
   rule,
   changed_by: user.id,
-  reason: "Increased threshold to 150"
+  reason: 'Increased threshold to 150'
 )
 
 # View history
@@ -344,8 +346,8 @@ create_table :rule_versions do |t|
   t.string :reason
   t.jsonb :metadata, default: {}
   t.timestamps
-  
-  t.index [:rule_id, :version_number], unique: true
+
+  t.index %i[rule_id version_number], unique: true
 end
 ```
 
@@ -356,12 +358,10 @@ end
 ```ruby
 def save_rule(rule)
   result = Ruleur::Validation.validate(rule)
-  
-  if result.valid?
-    repository.save(rule)
-  else
-    raise ValidationError, result.errors
-  end
+
+  raise ValidationError, result.errors unless result.valid?
+
+  repository.save(rule)
 end
 ```
 
@@ -384,15 +384,15 @@ class CachedRuleRepository
   def initialize(repository)
     @repository = repository
   end
-  
+
   def all
-    Rails.cache.fetch("rules/all", expires_in: 5.minutes) do
+    Rails.cache.fetch('rules/all', expires_in: 5.minutes) do
       @repository.all
     end
   end
-  
+
   def clear_cache
-    Rails.cache.delete("rules/all")
+    Rails.cache.delete('rules/all')
   end
 end
 ```

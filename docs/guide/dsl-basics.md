@@ -5,10 +5,10 @@ The Ruleur DSL provides a fluent, readable Ruby interface for defining business 
 ## Quick Example
 
 ```ruby
-require "ruleur"
+require 'ruleur'
 
 engine = Ruleur.define do
-  rule "admin_create", no_loop: true do
+  rule 'admin_create', no_loop: true do
     match do
       any?(
         user(:admin?),
@@ -34,12 +34,12 @@ Use `Ruleur.define` to create an engine with rules:
 
 ```ruby
 engine = Ruleur.define do
-  rule "rule_name" do
+  rule 'rule_name' do
     # conditions
     # actions
   end
 
-  rule "another_rule", salience: 10 do
+  rule 'another_rule', salience: 10 do
     # ...
   end
 end
@@ -56,11 +56,10 @@ Each rule has:
 ### Basic Structure
 
 ```ruby
-rule "rule_name", salience: 10, tags: ['permissions'], no_loop: true do
+rule 'rule_name', salience: 10, tags: ['permissions'], no_loop: true do
   match do
-    all?(
-      # conditions go here
-    )
+    all?
+    # conditions go here
   end
 
   execute do
@@ -76,15 +75,15 @@ end
 - **`no_loop`**: Prevent rule from firing twice in same execution. Default: false
 
 ```ruby
-rule "high_priority", salience: 100 do
+rule 'high_priority', salience: 100 do
   # This rule fires before others
 end
 
-rule "admin_crud", tags: ['permissions', 'admin'] do
+rule 'admin_crud', tags: %w[permissions admin] do
   # Tagged for organization
 end
 
-rule "once_only", no_loop: true do
+rule 'once_only', no_loop: true do
   # Won't fire again even if conditions remain true
 end
 ```
@@ -121,7 +120,7 @@ Gets the actual value (not truthy check) from a record method:
 
 ```ruby
 eq?(record_value(:age), 18)
-includes(literal(['draft', 'pending']), record_value(:status))
+includes(literal(%w[draft pending]), record_value(:status))
 ```
 
 ### `user_value(method_name)` - User Value Reference
@@ -145,7 +144,7 @@ flag(:update)  # => truthy?(:update)
 This is useful for chaining rules - one rule sets `:create`, another checks it:
 
 ```ruby
-rule "admin_create" do
+rule 'admin_create' do
   match do
     any?(user(:admin?))
   end
@@ -155,7 +154,7 @@ rule "admin_create" do
   end
 end
 
-rule "draft_update" do
+rule 'draft_update' do
   match do
     all?(
       flag(:create),
@@ -176,7 +175,7 @@ Conditions determine when a rule fires. Use `match` with `all`/`any` builders or
 ### `when_all` - All Conditions Must Be True
 
 ```ruby
-rule "admin_update" do
+rule 'admin_update' do
   match do
     all?(
       user(:admin?),
@@ -196,7 +195,7 @@ All conditions must be truthy for the rule to fire.
 ### `when_any` - At Least One Condition True
 
 ```ruby
-rule "editor_show" do
+rule 'editor_show' do
   match do
     any?(
       user(:admin?),
@@ -218,7 +217,7 @@ If any condition is truthy, the rule fires.
 You can nest `all` and `any` within `when_all` or `when_any`:
 
 ```ruby
-rule "editor_update" do
+rule 'editor_update' do
   match do
     all?(
       any?(
@@ -243,12 +242,12 @@ end
 For more complex comparisons, use operators directly:
 
 ```ruby
-rule "premium_purchase" do
+rule 'premium_purchase' do
   match do
     all?(
       gte(record_value(:age), 18),
       eq?(record_value(:country), 'US'),
-      includes(literal(['active', 'trial']), record_value(:status))
+      includes(literal(%w[active trial]), record_value(:status))
     )
   end
   execute do
@@ -266,7 +265,7 @@ Actions define what happens when a rule fires. Use the `set` method or `action` 
 ### `set(key, value)` - Set a Context Value
 
 ```ruby
-rule "set_discount" do
+rule 'set_discount' do
   match do
     all?(user(:premium?))
   end
@@ -279,7 +278,7 @@ end
 ### `assert(hash)` - Set Multiple Values
 
 ```ruby
-rule "set_defaults" do
+rule 'set_defaults' do
   match do
     all?(record(:new?))
   end
@@ -298,7 +297,7 @@ end
 For more complex logic, use an `action` block:
 
 ```ruby
-rule "calculate_total" do
+rule 'calculate_total' do
   match do
     all?(record(:items))
   end
@@ -316,7 +315,7 @@ end
 The `action` method provides a block for executing code:
 
 ```ruby
-rule "apply_discount" do
+rule 'apply_discount' do
   match do
     all?(user(:premium?))
   end
@@ -343,13 +342,13 @@ ctx[:user]         # => current_user
 ctx[:custom_value] # => 123
 
 ctx[:update] # => true (if rule fired) or nil (denied)
-ctx[:discount]     # => 0.20 (if rule set it)
+ctx[:discount] # => 0.20 (if rule set it)
 ```
 
 Rules can reference any context key using `ref`:
 
 ```ruby
-rule "check_custom" do
+rule 'check_custom' do
   match do
     all?(
       eq?(ref(:custom_value), 123)
@@ -366,7 +365,7 @@ end
 Here's a real-world permission system:
 
 ```ruby
-require "ruleur"
+require 'ruleur'
 
 Document = Struct.new(:status, :owner_id, :locked) do
   def draft? = status == 'draft'
@@ -380,7 +379,7 @@ User = Struct.new(:id, :role) do
 end
 
 engine = Ruleur.define do
-  rule "admin_crud", salience: 100 do
+  rule 'admin_crud', salience: 100 do
     match do
       all?(user(:admin?))
     end
@@ -392,7 +391,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "editor_create_update", salience: 50 do
+  rule 'editor_create_update', salience: 50 do
     match do
       all?(
         user(:editor?),
@@ -405,7 +404,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "owner_update" do
+  rule 'owner_update' do
     match do
       all?(
         record(:draft?),
@@ -418,7 +417,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "editor_published_update" do
+  rule 'editor_published_update' do
     match do
       all?(
         record(:published?),
@@ -446,11 +445,11 @@ puts ctx[:destroy] # => nil (no permission)
 ### 1. Use Descriptive Names
 
 ```ruby
-rule "admin_destroy" do
+rule 'admin_destroy' do
   # ...
 end
 
-rule "user_destroy" do
+rule 'user_destroy' do
   # ...
 end
 ```
@@ -460,7 +459,7 @@ end
 Each rule should have a single responsibility:
 
 ```ruby
-rule "admin_create" do
+rule 'admin_create' do
   match do
     all?(user(:admin?))
   end
@@ -469,7 +468,7 @@ rule "admin_create" do
   end
 end
 
-rule "verified_user_create" do
+rule 'verified_user_create' do
   match do
     all?(user(:verified?))
   end
@@ -484,13 +483,13 @@ end
 Higher salience rules fire first:
 
 ```ruby
-rule "set_default_discount", salience: 0 do
+rule 'set_default_discount', salience: 0 do
   execute do
     set :discount, 0.0
   end
 end
 
-rule "apply_premium_discount", salience: 10 do
+rule 'apply_premium_discount', salience: 10 do
   match do
     all?(user(:premium?))
   end
@@ -499,7 +498,7 @@ rule "apply_premium_discount", salience: 10 do
   end
 end
 
-rule "apply_vip_discount", salience: 20 do
+rule 'apply_vip_discount', salience: 20 do
   match do
     all?(user(:vip?))
   end
@@ -514,7 +513,7 @@ end
 If a rule's action could make its own condition true again, use `no_loop`:
 
 ```ruby
-rule "increment_counter", no_loop: true do
+rule 'increment_counter', no_loop: true do
   match do
     all?(lt(ref(:counter), 100))
   end
@@ -527,11 +526,11 @@ end
 ### 6. Tag Rules for Organization
 
 ```ruby
-rule "admin_create", tags: ['permissions', 'admin'] do
+rule 'admin_create', tags: %w[permissions admin] do
   set :create, true
 end
 
-rule "editor_update", tags: ['permissions', 'editor'] do
+rule 'editor_update', tags: %w[permissions editor] do
   set :update, true
 end
 

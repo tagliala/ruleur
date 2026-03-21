@@ -54,7 +54,7 @@ The recommended way to create an engine is using the DSL:
 
 ```ruby
 engine = Ruleur.define do
-  rule "rule_name" do
+  rule 'rule_name' do
     match do
       all?(condition)
     end
@@ -71,9 +71,9 @@ end
 
 ```ruby
 engine = Ruleur::Engine.new(rules: [
-  discount_rule,
+                              discount_rule,
   shipping_rule
-])
+                            ])
 
 result = engine.run(
   order: order,
@@ -89,11 +89,11 @@ Rules execute in priority order based on salience:
 
 ```ruby
 engine = Ruleur.define do
-  rule "high_priority", salience: 100 do
+  rule 'high_priority', salience: 100 do
     # Executes first
   end
-  
-  rule "low_priority", salience: 1 do
+
+  rule 'low_priority', salience: 1 do
     # Executes last
   end
 end

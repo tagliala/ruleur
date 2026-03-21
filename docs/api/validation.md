@@ -21,7 +21,7 @@ Validates a rule.
 result = Ruleur::Validation.validate(rule)
 
 if result.valid?
-  puts "Rule is valid"
+  puts 'Rule is valid'
 else
   puts result.errors.full_messages
 end
@@ -111,7 +111,7 @@ result = Ruleur::Validation.validate(
 
 ```ruby
 # Missing name
-rule = Ruleur::Rule.new(name: "", condition: cond, action: act)
+rule = Ruleur::Rule.new(name: '', condition: cond, action: act)
 result = Ruleur::Validation.validate(rule)
 # => Error: "Rule name cannot be blank"
 
@@ -128,18 +128,18 @@ result = Ruleur::Validation.validate(rule)
 # Contradictory conditions
 match do
   all?(
-  user(:admin?),
-  not?(user(:admin?))
-)
+    user(:admin?),
+    not?(user(:admin?))
+  )
 end
 # => Warning: "Contradictory conditions detected"
 
 # Unreachable condition
 match do
   all?(
-  lit(false),
-  user(:admin?)
-)
+    lit(false),
+    user(:admin?)
+  )
 end
 # => Warning: "Unreachable condition detected"
 ```
@@ -150,11 +150,13 @@ end
 
 ```ruby
 engine = Ruleur.define do
-  rule "example" do
+  rule 'example' do
     match do
       all?(user(:admin?))
     end
-    execute do allow! :access end
+    execute do
+      allow! :access
+    end
   end
 end
 
@@ -170,13 +172,13 @@ end
 ### Validating YAML Rules
 
 ```ruby
-rule = Ruleur::Persistence::YAMLLoader.load_file("config/rules/example.yml")
+rule = Ruleur::Persistence::YAMLLoader.load_file('config/rules/example.yml')
 result = Ruleur::Validation.validate(rule)
 
 if result.valid?
-  puts "Rule loaded and validated successfully"
+  puts 'Rule loaded and validated successfully'
 else
-  puts "Validation errors:"
+  puts 'Validation errors:'
   result.errors.each { |error| puts "  - #{error}" }
 end
 ```
@@ -189,12 +191,12 @@ Validates rules with sample data:
 # Define test scenarios
 test_contexts = [
   {
-    name: "Admin user",
+    name: 'Admin user',
     context: { user: admin_user, record: record },
     expected: { allow_access: true }
   },
   {
-    name: "Regular user",
+    name: 'Regular user',
     context: { user: regular_user, record: record },
     expected: { allow_access: false }
   }
@@ -206,9 +208,9 @@ result = Ruleur::Validation.validate(
 )
 
 if result.valid?
-  puts "All test scenarios passed"
+  puts 'All test scenarios passed'
 else
-  puts "Test failures:"
+  puts 'Test failures:'
   result.test_failures.each do |failure|
     puts "  #{failure[:name]}: #{failure[:error]}"
   end
@@ -240,7 +242,7 @@ Validates and raises on error:
 ```ruby
 begin
   Ruleur::Validation.validate!(rule)
-  puts "Rule is valid"
+  puts 'Rule is valid'
 rescue Ruleur::ValidationError => e
   puts "Validation failed: #{e.message}"
 end
@@ -254,11 +256,11 @@ Validate before saving:
 class RuleRepository
   def save(rule)
     result = Ruleur::Validation.validate(rule)
-    
-    unless result.valid?
-      raise Ruleur::ValidationError, result.errors.join(", ")
-    end
-    
+
+    return if result.valid?
+
+    raise Ruleur::ValidationError, result.errors.join(', ')
+
     # Save rule...
   end
 end
@@ -281,9 +283,9 @@ end
 
 ```ruby
 def load_rules_from_yaml
-  rules = Dir["config/rules/*.yml"].map do |file|
+  Dir['config/rules/*.yml'].map do |file|
     rule = Ruleur::Persistence::YAMLLoader.load_file(file)
-    
+
     result = Ruleur::Validation.validate(rule)
     if result.valid?
       rule
@@ -292,8 +294,6 @@ def load_rules_from_yaml
       nil
     end
   end.compact
-  
-  rules
 end
 ```
 
@@ -301,12 +301,12 @@ end
 
 ```ruby
 # spec/validation/rules_spec.rb
-RSpec.describe "Rule Validation" do
-  Dir["config/rules/*.yml"].each do |file|
+RSpec.describe 'Rule Validation' do
+  Dir['config/rules/*.yml'].each do |file|
     it "validates #{File.basename(file)}" do
       rule = Ruleur::Persistence::YAMLLoader.load_file(file)
       result = Ruleur::Validation.validate(rule)
-      
+
       expect(result).to be_valid, result.errors.full_messages.join("\n")
     end
   end

@@ -46,7 +46,7 @@ Complete examples from production systems.
 
 ```ruby
 engine = Ruleur.define do
-  rule "admin_access" do
+  rule 'admin_access' do
     match do
       all?(user(:admin?))
     end
@@ -56,7 +56,7 @@ engine = Ruleur.define do
     end
   end
 
-  rule "owner_update" do
+  rule 'owner_update' do
     match do
       all?(user(:owner?, record))
     end
@@ -75,13 +75,13 @@ can_update = result[:update] # => true or nil
 
 ```ruby
 engine = Ruleur.define do
-  rule "bulk_discount", salience: 10 do
+  rule 'bulk_discount', salience: 10 do
     match { all?(order(:total).gt?(500)) }
 
     execute { set :discount, 0.15 }
   end
-  
-  rule "vip_discount", salience: 20 do
+
+  rule 'vip_discount', salience: 20 do
     match { all?(customer(:vip?)) }
 
     execute { set :discount, 0.20 }
@@ -96,33 +96,33 @@ discount = result[:discount] # Higher salience wins
 
 ```ruby
 engine = Ruleur.define do
-rule "can_submit" do
-  match do
-    all?(
-      document(:draft?),
-      document(:complete?),
-      not?(document(:submitted?))
-    )
+  rule 'can_submit' do
+    match do
+      all?(
+        document(:draft?),
+        document(:complete?),
+        not?(document(:submitted?))
+      )
+    end
+
+    execute do
+      set :submit, true
+    end
   end
 
-  execute do
-    set :submit, true
-  end
-end
+  rule 'can_approve' do
+    match do
+      all?(
+        user(:approver?),
+        document(:submitted?),
+        not?(document(:approved?))
+      )
+    end
 
-rule "can_approve" do
-  match do
-    all?(
-      user(:approver?),
-      document(:submitted?),
-      not?(document(:approved?))
-    )
+    execute do
+      set :approve, true
+    end
   end
-
-  execute do
-    set :approve, true
-  end
-end
 end
 ```
 
@@ -133,7 +133,7 @@ end
 Check conditions and set result flags:
 
 ```ruby
-rule "validation" do
+rule 'validation' do
   match do
     all?(
       user(:authenticated?),
@@ -151,7 +151,7 @@ end
 Compute values based on inputs:
 
 ```ruby
-rule "calculate_total" do
+rule 'calculate_total' do
   match do
     all?(order(:items).present)
   end
@@ -161,7 +161,7 @@ rule "calculate_total" do
     subtotal = order.items.sum(&:price)
     tax = subtotal * 0.08
     shipping = calculate_shipping(order)
-    
+
     set :subtotal, subtotal
     set :tax, tax
     set :shipping, shipping
@@ -175,13 +175,13 @@ end
 Rules that depend on other rules' results:
 
 ```ruby
-rule "step1" do
+rule 'step1' do
   match { all?(input(:valid?)) }
 
   execute { set :step1_complete, true }
 end
 
-rule "step2" do
+rule 'step2' do
   match do
     all?(
       flag(:step1_complete),
