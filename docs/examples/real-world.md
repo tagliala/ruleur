@@ -587,52 +587,62 @@ class InsurancePolicyEngine
     @engine ||= Ruleur.define do
       # Base Risk Assessment
       rule "age_risk_low", salience: 100 do
-        when_all(
-          applicant(:age).gte?(25),
-          applicant(:age).lte?(60)
-        )
-        action { set :age_risk_score, 0 }
+        match do
+          all(
+            applicant(:age).gte?(25),
+            applicant(:age).lte?(60)
+          )
+        end
+        execute { set :age_risk_score, 0 }
       end
       
       rule "age_risk_high", salience: 100 do
-        when_all(
-          any(
-            applicant(:age).lt?(25),
-            applicant(:age).gt?(60)
+        match do
+          all(
+            any(
+              applicant(:age).lt?(25),
+              applicant(:age).gt?(60)
+            )
           )
-        )
-        action { set :age_risk_score, 20 }
+        end
+        execute { set :age_risk_score, 20 }
       end
       
       # Driving History
       rule "clean_driving_record", salience: 90 do
-        when_all(
-          applicant(:accidents_last_5_years).eq?(0),
-          applicant(:violations_last_3_years).eq?(0)
-        )
-        action do
+        match do
+          all(
+            applicant(:accidents_last_5_years).eq?(0),
+            applicant(:violations_last_3_years).eq?(0)
+          )
+        end
+        execute do
           set :driving_risk_score, 0
           set :safe_driver_discount, 0.15
         end
       end
       
       rule "moderate_driving_risk", salience: 90 do
-        when_all(
-          applicant(:accidents_last_5_years).in([1, 2]),
-          applicant(:violations_last_3_years).lt?(3)
-        )
-        action { set :driving_risk_score, 30 }
+        match do
+          all(
+            applicant(:accidents_last_5_years).in([1, 2]),
+            applicant(:violations_last_3_years).lt?(3)
+          )
+        end
+        execute { set :driving_risk_score, 30 }
       end
       
       rule "high_driving_risk", salience: 90 do
-        when_all(
-          any(
-            applicant(:accidents_last_5_years).gt?(2),
-            applicant(:violations_last_3_years).gte?(3),
-            applicant(:dui_history?)
+        match do
+          all(
+            any(
+              applicant(:accidents_last_5_years).gt?(2),
+              applicant(:violations_last_3_years).gte?(3),
+              applicant(:dui_history?)
+            )
           )
-        )
-        action do
+        end
+        execute do
           set :driving_risk_score, 100
           set :requires_underwriting, true
         end
@@ -640,29 +650,35 @@ class InsurancePolicyEngine
       
       # Credit Score Impact
       rule "excellent_credit", salience: 85 do
-        when_all(
-          applicant(:credit_score).gte?(750)
-        )
-        action do
+        match do
+          all(
+            applicant(:credit_score).gte?(750)
+          )
+        end
+        execute do
           set :credit_risk_score, -10
           set :credit_discount, 0.10
         end
       end
       
       rule "poor_credit", salience: 85 do
-        when_all(
-          applicant(:credit_score).lt?(600)
-        )
-        action { set :credit_risk_score, 25 }
+        match do
+          all(
+            applicant(:credit_score).lt?(600)
+          )
+        end
+        execute { set :credit_risk_score, 25 }
       end
       
       # Calculate Total Risk Score
       rule "calculate_risk", salience: 50, no_loop: true do
-        when_all(
-          flag(:age_risk_score).present,
-          flag(:driving_risk_score).present
-        )
-        action do
+        match do
+          all(
+            flag(:age_risk_score).present,
+            flag(:driving_risk_score).present
+          )
+        end
+        execute do
           age = context[:age_risk_score]
           driving = context[:driving_risk_score]
           credit = context[:credit_risk_score] || 0
@@ -674,36 +690,42 @@ class InsurancePolicyEngine
       
       # Eligibility Determination
       rule "eligible_standard", salience: 40 do
-        when_all(
-          flag(:total_risk_score).lt?(50),
-          not(flag(:requires_underwriting))
-        )
-        action do
+        match do
+          all(
+            flag(:total_risk_score).lt?(50),
+            not(flag(:requires_underwriting))
+          )
+        end
+        execute do
           set :eligible, true
           set :policy_tier, "standard"
         end
       end
       
       rule "eligible_high_risk", salience: 40 do
-        when_all(
-          flag(:total_risk_score).gte?(50),
-          flag(:total_risk_score).lt?(80),
-          not(flag(:requires_underwriting))
-        )
-        action do
+        match do
+          all(
+            flag(:total_risk_score).gte?(50),
+            flag(:total_risk_score).lt?(80),
+            not(flag(:requires_underwriting))
+          )
+        end
+        execute do
           set :eligible, true
           set :policy_tier, "high_risk"
         end
       end
       
       rule "requires_manual_review", salience: 40 do
-        when_all(
-          any(
-            flag(:total_risk_score).gte?(80),
-            flag(:requires_underwriting)
+        match do
+          all(
+            any(
+              flag(:total_risk_score).gte?(80),
+              flag(:requires_underwriting)
+            )
           )
-        )
-        action do
+        end
+        execute do
           set :eligible, false
           set :manual_underwriting_required, true
           set :reason, "Risk score too high - manual review needed"
@@ -712,11 +734,13 @@ class InsurancePolicyEngine
       
       # Premium Calculation
       rule "calculate_premium", salience: 30 do
-        when_all(
-          flag(:eligible),
-          flag(:policy_tier).present
-        )
-        action do
+        match do
+          all(
+            flag(:eligible),
+            flag(:policy_tier).present
+          )
+        end
+        execute do
           base_premium = 1000
           risk_score = context[:total_risk_score]
           tier = context[:policy_tier]
