@@ -1,0 +1,120 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'json'
+require 'fileutils'
+require 'optparse'
+
+options = {
+  manifest: 'tmp/docs-examples/manifest.json',
+  examples_dir: 'tmp/docs-examples',
+  preview: false,
+  backup: true
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: apply-docs-examples [options]"
+
+  opts.on('--manifest PATH', "manifest.json path (default: #{options[:manifest]})") do |v|
+    options[:manifest] = v
+  end
+
+  opts.on('--examples-dir PATH', "examples dir (default: #{options[:examples_dir]})") do |v|
+    options[:examples_dir] = v
+  end
+
+  opts.on('--preview', 'Show previews instead of writing files') do
+    options[:preview] = true
+  end
+
+  opts.on('--no-backup', 'Do not create a backup before modifying files') do
+    options[:backup] = false
+  end
+end.parse!
+
+unless File.file?(options[:manifest])
+  warn "Manifest not found: #{options[:manifest]}"
+  exit 1
+end
+
+manifest = JSON.parse(File.read(options[:manifest]))
+
+# Group by source file
+by_source = Hash.new { |h, k| h[k] = [] }
+manifest.each do |filename, meta|
+  src = meta['source']
+  by_source[src] << { 'extracted_filename' => filename }.merge(meta)
+end
+
+apply_count = 0
+by_source.each do |src_file, entries|
+  unless File.file?(src_file)
+    warn "Source file not found: #{src_file} -- skipping"
+    next
+  end
+
+  content = File.read(src_file)
+  lines = content.lines.map { |l| l.chomp }
+
+  # sort by start_line descending so earlier replacements don't shift later indices
+  entries.sort_by! { |e| -e['start_line'].to_i }
+
+  modified = false
+
+  entries.each do |entry|
+    extracted_name = entry['extracted_filename']
+    extracted_path = File.join(options[:examples_dir], extracted_name)
+    unless File.file?(extracted_path)
+      warn "Extracted example not found: #{extracted_path} -- skipping"
+      next
+    end
+
+    start_line = entry['start_line'].to_i
+    end_line = entry['end_line'].to_i
+
+    if start_line < 1 || end_line < start_line || end_line > lines.size
+      warn "Invalid line range for #{extracted_name} -> #{src_file}: #{start_line}-#{end_line} (file has #{lines.size} lines) -- skipping"
+      next
+    end
+
+    new_content = File.read(extracted_path).lines.map { |l| l.chomp }
+
+    if lines[(start_line - 1)..(end_line - 1)] == new_content
+      # no change
+      next
+    end
+
+    modified = true
+    apply_count += 1
+
+    if options[:preview]
+      puts "== Preview: #{src_file} (lines #{start_line}-#{end_line}) replacing with #{extracted_name}"
+      puts "--- original ---"
+      puts lines[(start_line - 1)..(end_line - 1)].join("\n")
+      puts "--- new ---"
+      puts new_content.join("\n")
+      puts ""
+    else
+      # perform replacement
+      lines[(start_line - 1)..(end_line - 1)] = new_content
+    end
+  end
+
+  if modified && !options[:preview]
+    if options[:backup]
+      bak = "#{src_file}.bak.#{Time.now.to_i}"
+      FileUtils.cp(src_file, bak)
+      puts "Backed up #{src_file} -> #{bak}"
+    end
+
+    # preserve final newline if original had one
+    final_newline = File.read(src_file).end_with?("\n")
+    new_text = lines.join("\n")
+    new_text += "\n" if final_newline
+
+    File.write(src_file, new_text)
+    puts "Updated #{src_file}"
+  end
+end
+
+puts "Applied #{apply_count} example replacements." unless options[:preview]

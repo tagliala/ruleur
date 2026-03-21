@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require 'fileutils'
+require 'json'
 
 class DocsExamplesExtractor
   # Extracts Ruby code blocks from markdown documentation files for linting.
@@ -14,35 +15,49 @@ class DocsExamplesExtractor
     FileUtils.rm_rf(@output_dir)
     FileUtils.mkdir_p(@output_dir)
 
+    manifest = {}
     file_num = 0
 
     Dir.glob("#{@docs_dir}/**/*.md").each do |md_file|
       content = File.read(md_file)
-      file_num = extract_blocks(content, md_file, file_num)
+      file_num = extract_blocks(content, md_file, file_num, manifest)
     end
 
+    # Write a manifest mapping extracted files back to their source file and line range.
+    manifest_path = File.join(@output_dir, 'manifest.json')
+    File.write(manifest_path, JSON.pretty_generate(manifest))
+
     puts "Extracted #{file_num} code blocks to #{@output_dir}"
+    puts "Wrote manifest to #{manifest_path}"
     file_num
   end
 
   private
 
-  def extract_blocks(content, md_file, start_num)
+  def extract_blocks(content, md_file, start_num, manifest)
     in_block = false
     block_content = []
     block_count = 0
     file_num = start_num
+    block_start_line = nil
 
-    content.each_line do |line|
+    content.each_line.with_index(1) do |line, lineno|
       if line.strip == '```ruby'
         in_block = true
         block_content = []
+        block_start_line = lineno + 1
       elsif line.strip == '```' && in_block
         in_block = false
         block_count += 1
         file_num += 1
         filename = "#{file_num.to_s.rjust(3, '0')}_#{block_count}_#{File.basename(md_file, '.md')}.rb"
         write_file(filename, block_content.join)
+        manifest[filename] = {
+          'source' => md_file,
+          'start_line' => block_start_line,
+          'end_line' => lineno - 1
+        }
+        block_start_line = nil
       elsif in_block
         block_content << line
       end
