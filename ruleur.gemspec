@@ -7,14 +7,13 @@ require 'ruleur/version'
 Gem::Specification.new do |gem|
   gem.authors       = ['Geremia Taglialatela']
   gem.email         = ['tagliala.dev@gmail.com']
-  gem.summary       = 'A Ruby gem that implements a Business Rule Management System (BRMS) using the Rete algorithm'
+  gem.summary       = 'A Ruby gem that implements a Business Rule Management System (BRMS) using forward-chaining'
   gem.description   = <<~DESC
     Ruleur is a Ruby gem that provides a scalable and efficient way to manage
-    your business rules. It uses the Rete algorithm, a well-known algorithm
-    for efficient rule-based systems, to implement a Business Rule Management
-    System (BRMS). With Ruleur, you can manage your rules in a straightforward
-    and effective manner, without having to worry about performance or
-    scalability issues.
+    your business rules. It uses forward-chaining, a pattern-matching approach
+    for rule evaluation, to implement a Business Rule Management System (BRMS).
+    With Ruleur, you can manage your rules in a straightforward and effective
+    manner, without having to worry about performance or scalability issues.
   DESC
   gem.homepage      = 'https://github.com/tagliala/ruleur'
   gem.license       = 'MIT'
