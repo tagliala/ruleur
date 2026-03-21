@@ -42,7 +42,7 @@ module Ruleur
       return [] unless @debug.is_a?(Array)
 
       @debug_lock.synchronize do
-        new_entries = @debug[@debug_consumed..-1] || []
+        new_entries = @debug[@debug_consumed..] || []
         @debug_consumed = @debug.length
         new_entries
       end

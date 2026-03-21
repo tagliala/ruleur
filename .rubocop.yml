@@ -60,3 +60,6 @@ RSpec/MultipleExpectations:
 
 RSpec/SpecFilePathFormat:
   Enabled: false
+
+Style/NumericPredicate:
+  Enabled: false

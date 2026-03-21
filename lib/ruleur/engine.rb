@@ -97,7 +97,7 @@ module Ruleur
         new_entries = if ctx.respond_to?(:drain_debug_since_last)
                         ctx.drain_debug_since_last
                       else
-                        ctx.debug[debug_len..-1] || []
+                        ctx.debug[debug_len..] || []
                       end
         update_stats_from_debug(new_entries)
 

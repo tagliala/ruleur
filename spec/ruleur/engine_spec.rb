@@ -50,7 +50,7 @@ RSpec.describe Ruleur do
         # debug metrics should contain rule and predicate timings
         expect(ctx.debug).to be_an(Array)
         # must include at least one rule timing entry for allow_create and allow_update
-        rule_names = ctx.debug.map { |e| e[:rule] }.compact
+        rule_names = ctx.debug.filter_map { |e| e[:rule] }
         expect(rule_names).to include('allow_create', 'allow_update')
         # predicate timings must be present and reference a rule
         pred = ctx.debug.find { |e| e[:predicate] }
