@@ -15,8 +15,18 @@ AllCops:
     - vendor/**/*
     - bin/**/*
 
+Layout/LineLength:
+  Exclude:
+    - 'Rakefile'
+
 Metrics/AbcSize:
   Exclude:
+    - 'Rakefile'
+    - 'spec/**/*'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'Rakefile'
     - 'spec/**/*'
 
 Metrics/ClassLength:
@@ -25,10 +35,12 @@ Metrics/ClassLength:
 
 Metrics/CyclomaticComplexity:
   Exclude:
+    - 'Rakefile'
     - 'spec/**/*'
 
 Metrics/MethodLength:
   Exclude:
+    - 'Rakefile'
     - 'spec/**/*'
 
 Metrics/ModuleLength:
@@ -37,6 +49,7 @@ Metrics/ModuleLength:
 
 Metrics/PerceivedComplexity:
   Exclude:
+    - 'Rakefile'
     - 'spec/**/*'
 
 RSpec/ExampleLength:

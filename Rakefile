@@ -68,7 +68,7 @@ def apply_examples(manifest_path, examples_dir)
     end
 
     content = File.read(src_file)
-    lines = content.lines.map { |l| l.chomp }
+    lines = content.lines.map(&:chomp)
 
     entries.sort_by! { |e| -e['start_line'].to_i }
 
@@ -90,11 +90,9 @@ def apply_examples(manifest_path, examples_dir)
         next
       end
 
-      new_content = File.read(extracted_path).lines.map { |l| l.chomp }
+      new_content = File.read(extracted_path).lines.map(&:chomp)
 
-      if lines[(start_line - 1)..(end_line - 1)] == new_content
-        next
-      end
+      next if lines[(start_line - 1)..(end_line - 1)] == new_content
 
       modified = true
       apply_count += 1
@@ -103,14 +101,14 @@ def apply_examples(manifest_path, examples_dir)
       lines[(start_line - 1)..(end_line - 1)] = new_content
     end
 
-    if modified
-      final_newline = File.read(src_file).end_with?("\n")
-      new_text = lines.join("\n")
-      new_text += "\n" if final_newline
+    next unless modified
 
-      File.write(src_file, new_text)
-      puts "Updated #{src_file}"
-    end
+    final_newline = File.read(src_file).end_with?("\n")
+    new_text = lines.join("\n")
+    new_text += "\n" if final_newline
+
+    File.write(src_file, new_text)
+    puts "Updated #{src_file}"
   end
 
   puts "Applied #{apply_count} example replacements."
