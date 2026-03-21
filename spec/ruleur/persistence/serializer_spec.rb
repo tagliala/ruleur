@@ -34,7 +34,7 @@ RSpec.describe Ruleur::Persistence::Serializer do
     end
 
     it 'serializes nested Not conditions' do
-      cond = Ruleur::Condition::Builders.truthy(:flag)
+      cond = Ruleur::Condition::Builders.truthy?(:flag)
       double_negated = !(!cond)
 
       serialized = described_class.node_to_h(double_negated)
@@ -109,7 +109,7 @@ RSpec.describe Ruleur::Persistence::Serializer do
       engine = Ruleur.define do
         rule 'call_test' do
           when_all(
-            equals(call(ref(:user), :role), 'admin')
+            eq?(call(ref(:user), :role), 'admin')
           )
           set :is_admin, true
         end
@@ -139,7 +139,7 @@ RSpec.describe Ruleur::Persistence::Serializer do
       engine = Ruleur.define do
         rule 'with_lambda' do
           when_all(
-            equals(literal { |_ctx| 42 }, 42)
+            eq?(literal { |_ctx| 42 }, 42)
           )
           set :result, true
         end

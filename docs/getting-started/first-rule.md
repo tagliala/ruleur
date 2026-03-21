@@ -56,7 +56,7 @@ engine = Ruleur.define do
   rule 'author_draft_update' do
     when_all(
       record(:draft?),
-      equals(record_value(:author_id), user_value(:id))
+      eq?(record_value(:author_id), user_value(:id))
     )
     set :update, true
   end
@@ -102,7 +102,7 @@ engine = Ruleur.define do
   rule 'author_draft_update' do
     when_all(
       record(:draft?),
-      equals(record_value(:author_id), user_value(:id))
+      eq?(record_value(:author_id), user_value(:id))
     )
     set :update, true
   end
@@ -149,7 +149,7 @@ engine = Ruleur.define do
   rule 'author_draft_update' do
     when_all(
       record(:draft?),
-      equals(record_value(:author_id), user_value(:id))
+      eq?(record_value(:author_id), user_value(:id))
     )
     set :update, true
   end

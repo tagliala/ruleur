@@ -104,7 +104,7 @@ engine = Ruleur.define do
   rule "discount_rule", salience: 10, tags: [:pricing] do
     when_all(
       customer(:vip?),
-      order(:total).greater_than(100)
+      order(:total).gt?(100)
     )
     action do
       set :discount, 0.2
@@ -159,10 +159,10 @@ end
 ```ruby
 rule "shipping_discount" do
   when_all(
-    order(:total).greater_than(50),
+    order(:total).gt?(50),
     any(
       customer(:premium?),
-      order(:items_count).greater_than(3)
+      order(:items_count).gt?(3)
     )
   )
   action do

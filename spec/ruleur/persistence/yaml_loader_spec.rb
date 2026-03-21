@@ -115,7 +115,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
     it 'saves rule to YAML file' do
       engine = Ruleur.define do
         rule 'test_save' do
-          when_all(equals(ref(:status), 'active'))
+          when_all(eq?(ref(:status), 'active'))
           set :approved, true
         end
       end
@@ -134,7 +134,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
     it 'generates YAML string with metadata header' do
       engine = Ruleur.define do
         rule 'yaml_test', salience: 10, tags: ['test'], no_loop: true do
-          when_all(equals(ref(:x), 5))
+          when_all(eq?(ref(:x), 5))
           set :y, 10
         end
       end
@@ -151,7 +151,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
     it 'generates YAML string without metadata header' do
       engine = Ruleur.define do
         rule 'clean_yaml' do
-          when_all(equals(ref(:x), 5))
+          when_all(eq?(ref(:x), 5))
           set :y, 10
         end
       end

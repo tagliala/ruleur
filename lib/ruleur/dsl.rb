@@ -7,13 +7,20 @@ module Ruleur
 
     # Small helpers for a "fine" DSL without metaprogramming hazards
     module Shortcuts
+      # rubocop:disable Naming/PredicateMethod
+      # These take a method name as argument, not checking a boolean
       def record(*path)
-        Condition::Builders.truthy(Condition::Builders.ref(:record, *path))
+        Condition::Builders.truthy?(Condition::Builders.ref(:record, *path))
       end
 
       def user(*path)
-        Condition::Builders.truthy(Condition::Builders.ref(:user, *path))
+        Condition::Builders.truthy?(Condition::Builders.ref(:user, *path))
       end
+
+      def flag(name)
+        Condition::Builders.truthy?(Condition::Builders.ref(name))
+      end
+      # rubocop:enable Naming/PredicateMethod
 
       # use inside predicates: value of a record/user property
       def record_value(*path)
@@ -22,11 +29,6 @@ module Ruleur
 
       def user_value(*path)
         Condition::Builders.ref(:user, *path)
-      end
-
-      # refer to a permission flag
-      def flag(name)
-        Condition::Builders.truthy(Condition::Builders.ref(name))
       end
     end
 
@@ -53,15 +55,15 @@ module Ruleur
         Condition::Any.new(*children)
       end
 
-      def not_(child)
+      def not?(child)
         Condition::Not.new(child)
       end
 
-      def include?(value, collection)
+      def in?(value, collection)
         Condition::Predicate.new(value, :in, collection)
       end
 
-      def exclude?(value, collection)
+      def not_in?(value, collection)
         Condition::Not.new(Condition::Predicate.new(value, :in, collection))
       end
 

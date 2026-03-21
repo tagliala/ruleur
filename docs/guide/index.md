@@ -44,14 +44,14 @@ when_any(user(:admin?), record(:public?))
 
 # Ownership check
 when_all(
-  equals(record_value(:owner_id), user_value(:id)),
+  eq?(record_value(:owner_id), user_value(:id)),
   record(:active?)
 )
 
 # Range check
 when_all(
-  greater_than_or_equal(record_value(:price), 100),
-  less_than_or_equal(record_value(:price), 1000)
+  gte?(record_value(:price), 100),
+  lte?(record_value(:price), 1000)
 )
 
 # Array membership
@@ -75,22 +75,22 @@ matches(record_value(:email), literal(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a
 ### Operators Reference
 
 **Comparison:**
-- `equals(a, b)` - Equal
-- `not_equals(a, b)` - Not equal
-- `greater_than(a, b)` - Greater than
-- `greater_than_or_equal(a, b)` - Greater than or equal
-- `less_than(a, b)` - Less than
-- `less_than_or_equal(a, b)` - Less than or equal
+- `eq?(a, b)` - Equal
+- `not_eq?(a, b)` - Not equal
+- `gt?(a, b)` - Greater than
+- `gte?(a, b)` - Greater than or equal
+- `lt?(a, b)` - Less than
+- `lte?(a, b)` - Less than or equal
 
 **Logical:**
-- `truthy(value)` - Value is truthy
-- `falsy(value)` - Value is falsy
-- `present(value)` - Value is present (not nil/empty)
-- `blank(value)` - Value is blank (nil/empty)
+- `truthy?(value)` - Value is truthy
+- `falsy?(value)` - Value is falsy
+- `present?(value)` - Value is present (not nil/empty)
+- `blank?(value)` - Value is blank (nil/empty)
 
 **Collections:**
-- `include?(value, array)` - Value in array
-- `contains(array, value)` - Array contains value
+- `in?(value, array)` - Value in array
+- `contains?(array, value)` - Array contains value
 
 **Patterns:**
 - `matches(string, regex)` - String matches regex

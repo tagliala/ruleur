@@ -90,7 +90,7 @@ Validates a condition node (structural and semantic checks).
 
 ```ruby
 condition = Ruleur::DSL::Condition::Builders.all(
-  Ruleur::DSL::Condition::Builders.truthy(
+  Ruleur::DSL::Condition::Builders.truthy?(
     Ruleur::DSL::Condition::Builders.ref(:user, :admin?)
   )
 )

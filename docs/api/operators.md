@@ -18,8 +18,8 @@ Ruleur provides a comprehensive set of operators for:
 Checks equality using `==`.
 
 ```ruby
-user(:role).equals("admin")
-order(:status).equals("pending")
+user(:role).eq?("admin")
+order(:status).eq?("pending")
 ```
 
 ### `not_equals`
@@ -27,8 +27,8 @@ order(:status).equals("pending")
 Checks inequality using `!=`.
 
 ```ruby
-user(:role).not_equals("guest")
-order(:status).not_equals("cancelled")
+user(:role).not_eq?("guest")
+order(:status).not_eq?("cancelled")
 ```
 
 ### `identical`
@@ -46,8 +46,8 @@ value(:type).identical(expected_type)
 Greater than comparison using `>`.
 
 ```ruby
-order(:total).greater_than(100)
-user(:age).greater_than(18)
+order(:total).gt?(100)
+user(:age).gt?(18)
 ```
 
 ### `greater_than_or_equal`
@@ -55,8 +55,8 @@ user(:age).greater_than(18)
 Greater than or equal comparison using `>=`.
 
 ```ruby
-order(:total).greater_than_or_equal(50)
-user(:age).greater_than_or_equal(21)
+order(:total).gte?(50)
+user(:age).gte?(21)
 ```
 
 ### `less_than`
@@ -64,8 +64,8 @@ user(:age).greater_than_or_equal(21)
 Less than comparison using `<`.
 
 ```ruby
-order(:total).less_than(1000)
-user(:age).less_than(65)
+order(:total).lt?(1000)
+user(:age).lt?(65)
 ```
 
 ### `less_than_or_equal`
@@ -73,8 +73,8 @@ user(:age).less_than(65)
 Less than or equal comparison using `<=`.
 
 ```ruby
-order(:items_count).less_than_or_equal(10)
-user(:attempts).less_than_or_equal(3)
+order(:items_count).lte?(10)
+user(:attempts).lte?(3)
 ```
 
 ## Collection Operators
@@ -84,8 +84,8 @@ user(:attempts).less_than_or_equal(3)
 Checks if collection includes a value using `include?`.
 
 ```ruby
-user(:roles).contains("admin")
-order(:tags).contains("express")
+user(:roles).contains?("admin")
+order(:tags).contains?("express")
 ```
 
 ### `include?`
@@ -187,7 +187,7 @@ calculator(:compute, value1, value2, operator: :add)
 ```ruby
 rule "example" do
   when_all(
-    order(:total).greater_than(100),
+    order(:total).gt?(100),
     user(:email).matches(/@company\.com$/),
     user(:roles).includes("premium")
   )
@@ -240,8 +240,8 @@ when_all(
 ```ruby
 rule "medium_order" do
   when_all(
-    order(:total).greater_than_or_equal(50),
-    order(:total).less_than(200)
+    order(:total).gte?(50),
+    order(:total).lt?(200)
   )
   action { set :tier, "medium" }
 end

@@ -214,7 +214,7 @@ end
 rule "premium_check" do
   when_all(
     customer(:premium?),
-    order(:total).greater_than(100)
+    order(:total).gt?(100)
   )
   action do
     customer = context[:customer]

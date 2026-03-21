@@ -19,7 +19,7 @@ Checks if two values are equal using Ruby's `==` operator.
 ```ruby
 rule "adult_only" do
   when_all(
-    equals(record_value(:age), 18)
+    eq?(record_value(:age), 18)
   )
   allow! :access
 end
@@ -41,9 +41,9 @@ condition:
 
 **Examples:**
 ```ruby
-equals(literal(5), 5)           # => true
-equals(literal("hello"), "hello") # => true
-equals(record_value(:status), "active") # => true/false depending on record.status
+eq?(literal(5), 5)           # => true
+eq?(literal("hello"), "hello") # => true
+eq?(record_value(:status), "active") # => true/false depending on record.status
 ```
 
 ### `ne` - Not Equals
@@ -53,7 +53,7 @@ Checks if two values are not equal using Ruby's `!=` operator.
 ```ruby
 rule "exclude_archived" do
   when_all(
-    not_equals(record_value(:status), "archived")
+    not_eq?(record_value(:status), "archived")
   )
   allow! :view
 end
@@ -61,9 +61,9 @@ end
 
 **Examples:**
 ```ruby
-not_equals(literal(5), 10)          # => true
-not_equals(literal("draft"), "published") # => true
-not_equals(record_value(:status), "archived") # => true if status != "archived"
+not_eq?(literal(5), 10)          # => true
+not_eq?(literal("draft"), "published") # => true
+not_eq?(record_value(:status), "archived") # => true if status != "archived"
 ```
 
 ### `gt` - Greater Than
@@ -73,7 +73,7 @@ Checks if left value is greater than right value. Returns `false` if either valu
 ```ruby
 rule "senior_discount" do
   when_all(
-    greater_than(record_value(:age), 65)
+    gt?(record_value(:age), 65)
   )
   set :discount, 0.15
 end
@@ -83,10 +83,10 @@ end
 
 **Examples:**
 ```ruby
-greater_than(literal(10), 5)          # => true
-greater_than(literal(5), 10)          # => false
-greater_than(literal(10), 10)         # => false
-greater_than(record_value(:age), 18)   # => true if age > 18
+gt?(literal(10), 5)          # => true
+gt?(literal(5), 10)          # => false
+gt?(literal(10), 10)         # => false
+gt?(record_value(:age), 18)   # => true if age > 18
 ```
 
 ### `gte` - Greater Than or Equal
@@ -96,7 +96,7 @@ Checks if left value is greater than or equal to right value. Returns `false` if
 ```ruby
 rule "voting_age" do
   when_all(
-    greater_than_or_equal(record_value(:age), 18)
+    gte?(record_value(:age), 18)
   )
   allow! :vote
 end
@@ -104,10 +104,10 @@ end
 
 **Examples:**
 ```ruby
-greater_than_or_equal(literal(10), 5)         # => true
-greater_than_or_equal(literal(10), 10)        # => true
-greater_than_or_equal(literal(5), 10)         # => false
-greater_than_or_equal(record_value(:age), 21)  # => true if age >= 21
+gte?(literal(10), 5)         # => true
+gte?(literal(10), 10)        # => true
+gte?(literal(5), 10)         # => false
+gte?(record_value(:age), 21)  # => true if age >= 21
 ```
 
 ### `lt` - Less Than
@@ -117,7 +117,7 @@ Checks if left value is less than right value. Returns `false` if either value i
 ```ruby
 rule "child_ticket" do
   when_all(
-    less_than(record_value(:age), 12)
+    lt?(record_value(:age), 12)
   )
   set :ticket_price, 5.00
 end
@@ -125,10 +125,10 @@ end
 
 **Examples:**
 ```ruby
-less_than(literal(5), 10)          # => true
-less_than(literal(10), 5)          # => false
-less_than(literal(10), 10)         # => false
-less_than(record_value(:price), 100) # => true if price < 100
+lt?(literal(5), 10)          # => true
+lt?(literal(10), 5)          # => false
+lt?(literal(10), 10)         # => false
+lt?(record_value(:price), 100) # => true if price < 100
 ```
 
 ### `lte` - Less Than or Equal
@@ -138,7 +138,7 @@ Checks if left value is less than or equal to right value. Returns `false` if ei
 ```ruby
 rule "standard_shipping" do
   when_all(
-    less_than_or_equal(record_value(:weight), 50)
+    lte?(record_value(:weight), 50)
   )
   set :shipping_method, "standard"
 end
@@ -146,10 +146,10 @@ end
 
 **Examples:**
 ```ruby
-less_than_or_equal(literal(5), 10)         # => true
-less_than_or_equal(literal(10), 10)        # => true
-less_than_or_equal(literal(10), 5)         # => false
-less_than_or_equal(record_value(:quantity), 100) # => true if quantity <= 100
+lte?(literal(5), 10)         # => true
+lte?(literal(10), 10)        # => true
+lte?(literal(10), 5)         # => false
+lte?(record_value(:quantity), 100) # => true if quantity <= 100
 ```
 
 ## Collection Operators
@@ -230,7 +230,7 @@ Checks if a value is truthy (not `nil` and not `false`).
 ```ruby
 rule "published_only" do
   when_all(
-    truthy(record(:published?))
+    truthy?(record(:published?))
   )
   allow! :view
 end
@@ -240,19 +240,19 @@ end
 The `record(method)` and `user(method)` helpers use `truthy` automatically:
 
 ```ruby
-record(:admin?)  # Equivalent to: truthy(ref(:record).call(:admin?))
-user(:verified?)  # Equivalent to: truthy(ref(:user).call(:verified?))
+record(:admin?)  # Equivalent to: truthy?(ref(:record).call(:admin?))
+user(:verified?)  # Equivalent to: truthy?(ref(:user).call(:verified?))
 ```
 :::
 
 **Examples:**
 ```ruby
-truthy(literal(true))        # => true
-truthy(literal(false))       # => false
-truthy(literal(nil))         # => false
-truthy(literal(0))           # => true (0 is truthy in Ruby)
-truthy(literal(""))          # => true (empty string is truthy)
-truthy(record(:admin?))     # => true if record.admin? is truthy
+truthy?(literal(true))        # => true
+truthy?(literal(false))       # => false
+truthy?(literal(nil))         # => false
+truthy?(literal(0))           # => true (0 is truthy in Ruby)
+truthy?(literal(""))          # => true (empty string is truthy)
+truthy?(record(:admin?))     # => true if record.admin? is truthy
 ```
 
 ### `falsy` - Falsy Check
@@ -262,7 +262,7 @@ Checks if a value is falsy (`nil` or `false`).
 ```ruby
 rule "unpublished_draft" do
   when_all(
-    falsy(record(:published?))
+    falsy?(record(:published?))
   )
   allow! :edit
 end
@@ -270,11 +270,11 @@ end
 
 **Examples:**
 ```ruby
-falsy(literal(false))        # => true
-falsy(literal(nil))          # => true
-falsy(literal(0))            # => false (0 is truthy)
-falsy(literal(""))           # => false (empty string is truthy)
-falsy(record(:locked?))     # => true if record.locked? is nil or false
+falsy?(literal(false))        # => true
+falsy?(literal(nil))          # => true
+falsy?(literal(0))            # => false (0 is truthy)
+falsy?(literal(""))           # => false (empty string is truthy)
+falsy?(record(:locked?))     # => true if record.locked? is nil or false
 ```
 
 ### `present` - Presence Check
@@ -284,7 +284,7 @@ Checks if a value is present (not `nil` and not empty). Similar to Rails' `prese
 ```ruby
 rule "requires_description" do
   when_all(
-    present(record_value(:description))
+    present?(record_value(:description))
   )
   allow! :publish
 end
@@ -297,13 +297,13 @@ end
 
 **Examples:**
 ```ruby
-present(literal(nil))         # => false
-present(literal(""))          # => false
-present(literal([]))          # => false
-present(literal({}))          # => false
-present(literal("hello"))     # => true
-present(literal([1, 2, 3]))   # => true
-present(record_value(:name))   # => true if name is not nil/empty
+present?(literal(nil))         # => false
+present?(literal(""))          # => false
+present?(literal([]))          # => false
+present?(literal({}))          # => false
+present?(literal("hello"))     # => true
+present?(literal([1, 2, 3]))   # => true
+present?(record_value(:name))   # => true if name is not nil/empty
 ```
 
 ### `blank` - Blank Check
@@ -313,7 +313,7 @@ Checks if a value is blank (`nil` or empty). Similar to Rails' `blank?`.
 ```ruby
 rule "set_default_title" do
   when_all(
-    blank(record_value(:title))
+    blank?(record_value(:title))
   )
   set :title, "Untitled"
 end
@@ -326,13 +326,13 @@ end
 
 **Examples:**
 ```ruby
-blank(literal(nil))          # => true
-blank(literal(""))           # => true
-blank(literal([]))           # => true
-blank(literal({}))           # => true
-blank(literal("hello"))      # => false
-blank(literal([1, 2, 3]))    # => false
-blank(record_value(:name))    # => true if name is nil or empty
+blank?(literal(nil))          # => true
+blank?(literal(""))           # => true
+blank?(literal([]))           # => true
+blank?(literal({}))           # => true
+blank?(literal("hello"))      # => false
+blank?(literal([1, 2, 3]))    # => false
+blank?(record_value(:name))    # => true if name is nil or empty
 ```
 
 ## Using Operators in DSL
@@ -358,7 +358,7 @@ For more complex comparisons, use operators direcordtly:
 ```ruby
 rule "age_and_status" do
   when_all(
-    greater_than_or_equal(record_value(:age), 18),
+    gte?(record_value(:age), 18),
     include?(record_value(:status), ['active', 'premium'])
   )
   set :purchase, true
@@ -370,11 +370,11 @@ end
 ```ruby
 rule "complex_eligibility" do
   when_all(
-    greater_than_or_equal(record_value(:age), 21),                    # Age >= 21
+    gte?(record_value(:age), 21),                    # Age >= 21
     include?(record_value(:country), ['US', 'CA']),     # Country is US or CA
-    present(record_value(:email)),                   # Email is present
+    present?(record_value(:email)),                   # Email is present
     matches(record_value(:email), /\@example\.com$/), # Email domain check
-    not_equals(record_value(:status), 'banned')             # Not banned
+    not_eq?(record_value(:status), 'banned')             # Not banned
   )
   set :vip_access, true
 end
@@ -384,19 +384,19 @@ end
 
 | Operator | Category | Description | Example |
 |----------|----------|-------------|---------|
-| `eq` | Comparison | Equals | `equals(record_value(:age), 18)` |
-| `ne` | Comparison | Not equals | `not_equals(record_value(:status), 'archived')` |
-| `gt` | Comparison | Greater than | `greater_than(record_value(:price), 100)` |
-| `gte` | Comparison | Greater than or equal | `greater_than_or_equal(record_value(:age), 18)` |
-| `lt` | Comparison | Less than | `less_than(record_value(:stock), 10)` |
-| `lte` | Comparison | Less than or equal | `less_than_or_equal(record_value(:weight), 50)` |
+| `eq` | Comparison | Equals | `eq?(record_value(:age), 18)` |
+| `ne` | Comparison | Not equals | `not_eq?(record_value(:status), 'archived')` |
+| `gt` | Comparison | Greater than | `gt?(record_value(:price), 100)` |
+| `gte` | Comparison | Greater than or equal | `gte?(record_value(:age), 18)` |
+| `lt` | Comparison | Less than | `lt?(record_value(:stock), 10)` |
+| `lte` | Comparison | Less than or equal | `lte?(record_value(:weight), 50)` |
 | `include?` | Collection | Value in collection | `include?(record_value(:status), ['draft', 'pending'])` |
 | `includes` | Collection | Collection includes value | `includes(record_value(:tags), 'featured')` |
 | `matches` | Collection | Regex match | `matches(record_value(:email), /\@example\.com$/)` |
-| `truthy` | Predicate | Is truthy | `truthy(record(:published?))` |
-| `falsy` | Predicate | Is falsy | `falsy(record(:locked?))` |
-| `present` | Predicate | Not nil/empty | `present(record_value(:name))` |
-| `blank` | Predicate | Nil or empty | `blank(record_value(:description))` |
+| `truthy` | Predicate | Is truthy | `truthy?(record(:published?))` |
+| `falsy` | Predicate | Is falsy | `falsy?(record(:locked?))` |
+| `present` | Predicate | Not nil/empty | `present?(record_value(:name))` |
+| `blank` | Predicate | Nil or empty | `blank?(record_value(:description))` |
 
 ## Custom Operators
 
@@ -432,7 +432,7 @@ Comparison operators (`gt`, `gte`, `lt`, `lte`) return `false` when either opera
 ```ruby
 rule "safe_comparison" do
   when_all(
-    greater_than(record_value(:age), 18)  # Returns false if age is nil
+    gt?(record_value(:age), 18)  # Returns false if age is nil
   )
   allow! :access
 end
@@ -445,8 +445,8 @@ This prevents `NoMethodError` exceptions during comparison.
 Operators don't perform type coercion. Values are compared as-is:
 
 ```ruby
-equals(literal(5), "5")        # => false (Integer vs String)
-equals(literal("5"), "5")      # => true
+eq?(literal(5), "5")        # => false (Integer vs String)
+eq?(literal("5"), "5")      # => true
 ```
 
 Ensure types match when using comparison operators:
@@ -455,7 +455,7 @@ Ensure types match when using comparison operators:
 # Good
 rule "numeric_check" do
   when_all(
-    greater_than(record_value(:age).to_i, 18)  # Coerce in DSL if needed
+    gt?(record_value(:age).to_i, 18)  # Coerce in DSL if needed
   )
 end
 
@@ -484,7 +484,7 @@ end
 # Less clear - works but awkward
 rule "has_role" do
   when_all(
-    equals(record_value(:roles).include?('admin'), true)
+    eq?(record_value(:roles).include?('admin'), true)
   )
 end
 ```
@@ -502,7 +502,7 @@ end
 # Verbose
 rule "admin_check" do
   when_all(
-    truthy(ref(:user).call(:admin?))
+    truthy?(ref(:user).call(:admin?))
   )
 end
 ```
@@ -515,7 +515,7 @@ When comparing actual values, use the `_val` variants:
 # Good
 rule "status_check" do
   when_all(
-    equals(record_value(:status), "published")
+    eq?(record_value(:status), "published")
   )
 end
 
@@ -534,9 +534,9 @@ Use `present`/`blank` to handle nil values explicitly:
 ```ruby
 rule "requires_fields" do
   when_all(
-    present(record_value(:title)),
-    present(record_value(:description)),
-    greater_than_or_equal(record_value(:price), 0)
+    present?(record_value(:title)),
+    present?(record_value(:description)),
+    gte?(record_value(:price), 0)
   )
   allow! :publish
 end

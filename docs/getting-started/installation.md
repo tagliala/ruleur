@@ -34,7 +34,7 @@ require 'ruleur'
 
 engine = Ruleur.define do
   rule 'hello' do
-    when_any(truthy(true))
+    when_any(truthy?(true))
     action { set :greeting, 'Hello Ruleur!' }
   end
 end

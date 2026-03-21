@@ -22,7 +22,7 @@ engine = Ruleur.define do
   end
 
   rule "bulk_discount" do
-    when_all(order(:total).greater_than(500))
+    when_all(order(:total).gt?(500))
     action { set :discount, 0.15 }
   end
 end
@@ -73,8 +73,8 @@ end
 engine = Ruleur.define do
   rule "tier_bronze", salience: 10 do
     when_all(
-      order(:quantity).greater_than_or_equal(1),
-      order(:quantity).less_than(10)
+      order(:quantity).gte?(1),
+      order(:quantity).lt?(10)
     )
     action do
       set :price_per_unit, 10.00
@@ -84,8 +84,8 @@ engine = Ruleur.define do
 
   rule "tier_silver", salience: 20 do
     when_all(
-      order(:quantity).greater_than_or_equal(10),
-      order(:quantity).less_than(50)
+      order(:quantity).gte?(10),
+      order(:quantity).lt?(50)
     )
     action do
       set :price_per_unit, 8.50
@@ -95,8 +95,8 @@ engine = Ruleur.define do
 
   rule "tier_gold", salience: 30 do
     when_all(
-      order(:quantity).greater_than_or_equal(50),
-      order(:quantity).less_than(100)
+      order(:quantity).gte?(50),
+      order(:quantity).lt?(100)
     )
     action do
       set :price_per_unit, 7.00
@@ -105,7 +105,7 @@ engine = Ruleur.define do
   end
 
   rule "tier_platinum", salience: 40 do
-    when_all(order(:quantity).greater_than_or_equal(100))
+    when_all(order(:quantity).gte?(100))
     action do
       set :price_per_unit, 5.50
       set :tier, "platinum"
@@ -129,7 +129,7 @@ end
 engine = Ruleur.define do
   rule "basic_tier" do
     when_all(
-      customer(:subscription).equals("basic"),
+      customer(:subscription).eq?("basic"),
       customer(:active?)
     )
     action do
@@ -141,7 +141,7 @@ engine = Ruleur.define do
 
   rule "pro_tier" do
     when_all(
-      customer(:subscription).equals("pro"),
+      customer(:subscription).eq?("pro"),
       customer(:active?)
     )
     action do
@@ -153,7 +153,7 @@ engine = Ruleur.define do
 
   rule "enterprise_tier" do
     when_all(
-      customer(:subscription).equals("enterprise"),
+      customer(:subscription).eq?("enterprise"),
       customer(:active?)
     )
     action do
@@ -164,7 +164,7 @@ engine = Ruleur.define do
   end
 
   rule "annual_discount" do
-    when_all(customer(:billing_period).equals("annual"))
+    when_all(customer(:billing_period).eq?("annual"))
     action do
       monthly = context[:monthly_price]
       annual_discount = monthly * 12 * 0.20
@@ -182,7 +182,7 @@ end
 ```ruby
 engine = Ruleur.define do
   rule "free_shipping_threshold", salience: 100 do
-    when_all(order(:total).greater_than(100))
+    when_all(order(:total).gt?(100))
     action do
       set :shipping_cost, 0
       set :free_shipping, true
@@ -192,7 +192,7 @@ engine = Ruleur.define do
   rule "local_shipping", salience: 50 do
     when_all(
       not(flag(:free_shipping)),
-      order(:distance_miles).less_than(50)
+      order(:distance_miles).lt?(50)
     )
     action do
       weight = context[:order].weight_lbs
@@ -205,8 +205,8 @@ engine = Ruleur.define do
   rule "regional_shipping", salience: 40 do
     when_all(
       not(flag(:free_shipping)),
-      order(:distance_miles).greater_than_or_equal(50),
-      order(:distance_miles).less_than(500)
+      order(:distance_miles).gte?(50),
+      order(:distance_miles).lt?(500)
     )
     action do
       weight = context[:order].weight_lbs
@@ -219,7 +219,7 @@ engine = Ruleur.define do
   rule "national_shipping", salience: 30 do
     when_all(
       not(flag(:free_shipping)),
-      order(:distance_miles).greater_than_or_equal(500)
+      order(:distance_miles).gte?(500)
     )
     action do
       weight = context[:order].weight_lbs
@@ -239,8 +239,8 @@ end
 engine = Ruleur.define do
   rule "black_friday", salience: 100 do
     when_all(
-      lit(Date.today).greater_than_or_equal(lit(Date.new(2026, 11, 24))),
-      lit(Date.today).less_than_or_equal(lit(Date.new(2026, 11, 29)))
+      lit(Date.today).gte?(lit(Date.new(2026, 11, 24))),
+      lit(Date.today).lte?(lit(Date.new(2026, 11, 29)))
     )
     action do
       set :discount, 0.25
@@ -250,7 +250,7 @@ engine = Ruleur.define do
 
   rule "cyber_monday", salience: 100 do
     when_all(
-      lit(Date.today).equals(lit(Date.new(2026, 12, 2)))
+      lit(Date.today).eq?(lit(Date.new(2026, 12, 2)))
     )
     action do
       set :discount, 0.30
@@ -289,7 +289,7 @@ engine = Ruleur.define do
   rule "percentage_coupon" do
     when_all(
       flag(:coupon_valid),
-      coupon(:type).equals("percentage")
+      coupon(:type).eq?("percentage")
     )
     action do
       discount = context[:coupon].discount_percentage / 100.0
@@ -301,7 +301,7 @@ engine = Ruleur.define do
   rule "fixed_amount_coupon" do
     when_all(
       flag(:coupon_valid),
-      coupon(:type).equals("fixed")
+      coupon(:type).eq?("fixed")
     )
     action do
       amount = context[:coupon].discount_amount
@@ -313,7 +313,7 @@ engine = Ruleur.define do
   rule "free_shipping_coupon" do
     when_all(
       flag(:coupon_valid),
-      coupon(:type).equals("free_shipping")
+      coupon(:type).eq?("free_shipping")
     )
     action do
       set :shipping_cost, 0
@@ -332,7 +332,7 @@ end
 engine = Ruleur.define do
   rule "normal_pricing", salience: 10 do
     when_all(
-      demand(:current_load).less_than(70)
+      demand(:current_load).lt?(70)
     )
     action do
       set :surge_multiplier, 1.0
@@ -342,8 +342,8 @@ engine = Ruleur.define do
 
   rule "moderate_surge", salience: 20 do
     when_all(
-      demand(:current_load).greater_than_or_equal(70),
-      demand(:current_load).less_than(90)
+      demand(:current_load).gte?(70),
+      demand(:current_load).lt?(90)
     )
     action do
       set :surge_multiplier, 1.5
@@ -353,7 +353,7 @@ engine = Ruleur.define do
 
   rule "high_surge", salience: 30 do
     when_all(
-      demand(:current_load).greater_than_or_equal(90)
+      demand(:current_load).gte?(90)
     )
     action do
       set :surge_multiplier, 2.0
@@ -409,7 +409,7 @@ class OrderPricingEngine
       # Step 3: Apply bulk discounts
       rule "bulk_discount", salience: 85 do
         when_all(
-          flag(:subtotal).greater_than(500)
+          flag(:subtotal).gt?(500)
         )
         action do
           subtotal = context[:subtotal]

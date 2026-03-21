@@ -53,7 +53,7 @@ engine = Ruleur.define do
   # Draft -> Submitted
   rule "submit_document", salience: 100 do
     when_all(
-      document(:status).equals("draft"),
+      document(:status).eq?("draft"),
       document(:complete?),
       flag(:action_submit)
     )
@@ -67,7 +67,7 @@ engine = Ruleur.define do
   # Submitted -> Under Review
   rule "start_review", salience: 90 do
     when_all(
-      document(:status).equals("submitted"),
+      document(:status).eq?("submitted"),
       user(:reviewer?),
       flag(:action_start_review)
     )
@@ -82,7 +82,7 @@ engine = Ruleur.define do
   # Under Review -> Approved
   rule "approve_document", salience: 80 do
     when_all(
-      document(:status).equals("under_review"),
+      document(:status).eq?("under_review"),
       user(:approver?),
       flag(:action_approve)
     )
@@ -97,7 +97,7 @@ engine = Ruleur.define do
   # Under Review -> Rejected
   rule "reject_document", salience: 80 do
     when_all(
-      document(:status).equals("under_review"),
+      document(:status).eq?("under_review"),
       user(:approver?),
       flag(:action_reject),
       flag(:rejection_reason).present
@@ -113,7 +113,7 @@ engine = Ruleur.define do
   # Rejected -> Draft (resubmit)
   rule "resubmit_document", salience: 70 do
     when_all(
-      document(:status).equals("rejected"),
+      document(:status).eq?("rejected"),
       user(:owns?, document),
       flag(:action_resubmit)
     )
@@ -135,7 +135,7 @@ engine = Ruleur.define do
   # Step 1: Validate Order
   rule "validate_order", salience: 100, no_loop: true do
     when_all(
-      order(:status).equals("pending"),
+      order(:status).eq?("pending"),
       order(:items).present,
       order(:shipping_address).present
     )
@@ -161,7 +161,7 @@ engine = Ruleur.define do
   rule "calculate_pricing", salience: 80, no_loop: true do
     when_all(
       flag(:inventory_available),
-      order(:total).greater_than(0)
+      order(:total).gt?(0)
     )
     action do
       order = context[:order]
@@ -178,7 +178,7 @@ engine = Ruleur.define do
   # Step 4: Process Payment
   rule "process_payment", salience: 70, no_loop: true do
     when_all(
-      flag(:step_pricing).equals("completed"),
+      flag(:step_pricing).eq?("completed"),
       order(:payment_method).present
     )
     action do
@@ -268,7 +268,7 @@ engine = Ruleur.define do
   # Small amounts - auto-approve
   rule "auto_approve_small", salience: 100 do
     when_all(
-      expense(:amount).less_than(100),
+      expense(:amount).lt?(100),
       user(:employee?),
       not(expense(:approved?))
     )
@@ -282,8 +282,8 @@ engine = Ruleur.define do
   # Medium amounts - manager approval
   rule "manager_approval_required", salience: 90 do
     when_all(
-      expense(:amount).greater_than_or_equal(100),
-      expense(:amount).less_than(1000)
+      expense(:amount).gte?(100),
+      expense(:amount).lt?(1000)
     )
     action do
       set :approval_required, "manager"
@@ -294,8 +294,8 @@ engine = Ruleur.define do
   # Large amounts - director approval
   rule "director_approval_required", salience: 80 do
     when_all(
-      expense(:amount).greater_than_or_equal(1000),
-      expense(:amount).less_than(10000)
+      expense(:amount).gte?(1000),
+      expense(:amount).lt?(10000)
     )
     action do
       set :approval_required, "director"
@@ -306,7 +306,7 @@ engine = Ruleur.define do
   # Very large - CFO approval
   rule "cfo_approval_required", salience: 70 do
     when_all(
-      expense(:amount).greater_than_or_equal(10000)
+      expense(:amount).gte?(10000)
     )
     action do
       set :approval_required, "cfo"
@@ -420,8 +420,8 @@ class PurchaseOrderWorkflow
       # Auto-approve under threshold
       rule "auto_approve", salience: 90 do
         when_all(
-          po(:total).less_than(1000),
-          po(:status).equals("pending_approval"),
+          po(:total).lt?(1000),
+          po(:status).eq?("pending_approval"),
           user(:employee?)
         )
         action do
@@ -434,9 +434,9 @@ class PurchaseOrderWorkflow
       # Manager approval
       rule "manager_review", salience: 80 do
         when_all(
-          po(:total).greater_than_or_equal(1000),
-          po(:total).less_than(10000),
-          po(:status).equals("pending_approval")
+          po(:total).gte?(1000),
+          po(:total).lt?(10000),
+          po(:status).eq?("pending_approval")
         )
         action do
           set :requires_manager_approval, true

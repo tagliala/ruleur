@@ -88,12 +88,12 @@ Ruleur provides convenient helper methods to keep your rules readable.
 Checks if a method on the `record` returns truthy:
 
 ```ruby
-record(:admin?)       # => truthy(record.admin?)
-record(:published?)   # => truthy(record.published?)
+record(:admin?)       # => truthy?(record.admin?)
+record(:published?)   # => truthy?(record.published?)
 ```
 
 ::: tip
-`record(method)` is shorthand for `truthy(ref(:record).call(method))`. The `truthy` operator checks if the value is not `nil` or `false`.
+`record(method)` is shorthand for `truthy?(ref(:record).call(method))`. The `truthy` operator checks if the value is not `nil` or `false`.
 :::
 
 ### `user(method_name)` - User Method Check
@@ -101,8 +101,8 @@ record(:published?)   # => truthy(record.published?)
 Checks if a method on the `user` returns truthy:
 
 ```ruby
-user(:admin?)       # => truthy(user.admin?)
-user(:verified?)    # => truthy(user.verified?)
+user(:admin?)       # => truthy?(user.admin?)
+user(:verified?)    # => truthy?(user.verified?)
 :::
 
 ### `record_value(method_name)` - Record Value Reference
@@ -110,7 +110,7 @@ user(:verified?)    # => truthy(user.verified?)
 Gets the actual value (not truthy check) from a record method:
 
 ```ruby
-equals(record_value(:age), 18)
+eq?(record_value(:age), 18)
 includes(lit(['draft', 'pending']), record_value(:status))
 ```
 
@@ -119,7 +119,7 @@ includes(lit(['draft', 'pending']), record_value(:status))
 Gets the actual value from a user method:
 
 ```ruby
-equals(user_value(:role), 'admin')
+eq?(user_value(:role), 'admin')
 gte(user_value(:subscription_level), 3)
 ```
 
@@ -128,8 +128,8 @@ gte(user_value(:subscription_level), 3)
 Checks if a flag was set by another rule:
 
 ```ruby
-flag(:create)  # => truthy(:create)
-flag(:update)  # => truthy(:update)
+flag(:create)  # => truthy?(:create)
+flag(:update)  # => truthy?(:update)
 ```
 
 This is useful for chaining rules - one rule sets `:create`, another checks it:
@@ -175,7 +175,7 @@ rule "editor_show" do
   when_any(
     user(:admin?),
     record(:public?),
-    equals(record_value(:owner_id), user_value(:id))
+    eq?(record_value(:owner_id), user_value(:id))
   )
   set :show, true
 end
@@ -211,7 +211,7 @@ For more complex comparisons, use operators directly:
 rule "premium_purchase" do
   when_all(
     gte(record_value(:age), 18),
-    equals(record_value(:country), 'US'),
+    eq?(record_value(:country), 'US'),
     includes(lit(['active', 'trial']), record_value(:status))
   )
   set :purchase, true
@@ -300,7 +300,7 @@ Rules can reference any context key using `ref`:
 ```ruby
 rule "check_custom" do
   when_all(
-    equals(ref(:custom_value), 123)
+    eq?(ref(:custom_value), 123)
   )
   set :custom_check, true
 end
@@ -346,7 +346,7 @@ engine = Ruleur.define do
     when_all(
       record(:draft?),
       not(record(:locked?)),
-      equals(record_value(:owner_id), user_value(:id))
+      eq?(record_value(:owner_id), user_value(:id))
     )
     set :update, true
   end

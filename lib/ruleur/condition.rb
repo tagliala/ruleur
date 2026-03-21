@@ -133,25 +133,27 @@ module Ruleur
         LambdaValue.new(block)
       end
 
-      def equals(left, right) = Predicate.new(left, :eq, right)
+      def eq?(left, right) = Predicate.new(left, :eq, right)
 
-      def not_equals(left, right) = Predicate.new(left, :ne, right)
+      def not_eq?(left, right) = Predicate.new(left, :ne, right)
 
-      def greater_than(left, right) = Predicate.new(left, :gt, right)
+      def gt?(left, right) = Predicate.new(left, :gt, right)
 
-      def greater_than_or_equal(left, right) = Predicate.new(left, :gte, right)
+      def gte?(left, right) = Predicate.new(left, :gte, right)
 
-      def less_than(left, right) = Predicate.new(left, :lt, right)
+      def lt?(left, right) = Predicate.new(left, :lt, right)
 
-      def less_than_or_equal(left, right) = Predicate.new(left, :lte, right)
+      def lte?(left, right) = Predicate.new(left, :lte, right)
 
-      def contains(left, right) = Predicate.new(left, :includes, right)
+      def contains?(left, right) = Predicate.new(left, :includes, right)
 
-      def matches(left, right) = Predicate.new(left, :matches, right)
-      def truthy(left) = Predicate.new(left, :truthy, nil)
-      def falsy(left) = Predicate.new(left, :falsy, nil)
-      def present(left) = Predicate.new(left, :present, nil)
-      def blank(left) = Predicate.new(left, :blank, nil)
+      def in?(left, right) = Predicate.new(left, :in, right)
+
+      def matches?(left, right) = Predicate.new(left, :matches, right)
+      def truthy?(left) = Predicate.new(left, :truthy, nil)
+      def falsy?(left) = Predicate.new(left, :falsy, nil)
+      def present?(left) = Predicate.new(left, :present, nil)
+      def blank?(left) = Predicate.new(left, :blank, nil)
 
       def literal(value = nil, &block)
         LambdaValue.new(block || -> { value })
@@ -159,7 +161,7 @@ module Ruleur
 
       def all(*children) = All.new(*children)
       def any(*children) = Any.new(*children)
-      def not_(child) = Not.new(child)
+      def not?(child) = Not.new(child)
 
       def predicate(&) = BlockPredicate.new(&)
     end

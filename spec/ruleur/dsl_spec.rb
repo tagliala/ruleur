@@ -8,7 +8,7 @@ RSpec.describe Ruleur::DSL do
       engine = Ruleur.define do
         rule 'compare_values' do
           when_all(
-            equals(record_value(:score), user_value(:threshold))
+            eq?(record_value(:score), user_value(:threshold))
           )
           set :match, true
         end
@@ -29,7 +29,7 @@ RSpec.describe Ruleur::DSL do
       engine = Ruleur.define do
         rule 'nested_check' do
           when_all(
-            equals(record_value(:profile, :level), 5)
+            eq?(record_value(:profile, :level), 5)
           )
           set :senior, true
         end
@@ -46,7 +46,7 @@ RSpec.describe Ruleur::DSL do
       engine = Ruleur.define do
         rule 'permission_check' do
           when_all(
-            truthy(user_value(:permissions, :admin))
+            truthy?(user_value(:permissions, :admin))
           )
           set :is_admin, true
         end
@@ -64,7 +64,7 @@ RSpec.describe Ruleur::DSL do
     it 'sets multiple facts at once' do
       engine = Ruleur.define do
         rule 'multi_set' do
-          when_all(truthy(:trigger))
+          when_all(truthy?(:trigger))
           assert(
             flag1: true,
             flag2: false,
@@ -82,7 +82,7 @@ RSpec.describe Ruleur::DSL do
     it 'can use references in assert' do
       engine = Ruleur.define do
         rule 'copy_values' do
-          when_all(truthy(:enabled))
+          when_all(truthy?(:enabled))
           assert(
             output1: record_value(:input1),
             output2: user_value(:input2)
@@ -101,7 +101,7 @@ RSpec.describe Ruleur::DSL do
     it 'creates serializable action specs' do
       engine = Ruleur.define do
         rule 'serializable' do
-          when_all(truthy(:go))
+          when_all(truthy?(:go))
           assert(
             result: 'success',
             code: 200

@@ -135,8 +135,8 @@ engine = Ruleur.define do
   rule "standard_approve", salience: 10 do
     when_all(
       include?(user_value(:role), ['approver', 'admin']),
-      not(equals(record_value(:author_id), user_value(:id))),
-      equals(record_value(:status), 'pending_approval'),
+      not(eq?(record_value(:author_id), user_value(:id))),
+      eq?(record_value(:status), 'pending_approval'),
       record(:complete?),
       gte(Time.current.hour, 9),
       lt(Time.current.hour, 17)
@@ -147,7 +147,7 @@ engine = Ruleur.define do
   rule "emergency_approve", salience: 20 do
     when_all(
       user(:admin?),
-      equals(record_value(:status), 'pending_approval'),
+      eq?(record_value(:status), 'pending_approval'),
       flag(:emergency_mode)
     )
     set :approve, true
@@ -181,7 +181,7 @@ engine = Ruleur.define do
 
   rule "enterprise_features" do
     when_all(
-      equals(user_value(:subscription_tier), 'enterprise'),
+      eq?(user_value(:subscription_tier), 'enterprise'),
       user(:subscription_active?)
     )
     set :white_label, true
@@ -200,7 +200,7 @@ engine = Ruleur.define do
   rule "business_hours_access" do
     when_all(
       user(:employee?),
-      include?([1, 2, 3, 4, 5], [Time.current.wday]),
+      in?([1, 2, 3, 4, 5], [Time.current.wday]),
       gte(Time.current.hour, 9),
       lt(Time.current.hour, 17)
     )
@@ -379,7 +379,7 @@ end
 rule "draft_owner_crud", salience: 50, no_loop: true, tags: [:ownership, :draft] do
   when_all(
     record(:draft?),
-    equals(record_value(:owner_id), user_value(:id))
+    eq?(record_value(:owner_id), user_value(:id))
   )
   set :show, true
   set :update, true
@@ -389,7 +389,7 @@ end
 rule "review_owner_update", salience: 50, no_loop: true, tags: [:lifecycle, :review] do
   when_all(
     record(:in_review?),
-    equals(record_value(:owner_id), user_value(:id))
+    eq?(record_value(:owner_id), user_value(:id))
   )
   set :update, true
 end
@@ -398,7 +398,7 @@ rule "review_approver_update", salience: 45, no_loop: true, tags: [:lifecycle, :
   when_all(
     record(:in_review?),
     user(:approver?),
-    equals(record_value(:department_id), user_value(:department_id))
+    eq?(record_value(:department_id), user_value(:department_id))
   )
   set :update, true
 end
@@ -411,13 +411,13 @@ end
 rule "published_owner_destroy", salience: 45, no_loop: true, tags: [:lifecycle, :published] do
   when_all(
     record(:published?),
-    equals(record_value(:owner_id), user_value(:id))
+    eq?(record_value(:owner_id), user_value(:id))
   )
   set :destroy, true
 end
 
 rule "owner_crud", salience: 40, no_loop: true, tags: [:ownership] do
-  when_all(equals(record_value(:owner_id), user_value(:id)))
+  when_all(eq?(record_value(:owner_id), user_value(:id)))
   set :show, true
   set :update, true
   set :destroy, true
@@ -426,7 +426,7 @@ end
 rule "department_show", salience: 30, no_loop: true, tags: [:department] do
   when_all(
     record(:visible_to_department?),
-    equals(record_value(:department_id), user_value(:department_id))
+    eq?(record_value(:department_id), user_value(:department_id))
   )
   set :show, true
 end

@@ -66,7 +66,7 @@ can_update = result[:update] # => true or nil
 ```ruby
 engine = Ruleur.define do
   rule "bulk_discount", salience: 10 do
-    when_all(order(:total).greater_than(500))
+    when_all(order(:total).gt?(500))
     action { set :discount, 0.15 }
   end
   

@@ -55,10 +55,10 @@ Predicates perform actual comparisons and checks.
 user(:admin?)
 
 # Comparison
-order(:total).greater_than(100)
+order(:total).gt?(100)
 
 # Nested property access
-user(:profile, :verified?).equals(true)
+user(:profile, :verified?).eq?(true)
 ```
 
 ## Class: `Ruleur::Condition::Base`
@@ -187,11 +187,11 @@ lit(42)               # The value 42
 
 ```ruby
 # Equality
-user(:role).equals("admin")
+user(:role).eq?("admin")
 
 # Comparisons
-order(:total).greater_than(100)
-order(:total).less_than(1000)
+order(:total).gt?(100)
+order(:total).lt?(1000)
 order(:items).includes("premium_item")
 
 # Boolean checks
@@ -215,8 +215,8 @@ end
 ```ruby
 rule "bulk_discount" do
   when_all(
-    order(:total).greater_than(500),
-    order(:items_count).greater_than(10)
+    order(:total).gt?(500),
+    order(:items_count).gt?(10)
   )
   action { set :discount, 0.15 }
 end
@@ -249,7 +249,7 @@ end
 rule "premium_feature" do
   when_all(
     user(:subscription, :active?),
-    user(:subscription, :tier).equals("premium"),
+    user(:subscription, :tier).eq?("premium"),
     feature(:enabled?),
     not(feature(:deprecated?))
   )

@@ -35,20 +35,20 @@ The predicate has three parts:
 ### Predicate Anatomy
 
 ```ruby
-# equals(left, right)
+# eq?(left, right)
 #  ^  ^     ^
 #  |  |     +-- Right value (comparison value)
 #  |  +-------- Left value (value to test)
 #  +----------- Operator
 
-equals(record_value(:status), "published")
+eq?(record_value(:status), "published")
 ```
 
 ### Common Predicates
 
 ```ruby
 # Equality
-equals(record_value(:status), "active")
+eq?(record_value(:status), "active")
 ne(record_value(:status), "archived")
 
 # Numeric comparison
@@ -65,10 +65,10 @@ includes(record_value(:roles), 'admin')
 matches(record_value(:email), lit(/@example\.com$/))
 
 # Truthiness
-truthy(record(:published?))
-falsy(record(:locked?))
-present(record_value(:name))
-blank(record_value(:description))
+truthy?(record(:published?))
+falsy?(record(:locked?))
+present?(record_value(:name))
+blank?(record_value(:description))
 ```
 
 See [Operators](./operators.md) for a complete list.
@@ -128,7 +128,7 @@ rule "can_edit" do
   when_any(
     user(:admin?),
     user(:editor?),
-    equals(record_value(:owner_id), user_value(:id))
+    eq?(record_value(:owner_id), user_value(:id))
   )
   allow! :edit
 end
@@ -146,7 +146,7 @@ The `not_` condition inverts the result of its child.
 ```ruby
 rule "not_archived" do
   when_all(
-    not_(record(:archived?))
+    not?(record(:archived?))
   )
   allow! :view
 end
@@ -170,7 +170,7 @@ rule "complex_update" do
     any(
       user(:admin?),
       all(
-        equals(record_value(:owner_id), user_value(:id)),
+        eq?(record_value(:owner_id), user_value(:id)),
         record(:draft?)
       )
     )
@@ -189,7 +189,7 @@ rule "complex_view" do
     record(:public?),
     all(
       user(:logged_in?),
-      not_(record(:archived?))
+      not?(record(:archived?))
     )
   )
   allow! :view
@@ -254,7 +254,7 @@ rule "mixed" do
   when_all(
     user(:verified?),                    # Shortcut
     gte(record_value(:subscription_level), 3), # Explicit
-    not_(record(:banned?))                 # Shortcut with negation
+    not?(record(:banned?))                 # Shortcut with negation
   )
 end
 ```
@@ -287,7 +287,7 @@ condition = any(user(:admin?), user(:editor?))
 condition = !record(:archived?)
 
 # Equivalent to:
-condition = not_(record(:archived?))
+condition = not?(record(:archived?))
 ```
 
 ### Combining Operators
@@ -299,7 +299,7 @@ condition = (user(:admin?) | user(:editor?)) & !record(:archived?)
 # Equivalent to:
 condition = all(
   any(user(:admin?), user(:editor?)),
-  not_(record(:archived?))
+  not?(record(:archived?))
 )
 ```
 
@@ -324,7 +324,7 @@ Conditions operate on **values** from the execution context.
 Use values direcordtly (strings, numbers, arrays):
 
 ```ruby
-equals(record_value(:status), "published")  # String value
+eq?(record_value(:status), "published")  # String value
 include?(record_value(:role), ['admin', 'editor'])  # Array value
 ```
 
@@ -424,7 +424,7 @@ rule "permission_cascade" do
   when_any(
     user(:admin?),                           # Highest priority
     all(user(:editor?), record(:draft?)),       # Medium priority
-    all(equals(record_value(:owner_id), user_value(:id)), not_(record(:locked?)))  # Lowest
+    all(eq?(record_value(:owner_id), user_value(:id)), not?(record(:locked?)))  # Lowest
   )
   allow! :edit
 end
@@ -562,7 +562,7 @@ rule "complex" do
     any(
       all(user(:premium?), gte(record_value(:total), 100)),
       all(user(:vip?), gte(record_value(:total), 50)),
-      all(user(:staff?), present(record_value(:staff_id)))
+      all(user(:staff?), present?(record_value(:staff_id)))
     )
   )
 end
@@ -658,8 +658,8 @@ puts condition.evaluate(ctx)  # => true or false
 ```ruby
 # Add presence checks
 when_all(
-  present(record_value(:user)),
-  equals(record_value(:user).call(:role), 'admin')
+  present?(record_value(:user)),
+  eq?(record_value(:user).call(:role), 'admin')
 )
 
 # Or use safe navigation in models

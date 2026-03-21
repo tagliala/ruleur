@@ -228,7 +228,7 @@ class FeatureAccessEngine
       # Enterprise Features
       rule "enterprise_features", salience: 80 do
         when_all(
-          user(:subscription, :tier).equals("enterprise"),
+          user(:subscription, :tier).eq?("enterprise"),
           user(:subscription, :active?)
         )
         action do
@@ -272,7 +272,7 @@ class FeatureAccessEngine
       # Add-on: API Access for Basic Users
       rule "api_addon", salience: 70 do
         when_all(
-          user(:subscription, :tier).equals("basic"),
+          user(:subscription, :tier).eq?("basic"),
           user(:has_addon?, "api_access")
         )
         action do
@@ -285,7 +285,7 @@ class FeatureAccessEngine
       rule "check_project_limit", salience: 50 do
         when_all(
           flag(:max_projects).present,
-          user(:projects_count).greater_than_or_equal(flag(:max_projects))
+          user(:projects_count).gte?(flag(:max_projects))
         )
         action do
           deny! :create_project
@@ -297,7 +297,7 @@ class FeatureAccessEngine
       rule "check_storage_limit", salience: 50 do
         when_all(
           flag(:storage_gb).present,
-          user(:storage_used_gb).greater_than_or_equal(flag(:storage_gb))
+          user(:storage_used_gb).gte?(flag(:storage_gb))
         )
         action do
           deny! :upload_files
@@ -375,7 +375,7 @@ class ContentModerationEngine
       rule "trusted_user_auto_approve", salience: 100 do
         when_all(
           user(:trusted?),
-          user(:violations_count).equals(0),
+          user(:violations_count).eq?(0),
           content(:type).in(["text", "image"])
         )
         action do
@@ -422,7 +422,7 @@ class ContentModerationEngine
       # New User Content
       rule "new_user_review", salience: 90 do
         when_all(
-          user(:account_age_days).less_than(7),
+          user(:account_age_days).lt?(7),
           not(flag(:auto_approved)),
           not(flag(:moderation_action).present)
         )
@@ -470,7 +470,7 @@ class ContentModerationEngine
       # Rate Limiting
       rule "rate_limit_exceeded", salience: 120 do
         when_all(
-          user(:posts_last_hour).greater_than(10)
+          user(:posts_last_hour).gt?(10)
         )
         action do
           set :moderation_action, "rate_limit"
@@ -552,8 +552,8 @@ class InsurancePolicyEngine
       # Base Risk Assessment
       rule "age_risk_low", salience: 100 do
         when_all(
-          applicant(:age).greater_than_or_equal(25),
-          applicant(:age).less_than_or_equal(60)
+          applicant(:age).gte?(25),
+          applicant(:age).lte?(60)
         )
         action { set :age_risk_score, 0 }
       end
@@ -561,8 +561,8 @@ class InsurancePolicyEngine
       rule "age_risk_high", salience: 100 do
         when_all(
           any(
-            applicant(:age).less_than(25),
-            applicant(:age).greater_than(60)
+            applicant(:age).lt?(25),
+            applicant(:age).gt?(60)
           )
         )
         action { set :age_risk_score, 20 }
@@ -571,8 +571,8 @@ class InsurancePolicyEngine
       # Driving History
       rule "clean_driving_record", salience: 90 do
         when_all(
-          applicant(:accidents_last_5_years).equals(0),
-          applicant(:violations_last_3_years).equals(0)
+          applicant(:accidents_last_5_years).eq?(0),
+          applicant(:violations_last_3_years).eq?(0)
         )
         action do
           set :driving_risk_score, 0
@@ -583,7 +583,7 @@ class InsurancePolicyEngine
       rule "moderate_driving_risk", salience: 90 do
         when_all(
           applicant(:accidents_last_5_years).in([1, 2]),
-          applicant(:violations_last_3_years).less_than(3)
+          applicant(:violations_last_3_years).lt?(3)
         )
         action { set :driving_risk_score, 30 }
       end
@@ -591,8 +591,8 @@ class InsurancePolicyEngine
       rule "high_driving_risk", salience: 90 do
         when_all(
           any(
-            applicant(:accidents_last_5_years).greater_than(2),
-            applicant(:violations_last_3_years).greater_than_or_equal(3),
+            applicant(:accidents_last_5_years).gt?(2),
+            applicant(:violations_last_3_years).gte?(3),
             applicant(:dui_history?)
           )
         )
@@ -605,7 +605,7 @@ class InsurancePolicyEngine
       # Credit Score Impact
       rule "excellent_credit", salience: 85 do
         when_all(
-          applicant(:credit_score).greater_than_or_equal(750)
+          applicant(:credit_score).gte?(750)
         )
         action do
           set :credit_risk_score, -10
@@ -615,7 +615,7 @@ class InsurancePolicyEngine
       
       rule "poor_credit", salience: 85 do
         when_all(
-          applicant(:credit_score).less_than(600)
+          applicant(:credit_score).lt?(600)
         )
         action { set :credit_risk_score, 25 }
       end
@@ -639,7 +639,7 @@ class InsurancePolicyEngine
       # Eligibility Determination
       rule "eligible_standard", salience: 40 do
         when_all(
-          flag(:total_risk_score).less_than(50),
+          flag(:total_risk_score).lt?(50),
           not(flag(:requires_underwriting))
         )
         action do
@@ -650,8 +650,8 @@ class InsurancePolicyEngine
       
       rule "eligible_high_risk", salience: 40 do
         when_all(
-          flag(:total_risk_score).greater_than_or_equal(50),
-          flag(:total_risk_score).less_than(80),
+          flag(:total_risk_score).gte?(50),
+          flag(:total_risk_score).lt?(80),
           not(flag(:requires_underwriting))
         )
         action do
@@ -663,7 +663,7 @@ class InsurancePolicyEngine
       rule "requires_manual_review", salience: 40 do
         when_all(
           any(
-            flag(:total_risk_score).greater_than_or_equal(80),
+            flag(:total_risk_score).gte?(80),
             flag(:requires_underwriting)
           )
         )

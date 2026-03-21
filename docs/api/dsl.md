@@ -158,8 +158,8 @@ flag(:email_sent)
 Creates a literal value reference.
 
 ```ruby
-user(:role).equals(lit("admin"))
-order(:total).greater_than(lit(100))
+user(:role).eq?(lit("admin"))
+order(:total).gt?(lit(100))
 ```
 
 ## Action Methods
@@ -273,7 +273,7 @@ puts result[:processed] # => true
 ```ruby
 def create_threshold_rule(name, threshold)
   rule name do
-    when_all(order(:total).greater_than(lit(threshold)))
+    when_all(order(:total).gt?(lit(threshold)))
     action { set :tier, name }
   end
 end
@@ -290,9 +290,9 @@ end
 ```ruby
 rule "premium_check" do
   when_all(
-    user(:subscription, :tier).equals("premium"),
+    user(:subscription, :tier).eq?("premium"),
     user(:subscription, :active?),
-    user(:subscription, :expires_at).greater_than(lit(Date.today))
+    user(:subscription, :expires_at).gt?(lit(Date.today))
   )
   action do
     set :premium_features, true

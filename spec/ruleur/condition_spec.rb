@@ -55,7 +55,7 @@ RSpec.describe Ruleur::Condition do
   describe 'Not operator' do
     it 'negates conditions using !' do
       ref = Ruleur::Condition::Ref.new(:admin)
-      cond = Ruleur::Condition::Builders.truthy(ref)
+      cond = Ruleur::Condition::Builders.truthy?(ref)
       negated = !cond
 
       ctx_truthy = Ruleur::Context.new(admin: 'yes')
@@ -115,7 +115,7 @@ RSpec.describe Ruleur::Condition do
       engine = Ruleur.define do
         rule 'lambda_test' do
           when_all(
-            equals(literal { |ctx| ctx[:a] + ctx[:b] }, 10)
+            eq?(literal { |ctx| ctx[:a] + ctx[:b] }, 10)
           )
           set :sum_is_ten, true
         end
@@ -132,7 +132,7 @@ RSpec.describe Ruleur::Condition do
       engine = Ruleur.define do
         rule 'lambda_calculation' do
           when_all(
-            greater_than(literal { |ctx| ctx[:x] * ctx[:y] }, 100)
+            gt?(literal { |ctx| ctx[:x] * ctx[:y] }, 100)
           )
           set :large_product, true
         end
