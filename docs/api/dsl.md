@@ -39,8 +39,10 @@ Defines a rule within the engine.
 
 ```ruby
 rule "example", salience: 10, tags: [:important], no_loop: true do
-  when_all(conditions)
-  action do
+  match do
+    all(conditions)
+  end
+  execute do
     # action code here
   end
 end
@@ -230,26 +232,30 @@ end
 engine = Ruleur.define do
   # High priority rule
   rule "validate_user", salience: 100 do
-    when_all(
-      user(:present),
-      not(user(:banned?))
-    )
-    action do
+    match do
+      all(
+        user(:present),
+        not(user(:banned?))
+      )
+    end
+    execute do
       set :user_valid, true
     end
   end
   
   # Permission rule
   rule "allow_edit", salience: 50, tags: [:permissions] do
-    when_any(
-      user(:admin?),
-      all(
-        user(:owner?, record()),
-        record(:editable?),
-        not(record(:locked?))
+    match do
+      any(
+        user(:admin?),
+        all(
+          user(:owner?, record()),
+          record(:editable?),
+          not(record(:locked?))
+        )
       )
-    )
-    action do
+    end
+    execute do
       set :edit, true
       set :reason, "User has edit permissions"
     end
@@ -257,12 +263,14 @@ engine = Ruleur.define do
   
   # Workflow rule with no_loop
   rule "process_order", salience: 10, no_loop: true do
-    when_all(
-      flag(:user_valid),
-      flag(:update),
-      recordord(:ready_to_process?)
-    )
-    action do
+    match do
+      all(
+        flag(:user_valid),
+        flag(:update),
+        recordord(:ready_to_process?)
+      )
+    end
+    execute do
       order = context[:recordord]
       call_method(order, :process!)
       set :processed, true
@@ -283,8 +291,10 @@ puts result[:processed] # => true
 ```ruby
 def create_threshold_rule(name, threshold)
   rule name do
-    all(order(:total).gt?(literal(threshold)))
-    action { set :tier, name }
+    match do
+      all(order(:total).gt?(literal(threshold)))
+    end
+    execute { set :tier, name }
   end
 end
 
@@ -299,12 +309,14 @@ end
 
 ```ruby
 rule "premium_check" do
-  when_all(
-    user(:subscription, :tier).eq?("premium"),
-    user(:subscription, :active?),
-    user(:subscription, :expires_at).gt?(literal(Date.today))
-  )
-  action do
+  match do
+    all(
+      user(:subscription, :tier).eq?("premium"),
+      user(:subscription, :active?),
+      user(:subscription, :expires_at).gt?(literal(Date.today))
+    )
+  end
+  execute do
     set :premium_features, true
   end
 end
@@ -314,8 +326,10 @@ end
 
 ```ruby
 rule "calculate_shipping" do
-  when_all(flag(:order_valid))
-  action do
+  match do
+    all(flag(:order_valid))
+  end
+  execute do
     order = context[:order]
     total = order.total
     
