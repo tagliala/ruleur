@@ -129,7 +129,7 @@ result = Ruleur::Validation.validate(rule)
 match do
   all(
   user(:admin?),
-  not(user(:admin?))
+  not?(user(:admin?))
 )
 end
 # => Warning: "Contradictory conditions detected"

@@ -161,7 +161,7 @@ engine = Ruleur.define do
     match do
       all(
         include?(user_value(:role), ['approver', 'admin']),
-        not(eq?(record_value(:author_id), user_value(:id))),
+        not?(eq?(record_value(:author_id), user_value(:id))),
         eq?(record_value(:status), 'pending_approval'),
         record(:complete?),
         gte(Time.current.hour, 9),
@@ -297,7 +297,7 @@ class BlogPolicy
           all(
             user(:owns?, record),
             record(:draft?),
-            not(record(:locked?))
+            not?(record(:locked?))
           )
         end
         execute do
@@ -310,7 +310,7 @@ class BlogPolicy
         match do
           all(
             include?(user_value(:role), ["editor", "admin"]),
-            not(record(:archived?))
+            not?(record(:archived?))
           )
         end
         execute do

@@ -230,7 +230,7 @@ engine = Ruleur.define do
   rule "local_shipping", salience: 50 do
     match do
       all(
-        not(flag(:free_shipping)),
+        not?(flag(:free_shipping)),
         order(:distance_miles).lt?(50)
       )
     end
@@ -245,7 +245,7 @@ engine = Ruleur.define do
   rule "regional_shipping", salience: 40 do
     match do
       all(
-        not(flag(:free_shipping)),
+        not?(flag(:free_shipping)),
         order(:distance_miles).gte?(50),
         order(:distance_miles).lt?(500)
       )
@@ -261,7 +261,7 @@ engine = Ruleur.define do
   rule "national_shipping", salience: 30 do
     match do
       all(
-        not(flag(:free_shipping)),
+        not?(flag(:free_shipping)),
         order(:distance_miles).gte?(500)
       )
     end
@@ -308,7 +308,7 @@ engine = Ruleur.define do
     match do
       all(
         customer(:first_purchase?),
-        not(flag(:discount).present)
+        not?(flag(:discount).present)
       )
     end
     execute do
@@ -328,7 +328,7 @@ engine = Ruleur.define do
       all(
         coupon(:valid?),
         coupon(:not_expired?),
-        not(coupon(:used?))
+        not?(coupon(:used?))
       )
     end
     execute do

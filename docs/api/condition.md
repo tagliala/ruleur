@@ -154,7 +154,7 @@ Conditions can be nested to arbitrary depth:
 
 ```ruby
 match do
-    any(
+        any(
       all(
         user(:admin?),
         not?(record(:locked?))
@@ -164,7 +164,7 @@ match do
       record(:editable?),
       any(
         flag(:force_edit),
-        not(record(:published?))
+        not?(record(:published?))
       )
     )
   )
