@@ -1,36 +1,10 @@
 AllCops:
   TargetRubyVersion: 3.2
   NewCops: enable
-  DisabledByDefault: true
   SuggestExtensions: false
 
-Layout/LineLength:
-  Enabled: true
-  Max: 120
-
-Lint/Syntax:
-  Enabled: true
-
-Naming/FileName:
+Lint/UselessAssignment:
   Enabled: false
 
-Style/Documentation:
-  Enabled: false
-
-Metrics/AbcSize:
-  Enabled: false
-
-Metrics/MethodLength:
-  Enabled: false
-
-Metrics/ClassLength:
-  Enabled: false
-
-Metrics/CyclomaticComplexity:
-  Enabled: false
-
-Metrics/PerceivedComplexity:
-  Enabled: false
-
-Metrics/ModuleLength:
+Style/FrozenStringLiteralComment:
   Enabled: false
