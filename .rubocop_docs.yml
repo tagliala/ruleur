@@ -6,5 +6,8 @@ AllCops:
 Lint/UselessAssignment:
   Enabled: false
 
+Layout/ArrayAlignment:
+  Enabled: false
+
 Style/FrozenStringLiteralComment:
   Enabled: false
