@@ -57,10 +57,10 @@ module Ruleur
         validate_required_fields(rule_hash, result)
 
         # Validate condition structure
-        validate_condition_hash(rule_hash[:condition], result) if rule_hash[:condition]
+        validate_condition_hash(rule_hash[:conditions], result) if rule_hash[:conditions]
 
         # Validate action structure
-        validate_action_hash(rule_hash[:action], result) if rule_hash[:action]
+        validate_action_hash(rule_hash[:actions], result) if rule_hash[:actions]
 
         result
       end
@@ -87,8 +87,8 @@ module Ruleur
 
       def validate_required_fields(hash, result)
         result.add_error('Missing required field: name') unless hash[:name]
-        result.add_error('Missing required field: condition') unless hash[:condition]
-        result.add_error('Missing required field: action') unless hash[:action]
+        result.add_error('Missing required field: conditions') unless hash[:conditions]
+        result.add_error('Missing required field: actions') unless hash[:actions]
       end
 
       # rubocop:disable Metrics/MethodLength

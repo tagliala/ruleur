@@ -102,13 +102,13 @@ The recommended way to create rules is using the DSL within `Ruleur.define`:
 ```ruby
 engine = Ruleur.define do
   rule 'discount_rule', salience: 10, tags: [:pricing] do
-    match do
+    conditions do
       all?(
         customer(:vip?),
         order(:total).gt?(100)
       )
     end
-    execute do
+    actions do
       set :discount, 0.2
       set :discount_applied, true
     end
@@ -148,7 +148,7 @@ Prevents a rule from firing again after it modifies facts:
 
 ```ruby
 rule 'counter', no_loop: true do
-  execute do
+  actions do
     increment :count
   end
 end
@@ -160,7 +160,7 @@ end
 
 ```ruby
 rule 'shipping_discount' do
-  match do
+  conditions do
     all?(
       order(:total).gt?(50),
       any?(
@@ -169,7 +169,7 @@ rule 'shipping_discount' do
       )
     )
   end
-  execute do
+  actions do
     set :free_shipping, true
   end
 end
@@ -179,13 +179,13 @@ end
 
 ```ruby
 rule 'approval_workflow' do
-  match do
+  conditions do
     all?(
       document(:ready_for_review?),
       not?(document(:approved?))
     )
   end
-  execute do
+  actions do
     call_method document, :mark_pending_review
     set :notification_sent, send_notification(document)
     set :approval_required, true

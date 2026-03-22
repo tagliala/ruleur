@@ -6,7 +6,7 @@ tags:
   - permissions
   - create
 no_loop: true
-condition:
+conditions:
   type: any
   children:
     - type: pred
@@ -44,6 +44,6 @@ condition:
             method: draft?
             args: []
           right: null
-action:
+actions:
   set:
     allow_create: true

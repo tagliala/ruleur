@@ -75,9 +75,9 @@ name: rule_name
 salience: 10
 tags: [tag1, tag2]
 no_loop: true
-condition:
+conditions:
   # condition tree
-action:
+actions:
   # action definition
 ```
 
@@ -86,7 +86,7 @@ action:
 #### All (AND)
 
 ```yaml
-condition:
+conditions:
   type: all
   children:
     - type: pred
@@ -106,7 +106,7 @@ condition:
 #### Any (OR)
 
 ```yaml
-condition:
+conditions:
   type: any
   children:
     - type: pred
@@ -118,7 +118,7 @@ condition:
 #### Not (Negation)
 
 ```yaml
-condition:
+conditions:
   type: not
   child:
     type: pred
@@ -128,7 +128,7 @@ condition:
 #### Predicate with Operator
 
 ```yaml
-condition:
+conditions:
   type: pred
   op: greater_than
   left:
@@ -143,7 +143,7 @@ condition:
 ### Action Format
 
 ```yaml
-action:
+actions:
   set:
     discount: 0.15
     approved: true
@@ -164,14 +164,14 @@ name: admin_access
 salience: 100
 tags: [permissions, admin]
 no_loop: false
-condition:
+conditions:
   type: pred
   op: truthy
   left:
     type: call
     recv: { type: ref, root: user }
     method: admin?
-action:
+actions:
   set:
     allow_access: true
     access_level: "full"
@@ -193,7 +193,7 @@ result = engine.run(user: current_user)
 name: can_edit
 salience: 50
 tags: [permissions, edit]
-condition:
+conditions:
   type: any
   children:
     # Admin can always edit
@@ -224,7 +224,7 @@ condition:
               type: call
               recv: { type: ref, root: record }
               method: locked?
-action:
+actions:
   set:
     allow_edit: true
 ```
@@ -237,7 +237,7 @@ name: bulk_discount
 salience: 10
 tags: [pricing, discount]
 no_loop: true
-condition:
+conditions:
   type: all
   children:
     - type: pred
@@ -258,7 +258,7 @@ condition:
       right:
         type: literal
         value: 10
-action:
+actions:
   set:
     discount: 0.15
     discount_reason: "Bulk order discount"
@@ -301,10 +301,10 @@ Convert DSL rules to YAML:
 # Define rule in DSL
 engine = Ruleur.define do
   rule 'example' do
-    match do
+    conditions do
       all?(user(:admin?))
     end
-    execute do
+    actions do
       allow! :access
     end
   end

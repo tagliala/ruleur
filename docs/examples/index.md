@@ -47,21 +47,21 @@ Complete examples from production systems.
 ```ruby
 engine = Ruleur.define do
   rule 'admin_access' do
-    match do
+    conditions do
       all?(user(:admin?))
     end
 
-    execute do
+    actions do
       set :access, true
     end
   end
 
   rule 'owner_update' do
-    match do
+    conditions do
       all?(user(:owner?, record))
     end
 
-    execute do
+    actions do
       set :update, true
     end
   end
@@ -78,13 +78,13 @@ engine = Ruleur.define do
   rule 'bulk_discount', salience: 10 do
     match { all?(order(:total).gt?(500)) }
 
-    execute { set :discount, 0.15 }
+    actions { set :discount, 0.15 }
   end
 
   rule 'vip_discount', salience: 20 do
     match { all?(customer(:vip?)) }
 
-    execute { set :discount, 0.20 }
+    actions { set :discount, 0.20 }
   end
 end
 
@@ -97,7 +97,7 @@ discount = result[:discount] # Higher salience wins
 ```ruby
 engine = Ruleur.define do
   rule 'can_submit' do
-    match do
+    conditions do
       all?(
         document(:draft?),
         document(:complete?),
@@ -105,13 +105,13 @@ engine = Ruleur.define do
       )
     end
 
-    execute do
+    actions do
       set :submit, true
     end
   end
 
   rule 'can_approve' do
-    match do
+    conditions do
       all?(
         user(:approver?),
         document(:submitted?),
@@ -119,7 +119,7 @@ engine = Ruleur.define do
       )
     end
 
-    execute do
+    actions do
       set :approve, true
     end
   end
@@ -134,7 +134,7 @@ Check conditions and set result flags:
 
 ```ruby
 rule 'validation' do
-  match do
+  conditions do
     all?(
       user(:authenticated?),
       user(:email_verified?),
@@ -142,7 +142,7 @@ rule 'validation' do
     )
   end
 
-  execute { set :user_valid, true }
+  actions { set :user_valid, true }
 end
 ```
 
@@ -152,11 +152,11 @@ Compute values based on inputs:
 
 ```ruby
 rule 'calculate_total' do
-  match do
+  conditions do
     all?(order(:items).present)
   end
 
-  execute do
+  actions do
     order = context[:order]
     subtotal = order.items.sum(&:price)
     tax = subtotal * 0.08
@@ -178,18 +178,18 @@ Rules that depend on other rules' results:
 rule 'step1' do
   match { all?(input(:valid?)) }
 
-  execute { set :step1_complete, true }
+  actions { set :step1_complete, true }
 end
 
 rule 'step2' do
-  match do
+  conditions do
     all?(
       flag(:step1_complete),
       input(:ready?)
     )
   end
 
-  execute { set :step2_complete, true }
+  actions { set :step2_complete, true }
 end
 ```
 

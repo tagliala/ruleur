@@ -3,7 +3,7 @@ name: invalid_operator
 salience: 0
 tags: []
 no_loop: false
-condition:
+conditions:
   type: pred
   op: unknown_operator
   left:
@@ -11,6 +11,6 @@ condition:
     root: value
     path: []
   right: 10
-action:
+actions:
   set:
     result: true

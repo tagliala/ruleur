@@ -250,10 +250,10 @@ repo = Ruleur::Persistence::Repository::ActiveRecord.new
 # Save a rule
 rule = Ruleur.define do
   rule 'discount' do
-    match do
+    conditions do
       all?(order(:total).gt?(100))
     end
-    execute do
+    actions do
       set :discount, 0.1
     end
   end

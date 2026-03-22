@@ -13,8 +13,8 @@ module Ruleur
           salience: rule.salience,
           tags: rule.tags,
           no_loop: rule.no_loop,
-          condition: node_to_h(rule.condition),
-          action: rule.action_spec # serialized action spec only
+          conditions: node_to_h(rule.condition),
+          actions: rule.action_spec # serialized action spec only
         }
       end
 
@@ -72,8 +72,8 @@ module Ruleur
           salience: hash[:salience] || hash['salience'],
           tags: hash[:tags] || hash['tags'],
           no_loop: hash[:no_loop] || hash['no_loop'],
-          condition: node_from_h(hash[:condition] || hash['condition']),
-          action_spec: hash[:action] || hash['action']
+          condition: node_from_h(hash[:conditions] || hash['conditions']),
+          action_spec: hash[:actions] || hash['actions']
         )
       end
 

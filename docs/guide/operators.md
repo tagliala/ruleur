@@ -18,12 +18,12 @@ Checks if two values are equal using Ruby's `==` operator.
 
 ```ruby
 rule 'adult_only' do
-  match do
+  conditions do
     all?(
       eq?(record_value(:age), 18)
     )
   end
-  execute do
+  actions do
     allow! :access
   end
 end
@@ -31,7 +31,7 @@ end
 
 **YAML:**
 ```yaml
-condition:
+conditions:
   type: pred
   op: eq
   left:
@@ -56,12 +56,12 @@ Checks if two values are not equal using Ruby's `!=` operator.
 
 ```ruby
 rule 'exclude_archived' do
-  match do
+  conditions do
     all?(
       not_eq?(record_value(:status), 'archived')
     )
   end
-  execute do
+  actions do
     allow! :view
   end
 end
@@ -80,12 +80,12 @@ Checks if left value is greater than right value. Returns `false` if either valu
 
 ```ruby
 rule 'senior_discount' do
-  match do
+  conditions do
     all?(
       gt?(record_value(:age), 65)
     )
   end
-  execute do
+  actions do
     set :discount, 0.15
   end
 end
@@ -107,12 +107,12 @@ Checks if left value is greater than or equal to right value. Returns `false` if
 
 ```ruby
 rule 'voting_age' do
-  match do
+  conditions do
     all?(
       gte?(record_value(:age), 18)
     )
   end
-  execute do
+  actions do
     allow! :vote
   end
 end
@@ -132,12 +132,12 @@ Checks if left value is less than right value. Returns `false` if either value i
 
 ```ruby
 rule 'child_ticket' do
-  match do
+  conditions do
     all?(
       lt?(record_value(:age), 12)
     )
   end
-  execute do
+  actions do
     set :ticket_price, 5.00
   end
 end
@@ -157,12 +157,12 @@ Checks if left value is less than or equal to right value. Returns `false` if ei
 
 ```ruby
 rule 'standard_shipping' do
-  match do
+  conditions do
     all?(
       lte?(record_value(:weight), 50)
     )
   end
-  execute do
+  actions do
     set :shipping_method, 'standard'
   end
 end
@@ -184,12 +184,12 @@ Checks if left value is included in the right collection. The right operand must
 
 ```ruby
 rule 'valid_status' do
-  match do
+  conditions do
     all?(
       include?(record_value(:status), %w[draft pending published])
     )
   end
-  execute do
+  actions do
     set :edit, true
   end
 end
@@ -207,12 +207,12 @@ Checks if left collection includes the right value. The left operand must respon
 
 ```ruby
 rule 'has_permission' do
-  match do
+  conditions do
     all?(
       includes(record_value(:permissions), 'admin')
     )
   end
-  execute do
+  actions do
     allow! :delete
   end
 end
@@ -233,12 +233,12 @@ Checks if a string matches a regular expression pattern.
 
 ```ruby
 rule 'email_domain_check' do
-  match do
+  conditions do
     all?(
       matches(record_value(:email), literal(/@example\.com$/))
     )
   end
-  execute do
+  actions do
     set :internal_user, true
   end
 end
@@ -265,12 +265,12 @@ Checks if a value is truthy (not `nil` and not `false`).
 
 ```ruby
 rule 'published_only' do
-  match do
+  conditions do
     all?(
       truthy?(record(:published?))
     )
   end
-  execute do
+  actions do
     allow! :view
   end
 end
@@ -301,12 +301,12 @@ Checks if a value is falsy (`nil` or `false`).
 
 ```ruby
 rule 'unpublished_draft' do
-  match do
+  conditions do
     all?(
       falsy?(record(:published?))
     )
   end
-  execute do
+  actions do
     allow! :edit
   end
 end
@@ -327,12 +327,12 @@ Checks if a value is present (not `nil` and not empty). Similar to Rails' `prese
 
 ```ruby
 rule 'requires_description' do
-  match do
+  conditions do
     all?(
       present?(record_value(:description))
     )
   end
-  execute do
+  actions do
     allow! :publish
   end
 end
@@ -360,12 +360,12 @@ Checks if a value is blank (`nil` or empty). Similar to Rails' `blank?`.
 
 ```ruby
 rule 'set_default_title' do
-  match do
+  conditions do
     all?(
       blank?(record_value(:title))
     )
   end
-  execute do
+  actions do
     set :title, 'Untitled'
   end
 end
@@ -395,13 +395,13 @@ The simplest way to use operators with the DSL helpers:
 
 ```ruby
 rule 'simple_check' do
-  match do
+  conditions do
     all?(
       record(:admin?), # truthy check on record.admin?
       user(:verified?) # truthy check on user.verified?
     )
   end
-  execute do
+  actions do
     allow! :access
   end
 end
@@ -413,13 +413,13 @@ For more complex comparisons, use operators direcordtly:
 
 ```ruby
 rule 'age_and_status' do
-  match do
+  conditions do
     all?(
       gte?(record_value(:age), 18),
       include?(record_value(:status), %w[active premium])
     )
   end
-  execute do
+  actions do
     set :purchase, true
   end
 end
@@ -429,7 +429,7 @@ end
 
 ```ruby
 rule 'complex_eligibility' do
-  match do
+  conditions do
     all?(
       gte?(record_value(:age), 21), # Age >= 21
       include?(record_value(:country), %w[US CA]), # Country is US or CA
@@ -438,7 +438,7 @@ rule 'complex_eligibility' do
       not_eq?(record_value(:status), 'banned') # Not banned
     )
   end
-  execute do
+  actions do
     set :vip_access, true
   end
 end
@@ -474,7 +474,7 @@ end
 
 # Use in a rule
 rule 'age_range' do
-  match do
+  conditions do
     all?(
       predicate do
         left = record_value(:age)
@@ -483,7 +483,7 @@ rule 'age_range' do
       end
     )
   end
-  execute do
+  actions do
     allow! :insure
   end
 end
@@ -499,12 +499,12 @@ Comparison operators (`gt`, `gte`, `lt`, `lte`) return `false` when either opera
 
 ```ruby
 rule 'safe_comparison' do
-  match do
+  conditions do
     all?(
       gt?(record_value(:age), 18) # Returns false if age is nil
     )
   end
-  execute do
+  actions do
     allow! :access
   end
 end
@@ -526,7 +526,7 @@ Ensure types match when using comparison operators:
 ```ruby
 # Good
 rule 'numeric_check' do
-  match do
+  conditions do
     all?(
       gt?(record_value(:age).to_i, 18) # Coerce in DSL if needed
     )
@@ -550,7 +550,7 @@ Choose the operator that best expresses your intent:
 ```ruby
 # Good - clear intent
 rule 'has_role' do
-  match do
+  conditions do
     all?(
       includes(record_value(:roles), 'admin')
     )
@@ -559,7 +559,7 @@ end
 
 # Less clear - works but awkward
 rule 'has_role' do
-  match do
+  conditions do
     all?(
       eq?(record_value(:roles).include?('admin'), true)
     )
@@ -574,14 +574,14 @@ For simple boolean checks, use the helpers:
 ```ruby
 # Good - concise
 rule 'admin_check' do
-  match do
+  conditions do
     all?(user(:admin?))
   end
 end
 
 # Verbose
 rule 'admin_check' do
-  match do
+  conditions do
     all?(
       truthy?(ref(:user).call(:admin?))
     )
@@ -596,7 +596,7 @@ When comparing actual values, use the `_val` variants:
 ```ruby
 # Good
 rule 'status_check' do
-  match do
+  conditions do
     all?(
       eq?(record_value(:status), 'published')
     )
@@ -605,7 +605,7 @@ end
 
 # Wrong - record(:status) checks truthiness, not value
 rule 'status_check' do
-  match do
+  conditions do
     all?(
       record(:status) # This checks if status is truthy, not if it equals "published"
     )
@@ -619,14 +619,14 @@ Use `present`/`blank` to handle nil values explicitly:
 
 ```ruby
 rule 'requires_fields' do
-  match do
+  conditions do
     all?(
       present?(record_value(:title)),
       present?(record_value(:description)),
       gte?(record_value(:price), 0)
     )
   end
-  execute do
+  actions do
     allow! :publish
   end
 end
@@ -638,7 +638,7 @@ For clarity, use literal values direcordtly:
 
 ```ruby
 rule 'status_check' do
-  match do
+  conditions do
     all?(
       include?(record_value(:status), %w[draft pending published])
     )

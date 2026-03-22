@@ -11,19 +11,19 @@ This guide covers advanced features and techniques for working with Ruleur, incl
 ```ruby
 engine = Ruleur.define do
   rule 'low_priority', salience: 0 do
-    match do
+    conditions do
       all?(user(:logged_in?))
     end
-    execute do
+    actions do
       set :priority, 'low'
     end
   end
 
   rule 'high_priority', salience: 100 do
-    match do
+    conditions do
       all?(user(:admin?))
     end
-    execute do
+    actions do
       set :priority, 'high'
     end
   end
@@ -103,10 +103,10 @@ Without no-loop, a rule might fire repeatedly if its action makes its condition 
 ```ruby
 # Without no_loop - could fire multiple times!
 rule 'increment_counter' do
-  match do
+  conditions do
     all?(lt(ref(:counter), 10))
   end
-  execute do |ctx|
+  actions do |ctx|
     ctx[:counter] = (ctx[:counter] || 0) + 1
   end
 end
@@ -116,10 +116,10 @@ end
 
 ```ruby
 rule 'increment_counter', no_loop: true do
-  match do
+  conditions do
     all?(lt(ref(:counter), 10))
   end
-  execute do |ctx|
+  actions do |ctx|
     ctx[:counter] = (ctx[:counter] || 0) + 1
   end
 end
@@ -138,23 +138,23 @@ Use `no_loop: true` when:
 
 ```ruby
 rule 'grant_base_permissions', no_loop: true do
-  match do
+  conditions do
     all?(user(:registered?))
   end
-  execute do
+  actions do
     set :view, true
     set :comment, true
   end
 end
 
 rule 'grant_premium_permissions', no_loop: true do
-  match do
+  conditions do
     all?(
       user(:premium?),
       flag(:view) # Depends on previous rule
     )
   end
-  execute do
+  actions do
     set :download, true
     set :export, true
   end
@@ -220,10 +220,10 @@ Monitor execution cycles:
 cycles = 0
 engine = Ruleur.define do
   rule 'count_cycles', no_loop: false do
-    match do
+    conditions do
       all?(lt(ref(:counter), 100))
     end
-    execute do |ctx|
+    actions do |ctx|
       ctx[:counter] = (ctx[:counter] || 0) + 1
       cycles += 1
     end
@@ -241,13 +241,13 @@ Organize rules with tags:
 ```ruby
 engine = Ruleur.define do
   rule 'admin_check', tags: %w[permissions admin] do
-    match do
+    conditions do
       all? # placeholder
     end
   end
 
   rule 'payment_rule', tags: %w[payment validation] do
-    match do
+    conditions do
       all? # placeholder
     end
   end
@@ -272,19 +272,19 @@ Use consistent tag hierarchies:
 
 ```ruby
 rule 'process_user', tags: %w[user permissions] do
-  match do
+  conditions do
     all?(user(:active?))
   end
-  execute do
+  actions do
     set :can_access, true
   end
 end
 
 rule 'process_order', tags: %w[order payment] do
-  match do
+  conditions do
     all?(order(:pending?))
   end
-  execute do
+  actions do
     set :can_charge, true
   end
 end
@@ -351,42 +351,42 @@ Fewer rules = faster execution:
 ```ruby
 # Good - single rule
 rule 'permission_check' do
-  match do
+  conditions do
     any?(
       user(:admin?),
       user(:editor?),
       user(:owner?)
     )
   end
-  execute do
+  actions do
     set :edit, true
   end
 end
 
 # Less efficient - three rules
 rule 'admin_edit' do
-  match do
+  conditions do
     all?(user(:admin?))
   end
-  execute do
+  actions do
     set :edit, true
   end
 end
 
 rule 'editor_edit' do
-  match do
+  conditions do
     all?(user(:editor?))
   end
-  execute do
+  actions do
     set :edit, true
   end
 end
 
 rule 'owner_edit' do
-  match do
+  conditions do
     all?(user(:owner?))
   end
-  execute do
+  actions do
     set :edit, true
   end
 end
@@ -398,7 +398,7 @@ Put cheap, likely-to-fail checks first:
 
 ```ruby
 # Good - cheap check first
-match do
+conditions do
   all?(
     user(:logged_in?), # Fast boolean check
     present?(record_value(:title)), # Fast presence check
@@ -407,7 +407,7 @@ match do
 end
 
 # Less efficient - expensive check first
-match do
+conditions do
   all?(
     expensive_db_query,
     user(:logged_in?)
@@ -467,7 +467,7 @@ Avoid expensive computations in conditions:
 
 ```ruby
 # Bad - computed on every evaluation
-match do
+conditions do
   all?(
     gt?(record_value(:items).sum(&:price), 1000)
   )
@@ -478,7 +478,7 @@ total = recordord.items.sum(&:price)
 ctx = engine.run(user: user, recordord: recordord, total: total)
 
 rule 'high_value_order' do
-  match do
+  conditions do
     all?(gt?(ref(:total), 1000))
   end
 end
@@ -562,7 +562,7 @@ end
 
 # Use in rule
 rule 'age_range_check' do
-  match do
+  conditions do
     all?(
       predicate do
         left = record_value(:age)
@@ -571,7 +571,7 @@ rule 'age_range_check' do
       end
     )
   end
-  execute do
+  actions do
     set :eligible, true
   end
 end

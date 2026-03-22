@@ -12,7 +12,7 @@ engine = Ruleur.define do
   rule 'admin_update' do
     match { all?(user(:admin?)) }
 
-    execute { set :update, true }
+    actions { set :update, true }
   end
 end
 
@@ -39,7 +39,7 @@ engine = Ruleur.define do
   rule 'admin_access' do
     match { all?(user(:admin?)) }
 
-    execute { set :admin_access, true }
+    actions { set :admin_access, true }
   end
 end
 
@@ -52,7 +52,7 @@ result[:admin_access] # => true or nil
 ```ruby
 engine = Ruleur.define do
   rule 'staff_access' do
-    match do
+    conditions do
       any?(
         user(:admin?),
         user(:moderator?),
@@ -60,7 +60,7 @@ engine = Ruleur.define do
       )
     end
 
-    execute { set :staff_access, true }
+    actions { set :staff_access, true }
   end
 end
 ```
@@ -72,13 +72,13 @@ end
 ```ruby
 engine = Ruleur.define do
   rule 'owner_update' do
-    match do
+    conditions do
       all?(
         user(:owns?, record),
         not?(record(:locked?))
       )
     end
-    execute do
+    actions do
       set :update, true
     end
   end
@@ -93,7 +93,7 @@ result[:update] # => true or nil
 ```ruby
 engine = Ruleur.define do
   rule 'admin_or_owner_destroy' do
-    match do
+    conditions do
       any?(
         user(:admin?),
         all?(
@@ -102,7 +102,7 @@ engine = Ruleur.define do
         )
       )
     end
-    execute do
+    actions do
       set :destroy, true
     end
   end
@@ -116,35 +116,35 @@ end
 ```ruby
 engine = Ruleur.define do
   rule 'authenticated_show' do
-    match do
+    conditions do
       all?(user(:authenticated?))
     end
-    execute do
+    actions do
       set :show, true
     end
   end
 
   rule 'contributor_update' do
-    match do
+    conditions do
       any?(
         user(:contributor?),
         user(:maintainer?),
         user(:admin?)
       )
     end
-    execute do
+    actions do
       set :update, true
     end
   end
 
   rule 'maintainer_destroy' do
-    match do
+    conditions do
       any?(
         user(:maintainer?),
         user(:admin?)
       )
     end
-    execute do
+    actions do
       set :destroy, true
     end
   end
@@ -158,7 +158,7 @@ end
 ```ruby
 engine = Ruleur.define do
   rule 'standard_approve', salience: 10 do
-    match do
+    conditions do
       all?(
         include?(user_value(:role), %w[approver admin]),
         not?(eq?(record_value(:author_id), user_value(:id))),
@@ -168,20 +168,20 @@ engine = Ruleur.define do
         lt(Time.current.hour, 17)
       )
     end
-    execute do
+    actions do
       set :approve, true
     end
   end
 
   rule 'emergency_approve', salience: 20 do
-    match do
+    conditions do
       all?(
         user(:admin?),
         eq?(record_value(:status), 'pending_approval'),
         flag(:emergency_mode)
       )
     end
-    execute do
+    actions do
       set :approve, true
     end
   end
@@ -195,23 +195,23 @@ end
 ```ruby
 engine = Ruleur.define do
   rule 'basic_features' do
-    match do
+    conditions do
       all?(user(:subscription_active?))
     end
-    execute do
+    actions do
       set :basic_export, true
       set :basic_analytics, true
     end
   end
 
   rule 'premium_features' do
-    match do
+    conditions do
       all?(
         include?(user_value(:subscription_tier), %w[premium enterprise]),
         user(:subscription_active?)
       )
     end
-    execute do
+    actions do
       set :advanced_export, true
       set :custom_reports, true
       set :api_access, true
@@ -219,13 +219,13 @@ engine = Ruleur.define do
   end
 
   rule 'enterprise_features' do
-    match do
+    conditions do
       all?(
         eq?(user_value(:subscription_tier), 'enterprise'),
         user(:subscription_active?)
       )
     end
-    execute do
+    actions do
       set :white_label, true
       set :sso, true
       set :audit_logs, true
@@ -241,7 +241,7 @@ end
 ```ruby
 engine = Ruleur.define do
   rule 'business_hours_access' do
-    match do
+    conditions do
       all?(
         user(:employee?),
         in?([1, 2, 3, 4, 5], [Time.current.wday]),
@@ -249,16 +249,16 @@ engine = Ruleur.define do
         lt(Time.current.hour, 17)
       )
     end
-    execute do
+    actions do
       set :system_access, true
     end
   end
 
   rule 'after_hours_admin' do
-    match do
+    conditions do
       all?(user(:admin?))
     end
-    execute do
+    actions do
       set :system_access, true
     end
   end
@@ -272,58 +272,58 @@ class BlogPolicy
   def self.engine
     @engine ||= Ruleur.define do
       rule 'published_show' do
-        match do
+        conditions do
           all?(record(:published?))
         end
-        execute do
+        actions do
           set :show, true
         end
       end
 
       rule 'own_draft_show' do
-        match do
+        conditions do
           all?(
             user(:owns?, record),
             record(:draft?)
           )
         end
-        execute do
+        actions do
           set :show, true
         end
       end
 
       rule 'own_draft_update' do
-        match do
+        conditions do
           all?(
             user(:owns?, record),
             record(:draft?),
             not?(record(:locked?))
           )
         end
-        execute do
+        actions do
           set :update, true
           set :destroy, true
         end
       end
 
       rule 'editor_update' do
-        match do
+        conditions do
           all?(
             include?(user_value(:role), %w[editor admin]),
             not?(record(:archived?))
           )
         end
-        execute do
+        actions do
           set :update, true
           set :publish, true
         end
       end
 
       rule 'admin_crud' do
-        match do
+        conditions do
           all?(user(:admin?))
         end
-        execute do
+        actions do
           set :show, true
           set :update, true
           set :destroy, true
@@ -442,11 +442,11 @@ With Ruleur, you only define **when a value is set**. If no rule matches, the va
 ```ruby
 engine = Ruleur.define do
   rule 'admin_crud', salience: 100, no_loop: true, tags: [:admin] do
-    match do
+    conditions do
       all?(user(:admin?))
     end
 
-    execute do
+    actions do
       set :show, true
       set :create, true
       set :update, true
@@ -455,14 +455,14 @@ engine = Ruleur.define do
   end
 
   rule 'draft_owner_crud', salience: 50, no_loop: true, tags: %i[ownership draft] do
-    match do
+    conditions do
       all?(
         record(:draft?),
         eq?(record_value(:owner_id), user_value(:id))
       )
     end
 
-    execute do
+    actions do
       set :show, true
       set :update, true
       set :destroy, true
@@ -470,20 +470,20 @@ engine = Ruleur.define do
   end
 
   rule 'review_owner_update', salience: 50, no_loop: true, tags: %i[lifecycle review] do
-    match do
+    conditions do
       all?(
         record(:in_review?),
         eq?(record_value(:owner_id), user_value(:id))
       )
     end
 
-    execute do
+    actions do
       set :update, true
     end
   end
 
   rule 'review_approver_update', salience: 45, no_loop: true, tags: %i[lifecycle review] do
-    match do
+    conditions do
       all?(
         record(:in_review?),
         user(:approver?),
@@ -491,40 +491,40 @@ engine = Ruleur.define do
       )
     end
 
-    execute do
+    actions do
       set :update, true
     end
   end
 
   rule 'published_show', salience: 50, no_loop: true, tags: %i[lifecycle published] do
-    match do
+    conditions do
       all?(record(:published?))
     end
 
-    execute do
+    actions do
       set :show, true
     end
   end
 
   rule 'published_owner_destroy', salience: 45, no_loop: true, tags: %i[lifecycle published] do
-    match do
+    conditions do
       all?(
         record(:published?),
         eq?(record_value(:owner_id), user_value(:id))
       )
     end
 
-    execute do
+    actions do
       set :destroy, true
     end
   end
 
   rule 'owner_crud', salience: 40, no_loop: true, tags: [:ownership] do
-    match do
+    conditions do
       all?(eq?(record_value(:owner_id), user_value(:id)))
     end
 
-    execute do
+    actions do
       set :show, true
       set :update, true
       set :destroy, true
@@ -532,34 +532,34 @@ engine = Ruleur.define do
   end
 
   rule 'department_show', salience: 30, no_loop: true, tags: [:department] do
-    match do
+    conditions do
       all?(
         record(:visible_to_department?),
         eq?(record_value(:department_id), user_value(:department_id))
       )
     end
 
-    execute do
+    actions do
       set :show, true
     end
   end
 
   rule 'shared_show', salience: 25, no_loop: true, tags: [:sharing] do
-    match do
+    conditions do
       all?(record(:shared_with_user))
     end
 
-    execute do
+    actions do
       set :show, true
     end
   end
 
   rule 'public_show', salience: 20, no_loop: true, tags: [:visibility] do
-    match do
+    conditions do
       all?(record(:public?))
     end
 
-    execute do
+    actions do
       set :show, true
     end
   end
@@ -662,22 +662,22 @@ Only set values when conditions are met. Don't use `set :key, false`:
 ```ruby
 # Avoid: Using false values
 rule 'not_authenticated' do
-  match do
+  conditions do
     all?(not?(user(:authenticated?)))
   end
 
-  execute do
+  actions do
     set :update, false
   end
 end
 
 # Better: Only set when true
 rule 'authenticated_update' do
-  match do
+  conditions do
     all?(user(:authenticated?))
   end
 
-  execute do
+  actions do
     set :update, true
   end
 end
@@ -690,28 +690,28 @@ Place cheap/fast checks before expensive ones. This avoids unnecessary work:
 ```ruby
 # Bad: Expensive check first
 rule 'check_permission' do
-  match do
+  conditions do
     all?(
       expensive_database_query(:has_permission?),  # Expensive - do last
       user(:admin?)                                # Cheap - check first
     )
   end
 
-  execute do
+  actions do
     set :update, true
   end
 end
 
 # Good: Cheap checks first
 rule 'check_permission' do
-  match do
+  conditions do
     all?(
       user(:admin?),                              # Cheap - check first
       expensive_database_query(:has_permission?)  # Expensive - only if needed
     )
   end
 
-  execute do
+  actions do
     set :update, true
   end
 end
@@ -723,11 +723,11 @@ Place high-priority rules (like admin bypass) at high salience so they fire firs
 
 ```ruby
 rule 'admin_crud', salience: 100 do
-  match do
+  conditions do
     all?(user(:admin?))
   end
 
-  execute do
+  actions do
     set :show, true
     set :create, true
     set :update, true

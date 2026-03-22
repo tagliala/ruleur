@@ -34,10 +34,10 @@ require 'ruleur'
 
 engine = Ruleur.define do
   rule 'hello' do
-    match do
+    conditions do
       any?(truthy?(true))
     end
-    execute do
+    actions do
       set :greeting, 'Hello Ruleur!'
     end
   end

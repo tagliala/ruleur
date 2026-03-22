@@ -3,7 +3,7 @@ name: simple_flag_rule
 salience: 0
 tags: []
 no_loop: false
-condition:
+conditions:
   type: pred
   op: eq
   left:
@@ -11,6 +11,6 @@ condition:
     root: status
     path: []
   right: active
-action:
+actions:
   set:
     approved: true

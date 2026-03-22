@@ -81,15 +81,15 @@ module Ruleur
         @conds << predicate(&)
       end
 
-      # New DSL entrypoints: prefer `match do ... end` to collect conditions
-      # and `execute do ... end` to declare the action block. These are
+      # New DSL entrypoints: prefer `conditions do ... end` to collect conditions
+      # and `actions do ... end` to declare the action block. These are
       # thin adapters that keep backward compatibility with existing
       # `when_all`/`when_any` helpers.
-      def match(&block)
+      def conditions(&block)
         instance_eval(&block) if block
       end
 
-      def execute(&)
+      def actions(&)
         action(&)
       end
 
