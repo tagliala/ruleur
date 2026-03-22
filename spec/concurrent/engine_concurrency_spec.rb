@@ -1,7 +1,15 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'ostruct'
+
+# Lightweight record/user structs to avoid OpenStruct (avoid dynamic overhead)
+Record = Struct.new(:updatable) do
+  def updatable? = !!updatable
+end
+
+User = Struct.new(:admin) do
+  def admin? = !!admin
+end
 
 RSpec.describe 'Engine concurrency' do
   it 'collects metrics correctly when engine runs concurrently' do
@@ -20,7 +28,7 @@ RSpec.describe 'Engine concurrency' do
     threads = []
     10.times do |i|
       threads << Thread.new do
-        engine.run(record: OpenStruct.new(updatable?: i.even?), user: OpenStruct.new(admin?: i.odd?))
+        engine.run(record: Record.new(i.even?), user: User.new(i.odd?))
       end
     end
 

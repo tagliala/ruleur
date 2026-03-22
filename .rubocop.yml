@@ -61,8 +61,12 @@ Metrics/PerceivedComplexity:
     - 'lib/ruleur/engine.rb'
     - 'lib/ruleur/condition.rb'
 
+RSpec/DescribeClass:
+  Exclude:
+    - 'spec/concurrent/**/*'
+
 RSpec/ExampleLength:
-  Max: 15
+  Max: 25
 
 RSpec/MultipleExpectations:
   Max: 8
