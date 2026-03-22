@@ -149,14 +149,14 @@ module Ruleur
 
         # Check required fields
         errors << 'Missing required field: name' unless hash[:name]
-        errors << 'Missing required field: condition' unless hash[:condition]
-        errors << 'Missing required field: action' unless hash[:action]
+        errors << 'Missing required field: conditions' unless hash[:conditions]
+        errors << 'Missing required field: actions' unless hash[:actions]
 
         # Validate condition structure
-        errors.concat(validate_condition_structure(hash[:condition])) if hash[:condition]
+        errors.concat(validate_condition_structure(hash[:conditions])) if hash[:conditions]
 
         # Validate action structure
-        errors.concat(validate_action_structure(hash[:action])) if hash[:action]
+        errors.concat(validate_action_structure(hash[:actions])) if hash[:actions]
 
         errors
       end

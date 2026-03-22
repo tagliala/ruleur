@@ -49,24 +49,24 @@ You define rules that set values when conditions are met:
 ```ruby
 engine = Ruleur.define do
   rule 'admin_update' do
-    match do
+    conditions do
       any?(user(:admin?))
     end
 
-    execute do
+    actions do
       set :update, true
     end
   end
 
   rule 'author_draft_update' do
-    match do
+    conditions do
       all?(
         record(:draft?),
         eq?(record_value(:author_id), user_value(:id))
       )
     end
 
-    execute do
+    actions do
       set :update, true
     end
   end
@@ -107,31 +107,31 @@ engine = Ruleur.define do
   rule 'admin_update' do
     match { any?(user(:admin?)) }
 
-    execute { set :update, true }
+    actions { set :update, true }
   end
 
   rule 'author_draft_update' do
-    match do
+    conditions do
       all?(
         record(:draft?),
         eq?(record_value(:author_id), user_value(:id))
       )
     end
 
-    execute do
+    actions do
       set :update, true
     end
   end
 
   rule 'published_requires_admin' do
-    match do
+    conditions do
       all?(
         not?(record(:draft?)),
         user(:admin?)
       )
     end
 
-    execute do
+    actions do
       set :update, true
     end
   end
@@ -167,24 +167,24 @@ end
 
 engine = Ruleur.define do
   rule 'admin_update' do
-    match do
+    conditions do
       any?(user(:admin?))
     end
 
-    execute do
+    actions do
       set :update, true
     end
   end
 
   rule 'author_draft_update' do
-    match do
+    conditions do
       all?(
         record(:draft?),
         eq?(record_value(:author_id), user_value(:id))
       )
     end
 
-    execute do
+    actions do
       set :update, true
     end
   end

@@ -186,14 +186,14 @@ calculator(:compute, value1, value2, operator: :add)
 
 ```ruby
 rule 'example' do
-  match do
+  conditions do
     all?(
       order(:total).gt?(100),
       user(:email).matches(/@company\.com$/),
       user(:roles).includes('premium')
     )
   end
-  execute do
+  actions do
     set :qualified, true
   end
 end
@@ -202,7 +202,7 @@ end
 ### In YAML
 
 ```yaml
-condition:
+conditions:
   type: all
   children:
     - type: pred
@@ -228,7 +228,7 @@ When combining operators, use explicit grouping with `all?()` and `any?()`:
 
 ```ruby
 # Clear precedence with grouping
-match do
+conditions do
   all?(
     any?(
       user(:admin?),
@@ -245,13 +245,13 @@ end
 
 ```ruby
 rule 'medium_order' do
-  match do
+  conditions do
     all?(
       order(:total).gte?(50),
       order(:total).lt?(200)
     )
   end
-  execute do
+  actions do
     set :tier, 'medium'
   end
 end
@@ -261,13 +261,13 @@ end
 
 ```ruby
 rule 'valid_email' do
-  match do
+  conditions do
     all?(
       user(:email).present,
       user(:email).matches(/\A[\w+\-.]+@[a-z\d-]+(\.[a-z\d-]+)*\.[a-z]+\z/i)
     )
   end
-  execute do
+  actions do
     set :email_valid, true
   end
 end
@@ -277,14 +277,14 @@ end
 
 ```ruby
 rule 'can_approve' do
-  match do
+  conditions do
     all?(
       user(:roles).includes('approver'),
       document(:status).in(%w[pending submitted]),
       not?(document(:approved_at).present)
     )
   end
-  execute do
+  actions do
     allow! :approve
   end
 end
@@ -294,7 +294,7 @@ end
 
 ```ruby
 rule 'process_data' do
-  match do
+  conditions do
     all?(
       input(:data).present,
       input(:data).is_a(Hash),
@@ -302,7 +302,7 @@ rule 'process_data' do
       not?(input(:data, :items).blank)
     )
   end
-  execute do
+  actions do
     set :ready_to_process, true
   end
 end

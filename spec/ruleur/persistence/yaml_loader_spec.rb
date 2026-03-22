@@ -92,12 +92,12 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
     it 'handles symbols in YAML' do
       yaml = <<~YAML
         name: symbol_test
-        condition:
+        conditions:
           type: pred
           op: :eq
           left: :value
           right: :active
-        action:
+        actions:
           set:
             status: :done
       YAML
@@ -255,12 +255,12 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
     it 'validates correcordt YAML string' do
       yaml = <<~YAML
         name: valid_rule
-        condition:
+        conditions:
           type: pred
           op: eq
           left: value
           right: 10
-        action:
+        actions:
           set:
             result: true
       YAML
@@ -273,12 +273,12 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
 
     it 'detects missing name' do
       yaml = <<~YAML
-        condition:
+        conditions:
           type: pred
           op: eq
           left: value
           right: 10
-        action:
+        actions:
           set:
             result: true
       YAML
@@ -292,10 +292,10 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
     it 'detects invalid condition type' do
       yaml = <<~YAML
         name: invalid_cond_type
-        condition:
+        conditions:
           type: unknown_type
           data: test
-        action:
+        actions:
           set:
             result: true
       YAML
@@ -309,9 +309,9 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
     it 'detects missing children in composite conditions' do
       yaml = <<~YAML
         name: missing_children
-        condition:
+        conditions:
           type: all
-        action:
+        actions:
           set:
             result: true
       YAML
@@ -360,7 +360,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
       salience: 5
       tags: []
       no_loop: false
-      condition:
+      conditions:
         type: pred
         op: eq
         left:
@@ -368,7 +368,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
           root: status
           path: []
         right: active
-      action:
+      actions:
         set:
           result: true
     YAML
@@ -378,7 +378,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
     <<~YAML
       name: test_salience
       salience: 5
-      condition:
+      conditions:
         type: pred
         op: eq
         left:
@@ -386,7 +386,7 @@ RSpec.describe Ruleur::Persistence::YAMLLoader do
           root: status
           path: []
         right: active
-      action:
+      actions:
         set:
           result: true
     YAML

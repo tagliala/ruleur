@@ -16,7 +16,7 @@ Conditions define when a rule should fire. Ruleur provides composable condition 
 All child conditions must be true.
 
 ```ruby
-match do
+conditions do
   all?(
     user(:admin?),
     record(:published?),
@@ -30,7 +30,7 @@ end
 At least one child condition must be true.
 
 ```ruby
-match do
+conditions do
   any?(
     user(:admin?),
     user(:owner?, record)
@@ -43,7 +43,7 @@ end
 Inverts the child condition.
 
 ```ruby
-match do
+conditions do
   all?(
     not?(record(:archived?)),
     record(:active?)
@@ -153,7 +153,7 @@ See [Operators](./operators) for a complete list of available comparison operato
 Conditions can be nested to arbitrary depth:
 
 ```ruby
-match do
+conditions do
   any?(
     all?(
       user(:admin?),
@@ -212,11 +212,11 @@ not?(record(:draft?))
 
 ```ruby
 rule 'admin_only' do
-  match do
+  conditions do
     all?(user(:admin?))
   end
 
-  execute do
+  actions do
     allow! :access
   end
 end
@@ -226,14 +226,14 @@ end
 
 ```ruby
 rule 'bulk_discount' do
-  match do
+  conditions do
     all?(
       order(:total).gt?(500),
       order(:items_count).gt?(10)
     )
   end
 
-  execute do
+  actions do
     set :discount, 0.15
   end
 end
@@ -243,7 +243,7 @@ end
 
 ```ruby
 rule 'can_edit' do
-  match do
+  conditions do
     any?(
       # Admin can always edit
       user(:admin?),
@@ -259,7 +259,7 @@ rule 'can_edit' do
     )
   end
 
-  execute do
+  actions do
     allow! :edit
   end
 end
@@ -269,7 +269,7 @@ end
 
 ```ruby
 rule 'premium_feature' do
-  match do
+  conditions do
     all?(
       user(:subscription, :active?),
       user(:subscription, :tier).eq?('premium'),
@@ -278,7 +278,7 @@ rule 'premium_feature' do
     )
   end
 
-  execute do
+  actions do
     allow! :premium_feature
   end
 end

@@ -8,8 +8,8 @@ RSpec.describe Ruleur::Persistence::Serializer do
       rule = not_rule
 
       serialized = described_class.rule_to_h(rule)
-      expect(serialized[:condition][:type]).to eq('not')
-      expect(serialized[:condition][:child]).to be_a(Hash)
+      expect(serialized[:conditions][:type]).to eq('not')
+      expect(serialized[:conditions][:child]).to be_a(Hash)
     end
 
     it 'deserializes Not nodes' do

@@ -20,11 +20,11 @@ A **predicate** is the basic building block - it compares two values using an op
 
 ```ruby
 rule 'adult_check' do
-  match do
+  conditions do
     all?(gte(record_value(:age), 18)) # Predicate: recordord.age >= 18
   end
 
-  execute do
+  actions do
     allow! :access
   end
 end
@@ -86,7 +86,7 @@ The `all?` condition evaluates to true only if **all** children are true.
 
 ```ruby
 rule 'restricted_access' do
-  match do
+  conditions do
     all?(
       user(:verified?),
       user(:premium?),
@@ -94,7 +94,7 @@ rule 'restricted_access' do
     )
   end
 
-  execute do
+  actions do
     allow! :vip_access
   end
 end
@@ -110,7 +110,7 @@ Prefer using `match` together with `all?()`/`any?()` to make rule structure expl
 
 ```ruby
 # Using match + all (preferred)
-match do
+conditions do
   all?(
     user(:verified?),
     user(:premium?)
@@ -118,7 +118,7 @@ match do
 end
 
 # Legacy shorthand (still supported):
-match do
+conditions do
   all?(
     user(:verified?),
     user(:premium?)
@@ -133,7 +133,7 @@ The `any?` condition evaluates to true if **at least one** child is true.
 
 ```ruby
 rule 'can_edit' do
-  match do
+  conditions do
     any?(
       user(:admin?),
       user(:editor?),
@@ -141,7 +141,7 @@ rule 'can_edit' do
     )
   end
 
-  execute do
+  actions do
     allow! :edit
   end
 end
@@ -158,11 +158,11 @@ The `not?` condition inverts the result of its child.
 
 ```ruby
 rule 'not_archived' do
-  match do
+  conditions do
     all?(not?(record(:archived?)))
   end
 
-  execute do
+  actions do
     allow! :view
   end
 end
@@ -178,7 +178,7 @@ The real power comes from nesting conditions to express complex logic.
 
 ```ruby
 rule 'complex_update' do
-  match do
+  conditions do
     all?(
       any?(
         user(:admin?),
@@ -190,7 +190,7 @@ rule 'complex_update' do
     )
   end
 
-  execute do
+  actions do
     allow! :update
   end
 end
@@ -202,7 +202,7 @@ end
 
 ```ruby
 rule 'complex_view' do
-  match do
+  conditions do
     any?(
       record(:public?),
       all?(
@@ -212,7 +212,7 @@ rule 'complex_view' do
     )
   end
 
-  execute do
+  actions do
     allow! :view
   end
 end
@@ -224,7 +224,7 @@ end
 
 ```ruby
 rule 'publish_permission' do
-  match do
+  conditions do
     any?(
       user(:admin?),
       all?(
@@ -238,7 +238,7 @@ rule 'publish_permission' do
     )
   end
 
-  execute do
+  actions do
     allow! :publish
   end
 end
@@ -252,7 +252,7 @@ For simple truthy checks, use the DSL helpers:
 
 ```ruby
 rule 'simple' do
-  match do
+  conditions do
     all?(
       user(:admin?), # Checks user.admin? is truthy
       record(:published?) # Checks recordord.published? is truthy
@@ -267,7 +267,7 @@ For comparisons and complex checks:
 
 ```ruby
 rule 'explicit' do
-  match do
+  conditions do
     all?(
       gte(record_value(:age), 18),
       include?(record_value(:status), %w[active trial])
@@ -282,7 +282,7 @@ Combine both approaches:
 
 ```ruby
 rule 'mixed' do
-  match do
+  conditions do
     all?(
       user(:verified?), # Shortcut
       gte(record_value(:subscription_level), 3), # Explicit
@@ -397,7 +397,7 @@ For complex logic that doesn't fit the operator model, use `predicate` blocks:
 
 ```ruby
 rule 'custom_logic' do
-  match do
+  conditions do
     all?(
       predicate do |ctx|
         user = ctx[:user]
@@ -410,7 +410,7 @@ rule 'custom_logic' do
     )
   end
 
-  execute do
+  actions do
     allow! :purchase
   end
 end
@@ -440,14 +440,14 @@ ctx = engine.run(recordord: my_recordord, user: current_user)
 Composite conditions short-circuit for efficiency:
 
 ```ruby
-match do
+conditions do
   all?(
     expensive_check,   # Evaluated first
     cheap_check        # Not evaluated if expensive_check() returns false
   )
 end
 
-match do
+conditions do
   any?(
     cheap_check,       # Evaluated first
     expensive_check    # Not evaluated if cheap_check() returns true
@@ -463,7 +463,7 @@ Check permissions in priority order:
 
 ```ruby
 rule 'permission_cascade' do
-  match do
+  conditions do
     any?(
       user(:admin?), # Highest priority
       all?(user(:editor?), record(:draft?)), # Medium priority
@@ -471,7 +471,7 @@ rule 'permission_cascade' do
     )
   end
 
-  execute do
+  actions do
     allow! :edit
   end
 end
@@ -483,7 +483,7 @@ Combine feature flags with business logic:
 
 ```ruby
 rule 'new_feature' do
-  match do
+  conditions do
     all?(
       flag(:new_feature_enabled), # Feature flag
       user(:premium?), # Business rule
@@ -491,7 +491,7 @@ rule 'new_feature' do
     )
   end
 
-  execute do
+  actions do
     set :use_new_feature, true
   end
 end
@@ -503,7 +503,7 @@ Different access levels based on user tier:
 
 ```ruby
 rule 'vip_access' do
-  match do
+  conditions do
     all?(
       user(:vip?),
       any?(
@@ -514,13 +514,13 @@ rule 'vip_access' do
     )
   end
 
-  execute do
+  actions do
     allow! :access
   end
 end
 
 rule 'premium_access' do
-  match do
+  conditions do
     all?(
       user(:premium?),
       any?(
@@ -530,20 +530,20 @@ rule 'premium_access' do
     )
   end
 
-  execute do
+  actions do
     allow! :access
   end
 end
 
 rule 'basic_access' do
-  match do
+  conditions do
     all?(
       user(:registered?),
       record(:public?)
     )
   end
 
-  execute do
+  actions do
     allow! :access
   end
 end
@@ -555,27 +555,27 @@ Use flags set by earlier rules:
 
 ```ruby
 rule 'check_eligibility', salience: 10 do
-  match do
+  conditions do
     all?(
       gte(record_value(:age), 18),
       user(:verified?)
     )
   end
 
-  execute do
+  actions do
     allow! :eligible
   end
 end
 
 rule 'grant_access', salience: 0 do
-  match do
+  conditions do
     all?(
       flag(:eligible), # Depends on previous rule
       record(:active?)
     )
   end
 
-  execute do
+  actions do
     allow! :access
   end
 end
@@ -586,7 +586,7 @@ end
 Conditions serialize to YAML for storage:
 
 ```yaml
-condition:
+conditions:
   type: any
   children:
     - type: pred
@@ -626,7 +626,7 @@ Break complex conditions into smaller rules:
 ```ruby
 # Good - clear intent
 rule 'eligible_for_discount' do
-  match do
+  conditions do
     all?(
       user(:premium?),
       gte(record_value(:total), 100)
@@ -637,7 +637,7 @@ end
 
 # Hard to read
 rule 'complex' do
-  match do
+  conditions do
     all?(
       any?(
         all?(user(:premium?), gte(record_value(:total), 100)),
@@ -655,7 +655,7 @@ Put cheap, likely-to-fail checks first:
 
 ```ruby
 # Good - cheap check first
-match do
+conditions do
   all?(
     user(:logged_in?), # Fast, often false
     expensive_database_check
@@ -663,7 +663,7 @@ match do
 end
 
 # Less efficient
-match do
+conditions do
   all?(
     expensive_database_check,
     user(:logged_in?)
@@ -677,12 +677,12 @@ end
 # Good
 is_adult = gte(record_value(:age), 18)
 is_verified = user(:verified?)
-match do
+conditions do
   all?(is_adult, is_verified)
 end
 
 # Less clear
-match do
+conditions do
   all?(gte(record_value(:age), 18), user(:verified?))
 end
 ```
@@ -693,7 +693,7 @@ More than 3 levels deep gets hard to follow. Break into multiple rules:
 
 ```ruby
 # Too deep (4 levels)
-match do
+conditions do
   any?(
     a,
     all?(
@@ -708,25 +708,25 @@ end
 
 # Better - split into rules
 rule 'check_complex_1' do
-  match do
+  conditions do
     all?(d, e, any?(f, g))
   end
-  execute do
+  actions do
     set :complex_1, true
   end
 end
 
 rule 'check_complex_2' do
-  match do
+  conditions do
     any?(c, flag(:complex_1))
   end
-  execute do
+  actions do
     set :complex_2, true
   end
 end
 
 rule 'final_check' do
-  match do
+  conditions do
     any?(a, all?(b, flag(:complex_2)))
   end
   allow! :access
@@ -758,7 +758,7 @@ puts condition.evaluate(ctx) # => true or false
 
 ```ruby
 # Add presence checks
-match do
+conditions do
   all?(
     present?(record_value(:user)),
     eq?(record_value(:user).call(:role), 'admin')
@@ -781,7 +781,7 @@ end
 
 ```ruby
 # This short-circuits
-match do
+conditions do
   all?(
     cheap_check, # If false, stops here
     expensive_check

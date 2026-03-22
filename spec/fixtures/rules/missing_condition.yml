@@ -1,6 +1,6 @@
 # Invalid rule - missing required field 'condition'
 name: missing_condition
 salience: 0
-action:
+actions:
   set:
     result: true

@@ -39,10 +39,10 @@ Defines a rule within the engine.
 
 ```ruby
 rule 'example', salience: 10, tags: [:important], no_loop: true do
-  match do
+  conditions do
     all?(conditions)
   end
-  execute do
+  actions do
     # action code here
   end
 end
@@ -64,7 +64,7 @@ end
 All conditions must be true (AND). Wrap them in a `match` block in rules:
 
 ```ruby
-match do
+conditions do
   all?(
     user(:admin?),
     record(:published?),
@@ -78,7 +78,7 @@ end
 At least one condition must be true (OR). Wrap them in a `match` block in rules:
 
 ```ruby
-match do
+conditions do
   any?(
     user(:admin?),
     user(:owner?, record),
@@ -92,7 +92,7 @@ end
 Same as above but can be nested within `any`.
 
 ```ruby
-match do
+conditions do
   any?(
     user(:admin?),
     all?(
@@ -108,7 +108,7 @@ end
 Same as above but can be nested within `all`.
 
 ```ruby
-match do
+conditions do
   all?(
     any?(user(:admin?), user(:moderator?)),
     record(:published?)
@@ -121,7 +121,7 @@ end
 Negates a condition inside a `match` block.
 
 ```ruby
-match do
+conditions do
   all?(
     user(:active?),
     not?(user(:banned?))
@@ -183,7 +183,7 @@ order(:total).gt?(literal(100))
 Sets a value in the context.
 
 ```ruby
-execute do
+actions do
   set :discount, 0.15
   set :approved, true
   set :message, 'Order processed'
@@ -199,7 +199,7 @@ end
 Calls a method on an object.
 
 ```ruby
-execute do
+actions do
   order = context[:order]
   call_method(order, :apply_discount, 0.15)
   call_method(order, :add_note, 'Discount applied')
@@ -211,7 +211,7 @@ end
 Within action blocks, you have access to:
 
 ```ruby
-execute do
+actions do
   # Direcordt context access
   user = context[:user]
   order = context[:order]
@@ -230,20 +230,20 @@ end
 engine = Ruleur.define do
   # High priority rule
   rule 'validate_user', salience: 100 do
-    match do
+    conditions do
       all?(
         user(:present),
         not?(user(:banned?))
       )
     end
-    execute do
+    actions do
       set :user_valid, true
     end
   end
 
   # Permission rule
   rule 'allow_edit', salience: 50, tags: [:permissions] do
-    match do
+    conditions do
       any?(
         user(:admin?),
         all?(
@@ -253,7 +253,7 @@ engine = Ruleur.define do
         )
       )
     end
-    execute do
+    actions do
       set :edit, true
       set :reason, 'User has edit permissions'
     end
@@ -261,14 +261,14 @@ engine = Ruleur.define do
 
   # Workflow rule with no_loop
   rule 'process_order', salience: 10, no_loop: true do
-    match do
+    conditions do
       all?(
         flag(:user_valid),
         flag(:update),
         recordord(:ready_to_process?)
       )
     end
-    execute do
+    actions do
       order = context[:recordord]
       call_method(order, :process!)
       set :processed, true
@@ -289,10 +289,10 @@ puts result[:processed] # => true
 ```ruby
 def create_threshold_rule(name, threshold)
   rule name do
-    match do
+    conditions do
       all?(order(:total).gt?(literal(threshold)))
     end
-    execute { set :tier, name }
+    actions { set :tier, name }
   end
 end
 
@@ -307,14 +307,14 @@ end
 
 ```ruby
 rule 'premium_check' do
-  match do
+  conditions do
     all?(
       user(:subscription, :tier).eq?('premium'),
       user(:subscription, :active?),
       user(:subscription, :expires_at).gt?(literal(Date.today))
     )
   end
-  execute do
+  actions do
     set :premium_features, true
   end
 end
@@ -324,10 +324,10 @@ end
 
 ```ruby
 rule 'calculate_shipping' do
-  match do
+  conditions do
     all?(flag(:order_valid))
   end
-  execute do
+  actions do
     order = context[:order]
     total = order.total
 

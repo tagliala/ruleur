@@ -305,8 +305,8 @@ RSpec.describe Ruleur::Validation do
     it 'validates rule hash before deserialization' do
       rule_hash = {
         name: 'test',
-        condition: { type: 'pred', op: 'eq', left: 'x', right: 5 },
-        action: { set: { y: 10 } }
+        conditions: { type: 'pred', op: 'eq', left: 'x', right: 5 },
+        actions: { set: { y: 10 } }
       }
 
       result = validator.validate_hash(rule_hash)
@@ -318,15 +318,15 @@ RSpec.describe Ruleur::Validation do
 
       result = validator.validate_hash(rule_hash)
       expect(result.valid?).to be(false)
-      expect(result.errors).to include(/Missing required field: condition/)
-      expect(result.errors).to include(/Missing required field: action/)
+      expect(result.errors).to include(/Missing required field: conditions/)
+      expect(result.errors).to include(/Missing required field: actions/)
     end
 
     it 'detects invalid condition type in hash' do
       rule_hash = {
         name: 'test',
-        condition: { type: 'invalid_type' },
-        action: { set: { y: 10 } }
+        conditions: { type: 'invalid_type' },
+        actions: { set: { y: 10 } }
       }
 
       result = validator.validate_hash(rule_hash)
@@ -392,8 +392,8 @@ RSpec.describe Ruleur::Validation do
     it 'provides validate_hash shortcut' do
       hash = {
         name: 'test',
-        condition: { type: 'pred', op: 'eq', left: 'x', right: 5 },
-        action: { set: { y: 10 } }
+        conditions: { type: 'pred', op: 'eq', left: 'x', right: 5 },
+        actions: { set: { y: 10 } }
       }
 
       result = described_class.validate_hash(hash)

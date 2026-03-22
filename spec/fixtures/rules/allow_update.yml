@@ -6,7 +6,7 @@ tags:
   - permissions
   - update
 no_loop: true
-condition:
+conditions:
   type: all
   children:
     - type: pred
@@ -53,6 +53,6 @@ condition:
                 root: allow_create
                 path: []
               right: null
-action:
+actions:
   set:
     allow_update: true

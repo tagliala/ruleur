@@ -42,11 +42,11 @@ Validates a complete `Ruleur::Rule` object with structural, semantic, and option
 ```ruby
 rule = Ruleur.define do
   rule 'test_rule' do
-    match do
+    conditions do
       all?(user(:admin?))
     end
 
-    execute do
+    actions do
       allow! :delete
     end
   end
@@ -213,11 +213,11 @@ Record = Struct.new(:status)
 
 rule = Ruleur.define do
   rule 'admin_access' do
-    match do
+    conditions do
       all?(user(:admin))
     end
 
-    execute do
+    actions do
       allow! :access
     end
   end
@@ -248,11 +248,11 @@ end
 ```ruby
 rule = Ruleur.define do
   rule 'broken_rule' do
-    match do
+    conditions do
       all?(user(:nonexistent_method)) # This will fail
     end
 
-    execute do
+    actions do
       allow! :access
     end
   end

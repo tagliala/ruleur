@@ -41,9 +41,9 @@ name: rule_name
 salience: 0          # Optional: priority (default 0)
 tags: []             # Optional: array of tags
 no_loop: false       # Optional: prevent infinite loops
-condition:
+conditions:
   # Condition tree (see below)
-action:
+actions:
   # Action specification (see below)
 ```
 
@@ -56,7 +56,7 @@ tags:
   - permissions
   - admin
 no_loop: true
-condition:
+conditions:
   type: pred
   op: truthy
   left:
@@ -68,7 +68,7 @@ condition:
     method: admin?
     args: []
   right: null
-action:
+actions:
   set:
     allow_access: true
 ```
@@ -80,7 +80,7 @@ action:
 Evaluates a comparison between two values:
 
 ```yaml
-condition:
+conditions:
   type: pred
   op: eq              # Operator: eq, ne, gt, gte, lt, lte, truthy, etc.
   left:
@@ -94,7 +94,7 @@ condition:
 All child conditions must be true (AND logic):
 
 ```yaml
-condition:
+conditions:
   type: all
   children:
     - type: pred
@@ -112,7 +112,7 @@ condition:
 At least one child condition must be true (OR logic):
 
 ```yaml
-condition:
+conditions:
   type: any
   children:
     - type: pred
@@ -136,7 +136,7 @@ condition:
 Negates a condition:
 
 ```yaml
-condition:
+conditions:
   type: not
   child:
     type: pred
@@ -185,7 +185,7 @@ args: []               # Optional: method arguments
 Currently, only `set` actions are supported for YAML rules:
 
 ```yaml
-action:
+actions:
   set:
     allow_create: true
     allow_update: false
@@ -205,7 +205,7 @@ tags:
   - permissions
   - create
 no_loop: true
-condition:
+conditions:
   type: any
   children:
     # Admin can always create
@@ -245,7 +245,7 @@ condition:
             method: draft?
             args: []
           right: null
-action:
+actions:
   set:
     allow_create: true
 ```
@@ -258,7 +258,7 @@ salience: 5
 tags:
   - workflow
   - approval
-condition:
+conditions:
   type: all
   children:
     # Amount less than 1000
@@ -283,7 +283,7 @@ condition:
           root: invoice
         method: reviewed?
       right: null
-action:
+actions:
   set:
     auto_approved: true
     approval_status: approved
@@ -297,10 +297,10 @@ You can convert DSL-defined rules to YAML:
 # Define rule with DSL
 engine = Ruleur.define do
   rule 'my_rule', salience: 10 do
-    match do
+    conditions do
       any?(user(:admin?))
     end
-    execute do
+    actions do
       allow! :access
     end
   end
@@ -334,9 +334,9 @@ salience: 10
 tags:
   - permissions
 no_loop: true
-condition:
+conditions:
   # ...
-action:
+actions:
   # ...
 ```
 
@@ -431,7 +431,7 @@ tags:
   - edit
 no_loop: true
 
-condition:
+conditions:
   type: any
   children:
     # Rule 1: Admins can always edit
@@ -464,7 +464,7 @@ condition:
             method: draft?
           right: null
 
-action:
+actions:
   set:
     allow_edit: true
 ```
