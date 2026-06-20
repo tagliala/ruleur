@@ -126,7 +126,7 @@ RSpec.describe Ruleur::Generators::MigrationGenerator, type: :generator do
       rules_migration = migrations.find { |f| f.include?('create_ruleur_rules') }
       content = File.read(rules_migration)
       expect(content).to include('t.jsonb :payload')
-      expect(content).not_to match(/t\.integer :version/)
+      expect(content).not_to include('t.integer :version')
     end
 
     it 'does not include audit columns in simple migration' do
