@@ -5,7 +5,7 @@ require 'yaml'
 module Ruleur
   module Persistence
     # YAMLLoader handles loading and saving rules from/to YAML files
-    # rubocop:disable Metrics/ModuleLength
+    # rubocop:disable-next Metrics/ModuleLength
     module YAMLLoader
       module_function
 
@@ -91,7 +91,7 @@ module Ruleur
         { valid: false, errors: ["Invalid YAML syntax: #{e.message}"] }
       end
 
-      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
+      # rubocop:disable-next Metrics/CyclomaticComplexity, Metrics/MethodLength
       private_class_method def self.normalize_hash_keys!(hash)
         # Recursively convert string keys to symbols for consistency
         return hash unless hash.is_a?(Hash)
@@ -110,9 +110,8 @@ module Ruleur
 
         hash
       end
-      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/MethodLength
 
-      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
+      # rubocop:disable-next Metrics/CyclomaticComplexity, Metrics/MethodLength
       private_class_method def self.normalize_for_yaml!(hash)
         # Convert symbols to strings for cleaner YAML output
         return hash unless hash.is_a?(Hash)
@@ -132,7 +131,6 @@ module Ruleur
 
         hash
       end
-      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/MethodLength
 
       private_class_method def self.add_metadata_header(yaml, rule)
         header = "# Ruleur Rule: #{rule.name}\n"
@@ -213,6 +211,5 @@ module Ruleur
         errors
       end
     end
-    # rubocop:enable Metrics/ModuleLength
   end
 end

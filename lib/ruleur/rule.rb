@@ -5,7 +5,7 @@ module Ruleur
   class Rule
     attr_reader :name, :condition, :action, :salience, :tags, :no_loop, :action_spec
 
-    # rubocop:disable Metrics/ParameterLists
+    # rubocop:disable-next Metrics/ParameterLists
     def initialize(name:, condition:, action: nil, action_spec: nil, salience: 0, tags: [], no_loop: false)
       @name = name.to_s
       @condition = condition
@@ -16,7 +16,6 @@ module Ruleur
       @no_loop = !no_loop.nil?
       @fired_once = false
     end
-    # rubocop:enable Metrics/ParameterLists
 
     def eligible?(ctx)
       return false if no_loop && @fired_once

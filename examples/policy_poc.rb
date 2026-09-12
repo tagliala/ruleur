@@ -15,7 +15,7 @@ MockUser = Struct.new(:admin) do
   def admin? = !!admin
 end
 
-# rubocop:disable Metrics/MethodLength
+# rubocop:disable-next Metrics/MethodLength
 def create_engine
   Ruleur.define do
     rule 'create_if_admin_or_draft', no_loop: true, salience: 10 do
@@ -44,7 +44,6 @@ def create_engine
     end
   end
 end
-# rubocop:enable Metrics/MethodLength
 
 def run_case(record:, user:)
   engine = create_engine

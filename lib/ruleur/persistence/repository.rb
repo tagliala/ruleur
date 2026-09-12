@@ -67,7 +67,7 @@ module Ruleur
     end
 
     # VersionedActiveRecordRepository adds full version tracking and audit trail
-    # rubocop:disable Metrics/ClassLength
+    # rubocop:disable-next Metrics/ClassLength
     class VersionedActiveRecordRepository
       attr_reader :model, :version_model
 
@@ -237,6 +237,5 @@ module Ruleur
         end
       end
     end
-    # rubocop:enable Metrics/ClassLength
   end
 end
