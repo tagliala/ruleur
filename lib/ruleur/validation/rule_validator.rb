@@ -7,7 +7,7 @@ require_relative 'action_validator'
 module Ruleur
   module Validation
     # RuleValidator validates complete rules (structure, semantics, and optional execution)
-    # rubocop:disable Metrics/ClassLength
+    # rubocop:disable-next Metrics/ClassLength
     class RuleValidator
       def initialize(test_context: nil)
         @test_context = test_context
@@ -18,7 +18,7 @@ module Ruleur
       # Validate a Rule object
       # @param rule [Rule] Rule to validate
       # @return [ValidationResult] Validation outcome
-      # rubocop:disable Metrics/MethodLength
+      # rubocop:disable-next Metrics/MethodLength
       def validate_rule(rule)
         result = ValidationResult.new
 
@@ -45,7 +45,6 @@ module Ruleur
 
         result
       end
-      # rubocop:enable Metrics/MethodLength
 
       # Validate a rule hash (before deserialization)
       # @param rule_hash [Hash] Serialized rule
@@ -67,7 +66,7 @@ module Ruleur
 
       private
 
-      # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
+      # rubocop:disable-next Metrics/AbcSize, Metrics/CyclomaticComplexity
       def validate_structure(rule, result)
         result.add_error('Rule name cannot be nil or empty') if rule.name.nil? || rule.name.to_s.strip.empty?
 
@@ -83,7 +82,6 @@ module Ruleur
 
         result.add_error("no_loop must be boolean, got #{rule.no_loop.class}")
       end
-      # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity
 
       def validate_required_fields(hash, result)
         result.add_error('Missing required field: name') unless hash[:name]
@@ -91,7 +89,7 @@ module Ruleur
         result.add_error('Missing required field: actions') unless hash[:actions]
       end
 
-      # rubocop:disable Metrics/MethodLength
+      # rubocop:disable-next Metrics/MethodLength
       def validate_condition_hash(cond_hash, result)
         unless cond_hash.is_a?(Hash)
           result.add_error("Condition must be a Hash, got #{cond_hash.class}")
@@ -113,7 +111,6 @@ module Ruleur
           validate_not_hash(cond_hash, result)
         end
       end
-      # rubocop:enable Metrics/MethodLength
 
       def validate_predicate_hash(hash, result)
         result.add_error('Predicate missing operator') unless hash[:op]
@@ -187,6 +184,5 @@ module Ruleur
         result
       end
     end
-    # rubocop:enable Metrics/ClassLength
   end
 end

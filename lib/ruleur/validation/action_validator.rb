@@ -10,7 +10,7 @@ module Ruleur
         @result = ValidationResult.new
       end
 
-      # rubocop:disable Metrics/MethodLength
+      # rubocop:disable-next Metrics/MethodLength
       def validate(action_spec)
         @result = ValidationResult.new
 
@@ -29,11 +29,10 @@ module Ruleur
 
         @result
       end
-      # rubocop:enable Metrics/MethodLength
 
       private
 
-      # rubocop:disable Metrics/MethodLength
+      # rubocop:disable-next Metrics/MethodLength
       def validate_set_action(set_hash)
         unless set_hash.is_a?(Hash)
           @result.add_error("Action 'set' must be a Hash, got #{set_hash.class}")
@@ -50,7 +49,6 @@ module Ruleur
           validate_action_value(value, key)
         end
       end
-      # rubocop:enable Metrics/MethodLength
 
       def validate_action_value(value, key)
         case value

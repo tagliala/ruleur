@@ -3,7 +3,7 @@
 module Ruleur
   module Persistence
     # Serializer converts rules to/from JSON-serializable hashes
-    # rubocop:disable Metrics/ModuleLength
+    # rubocop:disable-next Metrics/ModuleLength
     module Serializer
       module_function
 
@@ -18,7 +18,7 @@ module Ruleur
         }
       end
 
-      # rubocop:disable Metrics/MethodLength
+      # rubocop:disable-next Metrics/MethodLength
       def node_to_h(node)
         case node
         when Condition::Predicate
@@ -33,7 +33,6 @@ module Ruleur
           raise ArgumentError, "Cannot serialize node: #{node.inspect}"
         end
       end
-      # rubocop:enable Metrics/MethodLength
 
       def serialize_predicate(node)
         {
@@ -130,6 +129,5 @@ module Ruleur
         Condition::Call.new(recv, (hash['method'] || hash[:method]).to_sym, *args)
       end
     end
-    # rubocop:enable Metrics/ModuleLength
   end
 end

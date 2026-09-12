@@ -18,7 +18,7 @@ module Ruleur
 
       private
 
-      # rubocop:disable Metrics/MethodLength
+      # rubocop:disable-next Metrics/MethodLength
       def validate_node(node)
         case node
         when Condition::Predicate
@@ -33,7 +33,6 @@ module Ruleur
           @result.add_error("Unknown condition node type: #{node.class}")
         end
       end
-      # rubocop:enable Metrics/MethodLength
 
       def validate_predicate(node)
         # Check if operator exists
@@ -65,7 +64,7 @@ module Ruleur
         @result.add_warning('BlockPredicate contains arbitrary code; runtime validation only')
       end
 
-      # rubocop:disable Metrics/MethodLength
+      # rubocop:disable-next Metrics/MethodLength
       def validate_value(value, position)
         case value
         when Condition::Ref
@@ -80,7 +79,6 @@ module Ruleur
           @result.add_error("Invalid value type at #{position}: #{value.class}")
         end
       end
-      # rubocop:enable Metrics/MethodLength
 
       def validate_ref(ref, position)
         # Check that root is a symbol or string
@@ -94,7 +92,7 @@ module Ruleur
         @result.add_error("Ref at #{position} has invalid path type: #{ref.path.class}")
       end
 
-      # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
+      # rubocop:disable-next Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
       def validate_call(call, position)
         # Validate receiver
         receiver = call.receiver
@@ -115,7 +113,6 @@ module Ruleur
           validate_value(arg, "#{position}.arg[#{idx}]")
         end
       end
-      # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
     end
   end
 end
